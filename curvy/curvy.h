@@ -1,10 +1,13 @@
 #pragma once
 
-#include <Windows.h>
+#include <memory>
 #include <vector>
+#include <gdiplus.h>
 #include <tuple>
 #include <optional>
 #include "colors.h"
+
+namespace gdi = Gdiplus;
 
 namespace curvy {
 
@@ -20,7 +23,7 @@ namespace curvy {
 
     public:
 
-        puck(const circle_rotation_state& crs, COLORREF color = colors::White, double puck_radius = 1, double mass = 1);
+        puck(const circle_rotation_state& crs, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
         void update( double dt );
         puck update( double dt ) const;
         double theta() const;
@@ -33,7 +36,7 @@ namespace curvy {
         double distance_from_center(const puck& p) const;
         double distance_from_intersection(const puck& p) const;
         std::optional<double> get_collision_time(const puck& p, double dt, double eps) const;
-        COLORREF color() const;
+        gdi::Color color() const;
         void set_speed(double speed);
 
     private:
@@ -41,7 +44,7 @@ namespace curvy {
         circle_rotation_state crs_;
         double puck_radius_;
         double mass_;
-        COLORREF color_;
+        gdi::Color color_;
     };
     
 
@@ -54,13 +57,13 @@ namespace curvy {
         void set_dimensions(int px_sz, double log_sz = 0);
         int get_size() const;
         void insert(const puck& p);
-        HBITMAP get_bitmap() const;
+        gdi::Bitmap* get_bitmap() const;
         void update(double dt);
 
     private:
 
         void render();
-        void paint_puck(HDC hdc, const puck& p);
+        void paint_puck(gdi::Graphics& g, const puck& p);
         std::tuple<int, int, int, int> get_location_in_pixels(const puck& p) const;
         std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2) const;
 
@@ -71,7 +74,7 @@ namespace curvy {
         void handle_collision(collision& c);
         void handle_collisions(collisions& c);
 
-        HBITMAP back_buffer_;
+        std::unique_ptr<gdi::Bitmap> back_buffer_;
         std::vector<puck> pucks_;
         double logical_sz_;
         int pixel_sz_;

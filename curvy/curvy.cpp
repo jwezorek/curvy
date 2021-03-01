@@ -1,3 +1,5 @@
+#include <Windows.h>
+#include <gdiplus.h>
 #include "curvy.h"
 #include <cmath>
 #include <string>
@@ -7,13 +9,6 @@
 namespace {
 
     const long double g_pi = acos(-1.L);
-
-    HBITMAP create_bitmap( int wd, int hgt ) {
-        HDC hdcScreen = GetDC(NULL);
-        HBITMAP hbm = CreateCompatibleBitmap(hdcScreen, wd, hgt);
-        ReleaseDC(NULL, hdcScreen);
-        return hbm;
-    }
 
     double euclidean_distance(double x1, double y1, double x2, double y2) {
         auto diff_x = x2 - x1;
@@ -60,7 +55,7 @@ double curvy::pi() {
     return g_pi;
 }
 
-curvy::puck::puck(const circle_rotation_state& crs, COLORREF color, double puck_radius, double mass) :
+curvy::puck::puck(const circle_rotation_state& crs, gdi::Color color, double puck_radius, double mass) :
     crs_(crs),
     color_(color),
     puck_radius_(puck_radius),
@@ -129,7 +124,7 @@ std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, 
     return ::get_collision_time(*this, p, 0, dt, eps);
 }
 
-COLORREF curvy::puck::color() const
+gdi::Color curvy::puck::color() const
 {
     return color_;
 }
@@ -142,7 +137,6 @@ void curvy::puck::set_speed(double speed)
 /*----------------------------------------------------------------------------------------------*/
 
 curvy::state::state(int px_sz, double log_sz) : 
-    back_buffer_(0),
     pixel_sz_(px_sz),
     logical_sz_(log_sz)
 {
@@ -156,7 +150,7 @@ void curvy::state::set_dimensions(int px_sz, double log_sz)
     }
     if (px_sz) {
         pixel_sz_ = px_sz;
-        back_buffer_ = create_bitmap(px_sz, px_sz);
+        back_buffer_ = std::make_unique<gdi::Bitmap>(px_sz, px_sz);
         render();
     }
 }
@@ -172,9 +166,9 @@ void curvy::state::insert(const puck& p)
     render();
 }
 
-HBITMAP curvy::state::get_bitmap() const
+gdi::Bitmap* curvy::state::get_bitmap() const
 {
-    return back_buffer_;
+    return back_buffer_.get();
 }
 
 void curvy::state::update(double dt)
@@ -192,48 +186,35 @@ void curvy::state::update(double dt)
     render();
 }
 
-/*
-void curvy::state::update(double dt)
-{
-    for (auto& p : pucks_)
-        p.update(dt);
-    render();
-}
-*/
+
+
 
 void curvy::state::render()
 {
     if (!pixel_sz_)
         return;
 
-    HDC hdcScreen = GetDC(NULL);
-    HDC hdc = CreateCompatibleDC(hdcScreen);
-    auto hbmOld = SelectObject(hdc, back_buffer_);
+    gdi::SolidBrush black_brush( colors::Black );
+    gdi::Pen white_pen(colors::White, 1);
+    auto* g = gdi::Graphics::FromImage(back_buffer_.get());
 
-    RECT r = { 0, 0, pixel_sz_, pixel_sz_ };
-    FillRect(hdc, &r, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
-    
-    SelectObject(hdc, static_cast<HBRUSH>(GetStockObject(NULL_BRUSH)));
-    SelectObject(hdc, static_cast<HPEN>(GetStockObject(WHITE_PEN)));
-    Ellipse(hdc, 0, 0, pixel_sz_, pixel_sz_);
+    g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
+    g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
+    g->DrawEllipse(&white_pen, 0, 0, pixel_sz_, pixel_sz_);
 
     for (const auto& puck : pucks_)
-        paint_puck(hdc, puck);
+        paint_puck(*g, puck);
 
-    SelectObject(hdc, hbmOld);
-    DeleteDC(hdc);
-    ReleaseDC(NULL, hdcScreen);
+    delete g;
 }
 
-void curvy::state::paint_puck(HDC hdc, const puck& p)
+void curvy::state::paint_puck(gdi::Graphics& g, const puck& p)
 {
-    HBRUSH hbr = CreateSolidBrush(p.color());
-    auto old_brush = SelectObject(hdc, static_cast<HBRUSH>(hbr));
-    SelectObject(hdc, static_cast<HPEN>(GetStockObject(NULL_PEN)));
+    
+    gdi::SolidBrush brush( p.color() );
     auto [x1, y1, x2, y2] = get_location_in_pixels(p);
-    Ellipse(hdc, x1, y1, x2, y2);
-    SelectObject(hdc, old_brush);
-    DeleteObject(hbr);
+    g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
+
 }
 
 std::tuple<int, int, int, int> curvy::state::to_scr_coords(double x1, double y1, double x2, double y2) const

@@ -2,6 +2,8 @@
 #include <chrono>
 #include "curvy.h"
 #include "colors.h"
+#include <gdiplus.h>
+#pragma comment (lib,"Gdiplus.lib")
 
 namespace chrono = std::chrono;
 
@@ -13,6 +15,11 @@ static curvy::state g_curvy(0, 40);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    gdi::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR           gdiplusToken;
+
+    // Initialize GDI+.
+    gdi::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
     MSG msg = { 0 };
     WNDCLASS wc = { 0 };
@@ -60,21 +67,12 @@ LRESULT HandleWmSize(curvy::state& state, WPARAM wParam, LPARAM lParam) {
 }
 
 LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam) {
-    int sz = state.get_size();
-    auto buffer = state.get_bitmap();
-    HDC hdc_scr = GetDC(NULL);
-    HDC hdc_buff = CreateCompatibleDC(hdc_scr);
-
-    auto hbm_old = SelectObject(hdc_buff, buffer);
 
     PAINTSTRUCT ps;
-    HDC hdc = BeginPaint(hwnd, &ps);
-    BitBlt(hdc, 0, 0, sz, sz, hdc_buff, 0, 0, SRCCOPY); 
+    auto hdc = BeginPaint(hwnd, &ps);
+    auto g = gdi::Graphics(hdc);
+    g.DrawImage(state.get_bitmap(), 0, 0);
     EndPaint(hwnd, &ps);
-    
-    SelectObject(hdc_buff, hbm_old);
-    DeleteDC(hdc_buff);
-    ReleaseDC(NULL, hdc_scr);
     return 0;
 }
 
