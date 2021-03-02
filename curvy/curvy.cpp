@@ -186,9 +186,6 @@ void curvy::state::update(double dt)
     render();
 }
 
-
-
-
 void curvy::state::render()
 {
     if (!pixel_sz_)
@@ -200,7 +197,7 @@ void curvy::state::render()
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
-    g->DrawEllipse(&white_pen, 0, 0, pixel_sz_, pixel_sz_);
+    g->DrawEllipse(&white_pen, 0, 0, pixel_sz_-1, pixel_sz_-1);
 
     for (const auto& puck : pucks_)
         paint_puck(*g, puck);
