@@ -21,13 +21,13 @@
     <ClCompile Include="impulse_viewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="puck_world_simulation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="puck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="curvy_world_simulation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,9 +38,6 @@
     <ClInclude Include="impulse_viewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="puck_world_simulation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="curvy_world_simulation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

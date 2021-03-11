@@ -1,33 +1,42 @@
 #include <Windows.h>
 #include "impulse_viewer.h"
 
+
 curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz)
 {
-    set_dimensions(px_sz, log_sz);
+    set_logical_dimensions(log_sz, false);
+    set_pixel_dimensions(px_sz, true);
 }
 
-void curvy::impulse_viewer::set_dimensions(int px_sz, double log_sz)
+void curvy::impulse_viewer::initialize()
 {
-    if (log_sz) {
-        logical_sz_ = log_sz;
+}
+
+void curvy::impulse_viewer::update(double dt)
+{
+}
+
+void curvy::impulse_viewer::set_logical_dimensions(double log_sz, bool refresh)
+{
+    logical_sz_ = log_sz;
+    if (logical_sz_ && pixel_sz_ && refresh) {
+        back_buffer_ = std::make_unique<gdi::Bitmap>(pixel_sz_, pixel_sz_);
+        render();
     }
-    if (px_sz) {
-        pixel_sz_ = px_sz;
+}
+void curvy::impulse_viewer::set_pixel_dimensions(int px_sz, bool refresh) {
+    pixel_sz_ = px_sz;
+    if (logical_sz_ && pixel_sz_ && refresh) {
         back_buffer_ = std::make_unique<gdi::Bitmap>(px_sz, px_sz);
         render();
     }
 }
 
-int curvy::impulse_viewer::get_size() const
-{
-    return 0;
-}
-
 gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
 {
-    return nullptr;
+    return back_buffer_.get();
 }
 
 void curvy::impulse_viewer::render()

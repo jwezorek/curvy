@@ -13,10 +13,10 @@ namespace gdi = Gdiplus;
 
 namespace curvy {
 
-    class puck_world_simulation : public state {
+    class curvy_world_simulation : public state {
 
     public:
-        puck_world_simulation(int px_sz, double log_sz);
+        curvy_world_simulation(int px_sz, double log_sz);
         void initialize() override;
         void set_pixel_dimensions(int px_sz, bool refresh) override;
         void set_logical_dimensions(double log_sz, bool refresh) override;

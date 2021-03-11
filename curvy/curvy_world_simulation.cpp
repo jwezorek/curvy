@@ -1,14 +1,13 @@
 #include <Windows.h>
 #include <gdiplus.h>
-#include "puck_world_simulation.h"
-#include "puck.h"
+#include "curvy_world_simulation.h"
 #include "util.h"
 #include <cmath>
 #include <string>
 #include <map>
 #include <limits>
 
-curvy::puck_world_simulation::puck_world_simulation(int px_sz, double log_sz) :
+curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz)
 {
@@ -16,7 +15,7 @@ curvy::puck_world_simulation::puck_world_simulation(int px_sz, double log_sz) :
     set_pixel_dimensions(px_sz, true);
 }
 
-void curvy::puck_world_simulation::initialize()
+void curvy::curvy_world_simulation::initialize()
 {
     insert({
         curvy::circle_rotation_state{  0, 0,  0, 12.0, 4 },
@@ -29,7 +28,7 @@ void curvy::puck_world_simulation::initialize()
     });
 }
 
-void curvy::puck_world_simulation::set_logical_dimensions(double log_sz, bool refresh)
+void curvy::curvy_world_simulation::set_logical_dimensions(double log_sz, bool refresh)
 {
     logical_sz_ = log_sz;
     if (logical_sz_ && pixel_sz_ && refresh) {
@@ -37,7 +36,7 @@ void curvy::puck_world_simulation::set_logical_dimensions(double log_sz, bool re
         render();
     }
 }
-void curvy::puck_world_simulation::set_pixel_dimensions(int px_sz, bool refresh) {
+void curvy::curvy_world_simulation::set_pixel_dimensions(int px_sz, bool refresh) {
     pixel_sz_ = px_sz;
     if (logical_sz_ && pixel_sz_ && refresh) {
         back_buffer_ = std::make_unique<gdi::Bitmap>(px_sz, px_sz);
@@ -45,23 +44,23 @@ void curvy::puck_world_simulation::set_pixel_dimensions(int px_sz, bool refresh)
     }
 }
 
-int curvy::puck_world_simulation::get_size() const
+int curvy::curvy_world_simulation::get_size() const
 {
     return pixel_sz_;
 }
 
-void curvy::puck_world_simulation::insert(const puck& p)
+void curvy::curvy_world_simulation::insert(const puck& p)
 {
     pucks_.push_back(p);
     render();
 }
 
-gdi::Bitmap* curvy::puck_world_simulation::get_bitmap() const
+gdi::Bitmap* curvy::curvy_world_simulation::get_bitmap() const
 {
     return back_buffer_.get();
 }
 
-void curvy::puck_world_simulation::update(double dt)
+void curvy::curvy_world_simulation::update(double dt)
 {
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, 1e-10);
@@ -76,7 +75,7 @@ void curvy::puck_world_simulation::update(double dt)
     render();
 }
 
-void curvy::puck_world_simulation::render()
+void curvy::curvy_world_simulation::render()
 {
     if (!pixel_sz_)
         return;
@@ -95,7 +94,7 @@ void curvy::puck_world_simulation::render()
     delete g;
 }
 
-void curvy::puck_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
+void curvy::curvy_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
 {
     
     gdi::SolidBrush brush( p.color() );
@@ -104,7 +103,7 @@ void curvy::puck_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
 
 }
 
-std::tuple<int, int, int, int> curvy::puck_world_simulation::to_scr_coords(double x1, double y1, double x2, double y2) const
+std::tuple<int, int, int, int> curvy::curvy_world_simulation::to_scr_coords(double x1, double y1, double x2, double y2) const
 {
     y1 *= -1;
     y2 *= -1;
@@ -129,7 +128,7 @@ std::tuple<int, int, int, int> curvy::puck_world_simulation::to_scr_coords(doubl
     );
 }
 
-std::tuple<int, int, int, int> curvy::puck_world_simulation::get_location_in_pixels(const puck& p) const
+std::tuple<int, int, int, int> curvy::curvy_world_simulation::get_location_in_pixels(const puck& p) const
 {
     auto [cx, cy] = p.center_of_revolution();
     auto x = cx + p.radius_of_revolution() * std::cos(p.theta());
@@ -143,7 +142,7 @@ std::tuple<int, int, int, int> curvy::puck_world_simulation::get_location_in_pix
     return to_scr_coords(x1, y1, x2, y2);
 }
 
-std::tuple<curvy::puck_world_simulation::collisions, double> curvy::puck_world_simulation::get_next_collisions(double dt, double eps) {
+std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world_simulation::get_next_collisions(double dt, double eps) {
     std::map<double, collision> collisions;
     int n = static_cast<int>(pucks_.size());
 
@@ -159,7 +158,7 @@ std::tuple<curvy::puck_world_simulation::collisions, double> curvy::puck_world_s
     }
 
     if (!collisions.empty()) {
-        curvy::puck_world_simulation::collisions collision_set;
+        curvy::curvy_world_simulation::collisions collision_set;
         double collision_time = -1;
         for (const auto& [time, pair] : collisions) {
             if (collision_time < 0 || std::abs(collision_time - time) < eps) {
@@ -170,17 +169,17 @@ std::tuple<curvy::puck_world_simulation::collisions, double> curvy::puck_world_s
         return { collision_set, collision_time };
     }
 
-    return { curvy::puck_world_simulation::collisions(), dt };
+    return { curvy::curvy_world_simulation::collisions(), dt };
 }
 
-void curvy::puck_world_simulation::handle_collision( collision& collision) {
+void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto [p1, p2] = collision;
     auto tmp = p1->angular_speed();
     p1->set_speed( p2->angular_speed() );
     p2->set_speed( tmp );
 }
 
-void curvy::puck_world_simulation::handle_collisions( collisions& pairs)
+void curvy::curvy_world_simulation::handle_collisions( collisions& pairs)
 {
     for (auto& pair : pairs)
         handle_collision(pair);

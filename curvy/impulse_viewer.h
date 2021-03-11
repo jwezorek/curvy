@@ -5,19 +5,23 @@
 #include <vector>
 #include <tuple>
 #include <optional>
+#include "state.h"
 #include "colors.h"
 
 namespace gdi = Gdiplus;
 
 namespace curvy {
 
-    class impulse_viewer {
+    class impulse_viewer : public state {
 
     public:
         impulse_viewer(int px_sz, double log_sz);
-        void set_dimensions(int px_sz, double log_sz = 0);
-        int get_size() const;
-        gdi::Bitmap* get_bitmap() const;
+
+        void initialize() override;
+        void update(double dt) override;
+        void set_pixel_dimensions(int px_sz, bool refresh) override;
+        void set_logical_dimensions(double log_sz, bool refresh) override;
+        gdi::Bitmap* get_bitmap() const override;
 
     private:
 
