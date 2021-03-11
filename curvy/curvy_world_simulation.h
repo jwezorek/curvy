@@ -30,7 +30,6 @@ namespace curvy {
         void render();
         void paint_puck(gdi::Graphics& g, const puck& p);
         std::tuple<int, int, int, int> get_location_in_pixels(const puck& p) const;
-        std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2) const;
 
         using collision = std::tuple<puck*, puck*>;
         using collisions = std::vector<collision>;

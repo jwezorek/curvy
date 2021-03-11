@@ -96,50 +96,14 @@ void curvy::curvy_world_simulation::render()
 
 void curvy::curvy_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
 {
-    
     gdi::SolidBrush brush( p.color() );
     auto [x1, y1, x2, y2] = get_location_in_pixels(p);
     g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
-
-}
-
-std::tuple<int, int, int, int> curvy::curvy_world_simulation::to_scr_coords(double x1, double y1, double x2, double y2) const
-{
-    y1 *= -1;
-    y2 *= -1;
-
-    x1 += logical_sz_ / 2;
-    y1 += logical_sz_ / 2;
-    x2 += logical_sz_ / 2;
-    y2 += logical_sz_ / 2;
-
-    double log_to_scr = pixel_sz_ / logical_sz_;
-
-    x1 *= log_to_scr;
-    y1 *= log_to_scr;
-    x2 *= log_to_scr;
-    y2 *= log_to_scr;
-
-    return std::tuple<int, int, int, int>(
-        static_cast<int>(std::round(x1)), 
-        static_cast<int>(std::round(y1)),
-        static_cast<int>(std::round(x2)),
-        static_cast<int>(std::round(y2))
-    );
 }
 
 std::tuple<int, int, int, int> curvy::curvy_world_simulation::get_location_in_pixels(const puck& p) const
 {
-    auto [cx, cy] = p.center_of_revolution();
-    auto x = cx + p.radius_of_revolution() * std::cos(p.theta());
-    auto y = cy + p.radius_of_revolution() * std::sin(p.theta());
-
-    auto x1 = x - p.radius();
-    auto y1 = y - p.radius();
-    auto x2 = x + p.radius();
-    auto y2 = y + p.radius();
-
-    return to_scr_coords(x1, y1, x2, y2);
+    return p.get_location_in_pixels(logical_sz_, pixel_sz_);
 }
 
 std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world_simulation::get_next_collisions(double dt, double eps) {

@@ -24,3 +24,28 @@ double normalize(const double value, const double start, const double end) {
 double pi() {
     return g_pi;
 }
+
+std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz) 
+{
+    y1 *= -1;
+    y2 *= -1;
+
+    x1 += logical_sz / 2;
+    y1 += logical_sz / 2;
+    x2 += logical_sz / 2;
+    y2 += logical_sz / 2;
+
+    double log_to_scr = pixel_sz / logical_sz;
+
+    x1 *= log_to_scr;
+    y1 *= log_to_scr;
+    x2 *= log_to_scr;
+    y2 *= log_to_scr;
+
+    return std::tuple<int, int, int, int>(
+        static_cast<int>(std::round(x1)),
+        static_cast<int>(std::round(y1)),
+        static_cast<int>(std::round(x2)),
+        static_cast<int>(std::round(y2))
+    );
+}

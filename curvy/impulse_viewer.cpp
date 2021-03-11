@@ -41,4 +41,16 @@ gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
 
 void curvy::impulse_viewer::render()
 {
+    if (!pixel_sz_)
+        return;
+
+    gdi::SolidBrush black_brush(colors::Black);
+    gdi::Pen white_pen(colors::White, 1);
+    auto* g = gdi::Graphics::FromImage(back_buffer_.get());
+
+    g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
+    g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
+
+
+    delete g;
 }

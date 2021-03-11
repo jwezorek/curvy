@@ -101,3 +101,17 @@ void curvy::puck::set_speed(double speed)
 {
     crs_.speed_ = speed;
 }
+
+std::tuple<int, int, int, int> curvy::puck::get_location_in_pixels(float log_sz, int pix_sz) const
+{
+    auto [cx, cy] = center_of_revolution();
+    auto x = cx + radius_of_revolution() * std::cos(theta());
+    auto y = cy + radius_of_revolution() * std::sin(theta());
+
+    auto x1 = x - radius();
+    auto y1 = y - radius();
+    auto x2 = x + radius();
+    auto y2 = y + radius();
+
+    return to_scr_coords(x1, y1, x2, y2, log_sz, pix_sz);
+}
