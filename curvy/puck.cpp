@@ -115,3 +115,10 @@ std::tuple<int, int, int, int> curvy::puck::get_location_in_pixels(float log_sz,
 
     return to_scr_coords(x1, y1, x2, y2, log_sz, pix_sz);
 }
+
+void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
+{
+    gdi::SolidBrush brush( color_ );
+    auto [x1, y1, x2, y2] = get_location_in_pixels(log_sz, pix_sz);
+    g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
+}

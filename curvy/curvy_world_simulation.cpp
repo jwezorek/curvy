@@ -96,9 +96,7 @@ void curvy::curvy_world_simulation::render()
 
 void curvy::curvy_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
 {
-    gdi::SolidBrush brush( p.color() );
-    auto [x1, y1, x2, y2] = get_location_in_pixels(p);
-    g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
+    p.paint(g, logical_sz_, pixel_sz_);
 }
 
 std::tuple<int, int, int, int> curvy::curvy_world_simulation::get_location_in_pixels(const puck& p) const

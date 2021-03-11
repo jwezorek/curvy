@@ -15,8 +15,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 LRESULT HandleWmSize(curvy::state& state, WPARAM wParam, LPARAM lParam);
 LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
 
-//static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::curvy_world_simulation>(0, 40);
 static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::curvy_world_simulation>(0, 40);
+//static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::impulse_viewer>(0, 40);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {

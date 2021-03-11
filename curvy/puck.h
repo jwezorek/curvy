@@ -38,6 +38,7 @@ namespace curvy {
         gdi::Color color() const;
         void set_speed(double speed);
         std::tuple<int, int, int, int> get_location_in_pixels(float log_sz, int pix_sz) const;
+        void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
 
     private:
 
