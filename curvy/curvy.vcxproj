@@ -141,12 +141,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="curvy.cpp" />
+    <ClCompile Include="puck.cpp" />
+    <ClCompile Include="puck_world_simulation.cpp" />
+    <ClCompile Include="impulse_viewer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colors.h" />
-    <ClInclude Include="curvy.h" />
+    <ClInclude Include="puck.h" />
+    <ClInclude Include="puck_world_simulation.h" />
+    <ClInclude Include="impulse_viewer.h" />
+    <ClInclude Include="state.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

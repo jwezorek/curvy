@@ -1,6 +1,9 @@
 #include <windows.h>
 #include <chrono>
-#include "curvy.h"
+#include <memory>
+#include "state.h"
+#include "puck_world_simulation.h"
+#include "util.h"
 #include "colors.h"
 #include <gdiplus.h>
 #pragma comment (lib,"Gdiplus.lib")
@@ -11,7 +14,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 LRESULT HandleWmSize(curvy::state& state, WPARAM wParam, LPARAM lParam);
 LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
 
-static curvy::state g_curvy(0, 40);
+static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::puck_world_simulation>(0, 40);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -51,7 +54,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         } else {
             auto current_time = chrono::high_resolution_clock::now();
             auto elapsed = chrono::duration_cast<chrono::duration<double>>(current_time - last_time);
-            g_curvy.update( elapsed.count() );
+            g_state->update( elapsed.count() );
             InvalidateRect(hwnd, NULL, FALSE);
             last_time = current_time;
         }
@@ -62,7 +65,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 LRESULT HandleWmSize(curvy::state& state, WPARAM wParam, LPARAM lParam) {
     auto wd = LOWORD(lParam);
-    state.set_dimensions(wd);
+    state.set_pixel_dimensions(wd);
     return 0;
 }
 
@@ -81,24 +84,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message) {
         case WM_CREATE:
-            g_curvy.insert( {
-                curvy::circle_rotation_state{  0, 0,  0, 12.0, 4 },
-                colors::Red
-            });
-
-            g_curvy.insert({
-                curvy::circle_rotation_state{ curvy::pi(),  0, 0, 12.0, 0 },
-                colors::Yellow
-            });
-
+            g_state->initialize();
             break;
         case WM_CLOSE:
             PostQuitMessage(0);
             break;
         case WM_SIZE:
-            return HandleWmSize(g_curvy, wParam, lParam);
+            return HandleWmSize(*g_state, wParam, lParam);
         case WM_PAINT:
-            return HandleWmPaint(hwnd, g_curvy, wParam, lParam);
+            return HandleWmPaint(hwnd, *g_state, wParam, lParam);
         default:
             return DefWindowProc(hwnd, message, wParam, lParam);
     }
