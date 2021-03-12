@@ -27,8 +27,8 @@ namespace {
 
 std::tuple<double, double> curvy::circle_rotation_state::position() const {
     return {
-        circle_.x_ + circle_.r_ * std::cos(theta_),
-        circle_.y_ + circle_.r_ * std::sin(theta_)
+        circle.x + circle.r * std::cos(theta),
+        circle.y + circle.r * std::sin(theta)
     };
 }
 
@@ -42,7 +42,7 @@ curvy::puck::puck(const circle_rotation_state& crs, gdi::Color color, double puc
 { }
 
 void curvy::puck::update(double dt) {
-    crs_.theta_ = normalize(crs_.theta_ + dt * crs_.speed_, 0, 2 * pi());
+    crs_.theta = normalize(crs_.theta + dt * crs_.speed, 0, 2 * pi());
 }
 
 curvy::puck curvy::puck::update(double dt) const {
@@ -52,20 +52,20 @@ curvy::puck curvy::puck::update(double dt) const {
 }
 
 double curvy::puck::theta() const {
-    return crs_.theta_;
+    return crs_.theta;
 }
 
 std::tuple<double, double> curvy::puck::center_of_revolution() const {
-    return { crs_.circle_.x_, crs_.circle_.y_ };
+    return { crs_.circle.x, crs_.circle.y };
 }
 
 double curvy::puck::radius_of_revolution() const {
-    return crs_.circle_.r_;
+    return crs_.circle.r;
 }
 
 double curvy::puck::angular_speed() const
 {
-    return crs_.speed_;
+    return crs_.speed;
 }
 
 double curvy::puck::radius() const
@@ -122,20 +122,20 @@ void curvy::puck::set_color(gdi::Color color)
 
 void curvy::puck::set_theta(double theta)
 {
-    crs_.theta_ = theta;
+    crs_.theta = theta;
 }
 
 void curvy::puck::set_speed(double speed)
 {
-    crs_.speed_ = speed;
+    crs_.speed = speed;
 }
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
-    crs_.theta_ = theta;
-    crs_.circle_.x_ = cx;
-    crs_.circle_.y_ = cy;
-    crs_.circle_.r_ = r;
+    crs_.theta = theta;
+    crs_.circle.x = cx;
+    crs_.circle.y = cy;
+    crs_.circle.r = r;
 }
 
 std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {

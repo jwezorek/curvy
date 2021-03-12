@@ -11,23 +11,23 @@ namespace gdi = Gdiplus;
 namespace curvy {
 
     struct circle {
-        double x_;
-        double y_;
-        double r_;
+        double x;
+        double y;
+        double r;
 
-        circle(double cx, double cy, double r) : x_(cx), y_(cy), r_(r)
+        circle(double cx, double cy, double r) : x(cx), y(cy), r(r)
         {}
     };
 
     struct circle_rotation_state {
-        double theta_;
-        double speed_;
-        circle circle_;
+        double theta;
+        double speed;
+        circle circle;
 
         circle_rotation_state(
             double theta = 0, double cx = 0, double cy = 0,
             double r = 0, double speed = 0
-        ) : theta_(theta), circle_(cx, cy, r), speed_(speed)
+        ) : theta(theta), circle(cx, cy, r), speed(speed)
         {}
 
         std::tuple<double, double> position() const;
