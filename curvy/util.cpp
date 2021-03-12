@@ -87,3 +87,8 @@ std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, do
         static_cast<int>(std::round(y2))
     );
 }
+
+std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect, double logical_sz, int pixel_sz) {
+    auto [x1, y1, x2, y2] = rect;
+    return to_scr_coords(x1, y1, x2, y2, logical_sz, pixel_sz);
+}

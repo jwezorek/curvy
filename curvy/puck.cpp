@@ -25,6 +25,17 @@ namespace {
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
+std::tuple<double, double, double, double> curvy::circle::bounding_box() const {
+    return {
+        x - r,
+        y - r,
+        x + r,
+        y + r
+    };
+}
+
+/*-----------------------------------------------------------------------------------------------------------------------------*/
+
 std::tuple<double, double> curvy::circle_rotation_state::position() const {
     return {
         circle.x + circle.r * std::cos(theta),
@@ -138,6 +149,19 @@ void curvy::puck::set_circle_rotation_position(double theta, double cx, double c
     crs_.circle.r = r;
 }
 
+curvy::circle curvy::puck::get_puck_circle() const
+{
+    return circle(crs_.position(), puck_radius_);
+}
+
+std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {
+    return to_scr_coords(
+        get_puck_circle().bounding_box(),
+        log_sz, pix_sz
+    );
+}
+
+/*
 std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {
     auto [x, y] = crs_.position();
     return to_scr_coords(
@@ -146,6 +170,7 @@ std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double lo
         log_sz, pix_sz
     );
 }
+*/
 
 void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
 {

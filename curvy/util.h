@@ -9,4 +9,5 @@ std::tuple<int, int> to_scr_coords(double x, double y, double logical_sz, int pi
 std::tuple<double, double> from_scr_coords(int x, int y, double logical_sz, int pixel_sz);
 std::tuple<double, double> from_scr_coords(const std::tuple<int,int>& pt, double logical_sz, int pixel_sz);
 std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz);
+std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect , double logical_sz, int pixel_sz);
 double pi();

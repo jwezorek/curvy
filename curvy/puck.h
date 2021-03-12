@@ -15,8 +15,15 @@ namespace curvy {
         double y;
         double r;
 
-        circle(double cx, double cy, double r) : x(cx), y(cy), r(r)
+        circle(double cx, double cy, double r) : 
+            x(cx), y(cy), r(r)
         {}
+
+        circle(const std::tuple<double,double>& pt, double r) : 
+            x(std::get<0>(pt)), y(std::get<1>(pt)), r(r)
+        {}
+
+        std::tuple<double, double, double, double> bounding_box() const;
     };
 
     struct circle_rotation_state {
@@ -57,6 +64,7 @@ namespace curvy {
         void set_theta(double theta);
         void set_speed(double speed);
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
+        circle get_puck_circle() const;
         std::tuple<int, int, int, int> get_bounding_box_in_pixels(double log_sz, int pix_sz) const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
 
