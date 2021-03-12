@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include "impulse_viewer.h"
-
+#include "util.h"
 
 curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
@@ -12,9 +12,20 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
 
 void curvy::impulse_viewer::initialize()
 {
+    puck_b_.set_position(0, 0, 0, 2);
 }
 
 void curvy::impulse_viewer::update(double dt)
+{
+    auto [scr_x, scr_y] = to_scr_coords( 2.5, 6, logical_sz_, pixel_sz_);
+    auto [log_x, log_y] = from_scr_coords(scr_x, scr_y, logical_sz_, pixel_sz_);
+}
+
+void curvy::impulse_viewer::handle_mouse_click(int x, int y, bool mouse_down)
+{
+}
+
+void curvy::impulse_viewer::handle_mouse_move(int x, int y)
 {
 }
 
@@ -51,6 +62,8 @@ void curvy::impulse_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
+    puck_a_.paint(*g, logical_sz_, pixel_sz_);
+    puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
     delete g;
 }

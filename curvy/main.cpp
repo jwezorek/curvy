@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <windowsx.h>
 #include <chrono>
 #include <memory>
 #include "state.h"
@@ -14,9 +15,11 @@ namespace chrono = std::chrono;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 LRESULT HandleWmSize(curvy::state& state, WPARAM wParam, LPARAM lParam);
 LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
+LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool button_down);
+LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
 
-static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::curvy_world_simulation>(0, 40);
-//static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::impulse_viewer>(0, 40);
+//static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::curvy_world_simulation>(0, 40);
+static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::impulse_viewer>(0, 40);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -81,6 +84,21 @@ LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lPar
     return 0;
 }
 
+LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool button_down) {
+    auto x = GET_X_LPARAM(lParam);
+    auto y = GET_Y_LPARAM(lParam);
+    state.handle_mouse_click(x, y, button_down);
+    return 0;
+}
+
+
+LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam) {
+    auto x = GET_X_LPARAM(lParam);
+    auto y = GET_Y_LPARAM(lParam);
+    state.handle_mouse_move(x, y);
+    return 0;
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
@@ -91,6 +109,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CLOSE:
             PostQuitMessage(0);
             break;
+        case WM_LBUTTONDOWN:
+            return HandleWmLButtonMsg(hwnd, *g_state, wParam, lParam, true);
+        case WM_LBUTTONUP:
+            return HandleWmLButtonMsg(hwnd, *g_state, wParam, lParam, false);
+        case WM_MOUSEMOVE:
+            return HandleWmMouseMove(hwnd, *g_state, wParam, lParam);
         case WM_SIZE:
             return HandleWmSize(*g_state, wParam, lParam);
         case WM_PAINT:

@@ -21,6 +21,38 @@ double normalize(const double value, const double start, const double end) {
     return (offsetValue - (floor(offsetValue / width) * width)) + start;
 }
 
+std::tuple<int, int> to_scr_coords(double x, double y, double logical_sz, int pixel_sz)
+{
+    y *= -1;
+
+    x += logical_sz / 2;
+    y += logical_sz / 2;
+
+    double log_to_scr = pixel_sz / logical_sz;
+
+    x *= log_to_scr;
+    y *= log_to_scr;
+
+    return std::tuple<int, int>(
+        static_cast<int>(std::round(x)),
+        static_cast<int>(std::round(y))
+    );
+}
+
+std::tuple<double, double> from_scr_coords(int xx, int yy, double logical_sz, int pixel_sz)
+{
+    double scr_to_log = logical_sz / pixel_sz;
+    double x = xx * scr_to_log;
+    double y = yy * scr_to_log;
+
+    x -= logical_sz / 2.0;
+    y -= logical_sz / 2.0;
+
+    y *= -1;
+
+    return { x,y };
+}
+
 double pi() {
     return g_pi;
 }

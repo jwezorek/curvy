@@ -102,6 +102,14 @@ void curvy::puck::set_speed(double speed)
     crs_.speed_ = speed;
 }
 
+void curvy::puck::set_position(double theta, double cx, double cy, double r)
+{
+    crs_.theta_ = theta;
+    crs_.cx_ = cx;
+    crs_.cy_ = cy;
+    crs_.r_ = r;
+}
+
 std::tuple<int, int, int, int> curvy::puck::get_location_in_pixels(float log_sz, int pix_sz) const
 {
     auto [cx, cy] = center_of_revolution();

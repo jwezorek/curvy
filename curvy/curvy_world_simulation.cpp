@@ -36,6 +36,12 @@ void curvy::curvy_world_simulation::set_logical_dimensions(double log_sz, bool r
         render();
     }
 }
+void curvy::curvy_world_simulation::handle_mouse_click(int x, int y, bool mouse_down)
+{
+}
+void curvy::curvy_world_simulation::handle_mouse_move(int x, int y)
+{
+}
 void curvy::curvy_world_simulation::set_pixel_dimensions(int px_sz, bool refresh) {
     pixel_sz_ = px_sz;
     if (logical_sz_ && pixel_sz_ && refresh) {
