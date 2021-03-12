@@ -27,8 +27,8 @@ namespace {
 
 std::tuple<double, double> curvy::circle_rotation_state::position() const {
     return {
-        cx_ + r_ * std::cos(theta_),
-        cy_ + r_ * std::sin(theta_)
+        circle_.x_ + circle_.r_ * std::cos(theta_),
+        circle_.y_ + circle_.r_ * std::sin(theta_)
     };
 }
 
@@ -56,11 +56,11 @@ double curvy::puck::theta() const {
 }
 
 std::tuple<double, double> curvy::puck::center_of_revolution() const {
-    return { crs_.cx_, crs_.cy_ };
+    return { crs_.circle_.x_, crs_.circle_.y_ };
 }
 
 double curvy::puck::radius_of_revolution() const {
-    return crs_.r_;
+    return crs_.circle_.r_;
 }
 
 double curvy::puck::angular_speed() const
@@ -133,9 +133,9 @@ void curvy::puck::set_speed(double speed)
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
     crs_.theta_ = theta;
-    crs_.cx_ = cx;
-    crs_.cy_ = cy;
-    crs_.r_ = r;
+    crs_.circle_.x_ = cx;
+    crs_.circle_.y_ = cy;
+    crs_.circle_.r_ = r;
 }
 
 std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {
