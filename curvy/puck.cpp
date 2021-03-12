@@ -23,6 +23,17 @@ namespace {
     }
 }
 
+/*-----------------------------------------------------------------------------------------------------------------------------*/
+
+std::tuple<double, double> curvy::circle_rotation_state::position() const {
+    return {
+        cx_ + r_ * std::cos(theta_),
+        cy_ + r_ * std::sin(theta_)
+    };
+}
+
+/*-----------------------------------------------------------------------------------------------------------------------------*/
+
 curvy::puck::puck(const circle_rotation_state& crs, gdi::Color color, double puck_radius, double mass) :
     crs_(crs),
     color_(color),
@@ -64,10 +75,17 @@ double curvy::puck::radius() const
 
 std::tuple<double, double> curvy::puck::position() const
 {
-    return {
-        crs_.cx_ + crs_.r_ * std::cos(crs_.theta_),
-        crs_.cy_ + crs_.r_ * std::sin(crs_.theta_)
-    };
+    return crs_.position();
+}
+
+bool curvy::puck::contains_point(double x, double y) const
+{
+    return contains_point( { x,y } );
+}
+
+bool curvy::puck::contains_point(const std::tuple<double, double>& pt) const
+{
+    return euclidean_distance(position(), pt) <= puck_radius_;
 }
 
 bool curvy::puck::intersects(const puck& p) const
@@ -97,12 +115,22 @@ gdi::Color curvy::puck::color() const
     return color_;
 }
 
+void curvy::puck::set_color(gdi::Color color)
+{
+    color_ = color;
+}
+
+void curvy::puck::set_theta(double theta)
+{
+    crs_.theta_ = theta;
+}
+
 void curvy::puck::set_speed(double speed)
 {
     crs_.speed_ = speed;
 }
 
-void curvy::puck::set_position(double theta, double cx, double cy, double r)
+void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
     crs_.theta_ = theta;
     crs_.cx_ = cx;
@@ -110,23 +138,20 @@ void curvy::puck::set_position(double theta, double cx, double cy, double r)
     crs_.r_ = r;
 }
 
-std::tuple<int, int, int, int> curvy::puck::get_location_in_pixels(float log_sz, int pix_sz) const
-{
-    auto [cx, cy] = center_of_revolution();
-    auto x = cx + radius_of_revolution() * std::cos(theta());
-    auto y = cy + radius_of_revolution() * std::sin(theta());
-
-    auto x1 = x - radius();
-    auto y1 = y - radius();
-    auto x2 = x + radius();
-    auto y2 = y + radius();
-
-    return to_scr_coords(x1, y1, x2, y2, log_sz, pix_sz);
+std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {
+    auto [x, y] = crs_.position();
+    return to_scr_coords(
+        x - puck_radius_,  y - puck_radius_,
+        x + puck_radius_, y + puck_radius_, 
+        log_sz, pix_sz
+    );
 }
 
 void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
 {
     gdi::SolidBrush brush( color_ );
-    auto [x1, y1, x2, y2] = get_location_in_pixels(log_sz, pix_sz);
+    auto [x1, y1, x2, y2] = get_bounding_box_in_pixels(log_sz, pix_sz);
     g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
 }
+
+

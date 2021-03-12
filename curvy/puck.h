@@ -23,6 +23,8 @@ namespace curvy {
         ) : theta_(theta), cx_(cx), cy_(cy),
             r_(r), speed_(speed)
         {}
+
+        std::tuple<double, double> position() const;
     };
 
     class puck {
@@ -38,14 +40,18 @@ namespace curvy {
         double angular_speed() const;
         double radius() const;
         std::tuple<double, double> position() const;
+        bool contains_point(double x, double y) const;
+        bool contains_point(const std::tuple<double,double>& pt) const;
         bool intersects(const puck& p) const;
         double distance_from_center(const puck& p) const;
         double distance_from_intersection(const puck& p) const;
         std::optional<double> get_collision_time(const puck& p, double dt, double eps) const;
         gdi::Color color() const;
+        void set_color(gdi::Color color);
+        void set_theta(double theta);
         void set_speed(double speed);
-        void set_position(double theta, double cx, double cy, double r);
-        std::tuple<int, int, int, int> get_location_in_pixels(float log_sz, int pix_sz) const;
+        void set_circle_rotation_position(double theta, double cx, double cy, double r);
+        std::tuple<int, int, int, int> get_bounding_box_in_pixels(double log_sz, int pix_sz) const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
 
     private:

@@ -20,8 +20,8 @@ namespace curvy {
         void initialize() override;
         void set_pixel_dimensions(int px_sz, bool refresh) override;
         void set_logical_dimensions(double log_sz, bool refresh) override;
-        void handle_mouse_click(int x, int y, bool mouse_down) override;
-        void handle_mouse_move(int x, int y) override;
+        bool handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down) override;
+        bool handle_mouse_move(const std::tuple<int, int>& pt) override;
         int get_size() const;
         void insert(const puck& p);
         gdi::Bitmap* get_bitmap() const override;

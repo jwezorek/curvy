@@ -87,7 +87,9 @@ LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lPar
 LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool button_down) {
     auto x = GET_X_LPARAM(lParam);
     auto y = GET_Y_LPARAM(lParam);
-    state.handle_mouse_click(x, y, button_down);
+    if (state.handle_mouse_click({ x, y }, button_down)) {
+        InvalidateRect(hwnd, NULL, FALSE);
+    }
     return 0;
 }
 
@@ -95,7 +97,9 @@ LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM
 LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam) {
     auto x = GET_X_LPARAM(lParam);
     auto y = GET_Y_LPARAM(lParam);
-    state.handle_mouse_move(x, y);
+    if (state.handle_mouse_move({ x, y })) {
+        InvalidateRect(hwnd, NULL, FALSE);
+    }
     return 0;
 }
 

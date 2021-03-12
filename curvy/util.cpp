@@ -53,6 +53,12 @@ std::tuple<double, double> from_scr_coords(int xx, int yy, double logical_sz, in
     return { x,y };
 }
 
+std::tuple<double, double> from_scr_coords(const std::tuple<int, int>& pt, double logical_sz, int pixel_sz)
+{
+    auto [x, y] = pt;
+    return from_scr_coords(x, y, logical_sz, pixel_sz);
+}
+
 double pi() {
     return g_pi;
 }

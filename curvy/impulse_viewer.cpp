@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <cmath>
 #include "impulse_viewer.h"
 #include "util.h"
 
@@ -12,7 +13,7 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
 
 void curvy::impulse_viewer::initialize()
 {
-    puck_b_.set_position(0, 0, 0, 2);
+    puck_b_.set_circle_rotation_position(0, 0, 0, 2);
 }
 
 void curvy::impulse_viewer::update(double dt)
@@ -21,12 +22,37 @@ void curvy::impulse_viewer::update(double dt)
     auto [log_x, log_y] = from_scr_coords(scr_x, scr_y, logical_sz_, pixel_sz_);
 }
 
-void curvy::impulse_viewer::handle_mouse_click(int x, int y, bool mouse_down)
+bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down)
 {
+    auto loc = from_scr_coords(pt, logical_sz_, pixel_sz_);
+    if (mouse_down && puck_b_.contains_point(loc)) {
+        dragging_b_ = true;
+        puck_b_.set_color(colors::Aqua);
+        render();
+        return true;
+    }
+
+    if (!mouse_down) {
+        dragging_b_ = false;
+        puck_b_.set_color(colors::White);
+        render();
+        return true;
+    }
+
+    return false;
 }
 
-void curvy::impulse_viewer::handle_mouse_move(int x, int y)
+bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pt)
 {
+    if (dragging_b_) {
+        auto [dx, dy] = from_scr_coords(pt, logical_sz_, pixel_sz_);
+        puck_b_.set_theta(
+            std::atan2(dy,dx)
+        );
+        render();
+        return true;
+    }
+    return false;
 }
 
 void curvy::impulse_viewer::set_logical_dimensions(double log_sz, bool refresh)
