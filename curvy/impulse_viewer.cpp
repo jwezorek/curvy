@@ -42,6 +42,9 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
         if (interaction_ == interaction::none)
             return false;
         switch (interaction_) {
+            case interaction::dragging_a:
+                puck_a_.set_color(colors::Aqua);
+                break;
             case interaction::dragging_b:
                 puck_b_.set_color(colors::Aqua);
                 break;
@@ -54,6 +57,7 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
 
     if (!mouse_down) {
         interaction_ = interaction::none;
+        puck_a_.set_color(colors::White);
         puck_b_.set_color(colors::White);
         render();
         return true;
@@ -65,18 +69,17 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
 bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt)
 {
     if (interaction_ != interaction::none) {
+        auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
+        auto [x, y] = pt;
         switch (interaction_) {
-            case interaction::dragging_b: {
-                    auto [dx, dy] = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
-                    puck_b_.set_theta(
-                        std::atan2(dy, dx)
-                    );
-                }
+            case interaction::dragging_a:
+                puck_a_.set_theta(get_angle_to_pt(puck_a_.center_of_revolution(), pt));
                 break;
-             case interaction::resizing_circle_of_rev: {
-                    auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
-                    puck_a_.set_radius_of_revolution(euclidean_distance(pt, puck_a_.circle_of_revolution().center()));
-                }
+            case interaction::dragging_b: 
+                puck_b_.set_theta( std::atan2(y, x)  );
+                break;
+             case interaction::resizing_circle_of_rev: 
+                puck_a_.set_radius_of_revolution(euclidean_distance(pt, puck_a_.circle_of_revolution().center()));
                 break;
         }
         render();
@@ -130,10 +133,13 @@ void curvy::impulse_viewer::render()
 
 curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location)
 {
+    if (puck_a_.contains_point(click_location))
+        return interaction::dragging_a;
+
     if (puck_b_.contains_point(click_location))
         return interaction::dragging_b;
 
-    if (is_pt_on_circle(puck_a_.circle_of_revolution(), click_location, 3.0))
+    if (is_pt_on_circle(puck_a_.circle_of_revolution(), click_location, 0.1))
         return interaction::resizing_circle_of_rev;
 
     return interaction::none;

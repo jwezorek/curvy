@@ -12,5 +12,7 @@ std::tuple<double, double> from_scr_coords(const std::tuple<int,int>& pt, double
 std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz);
 std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect , double logical_sz, int pixel_sz);
 double pi();
-curvy::circle circle_through_point(const std::tuple<double, double> pt);
+curvy::circle circle_through_point(const std::tuple<double, double>& pt);
 bool is_pt_on_circle(const curvy::circle& c, std::tuple<double, double> pt, double eps);
+std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, std::tuple<double, double> pt);
+double get_angle_to_pt(const std::tuple<double, double>& from_pt, const std::tuple<double, double>& to_pt);
