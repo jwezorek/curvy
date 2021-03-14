@@ -5,40 +5,11 @@
 #include <tuple>
 #include <optional>
 #include "colors.h"
+#include "circle.h"
 
 namespace gdi = Gdiplus;
 
 namespace curvy {
-
-    struct circle {
-        double x;
-        double y;
-        double r;
-
-        circle(double cx, double cy, double r) : 
-            x(cx), y(cy), r(r)
-        {}
-
-        circle(const std::tuple<double,double>& pt, double r) : 
-            x(std::get<0>(pt)), y(std::get<1>(pt)), r(r)
-        {}
-
-        std::tuple<double, double, double, double> bounding_box() const;
-    };
-
-    struct circle_rotation_state {
-        double theta;
-        double speed;
-        circle circle;
-
-        circle_rotation_state(
-            double theta = 0, double cx = 0, double cy = 0,
-            double r = 0, double speed = 0
-        ) : theta(theta), circle(cx, cy, r), speed(speed)
-        {}
-
-        std::tuple<double, double> position() const;
-    };
 
     class puck {
 
@@ -49,6 +20,7 @@ namespace curvy {
         puck update(double dt) const;
         double theta() const;
         std::tuple<double, double> center_of_revolution() const;
+        circle circle_of_revolution() const;
         double radius_of_revolution() const;
         double angular_speed() const;
         double radius() const;
@@ -63,6 +35,7 @@ namespace curvy {
         void set_color(gdi::Color color);
         void set_theta(double theta);
         void set_speed(double speed);
+        void set_radius_of_revolution(double r);
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
         circle get_puck_circle() const;
         std::tuple<int, int, int, int> get_bounding_box_in_pixels(double log_sz, int pix_sz) const;

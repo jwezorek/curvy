@@ -63,6 +63,19 @@ double pi() {
     return g_pi;
 }
 
+curvy::circle circle_through_point(const std::tuple<double, double> pt)
+{
+    auto [x, y] = pt;
+    auto r = (x * x + y * y) / (2 * x);
+    return curvy::circle(r, 0, r);
+}
+
+bool is_pt_on_circle(const curvy::circle& c, std::tuple<double, double> pt, double eps)
+{
+    auto distance = euclidean_distance(c.center(), pt);
+    return std::abs(distance - c.r) <= eps;
+}
+
 std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz) 
 {
     y1 *= -1;

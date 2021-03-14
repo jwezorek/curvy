@@ -23,25 +23,7 @@ namespace {
     }
 }
 
-/*-----------------------------------------------------------------------------------------------------------------------------*/
 
-std::tuple<double, double, double, double> curvy::circle::bounding_box() const {
-    return {
-        x - r,
-        y - r,
-        x + r,
-        y + r
-    };
-}
-
-/*-----------------------------------------------------------------------------------------------------------------------------*/
-
-std::tuple<double, double> curvy::circle_rotation_state::position() const {
-    return {
-        circle.x + circle.r * std::cos(theta),
-        circle.y + circle.r * std::sin(theta)
-    };
-}
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
@@ -68,6 +50,11 @@ double curvy::puck::theta() const {
 
 std::tuple<double, double> curvy::puck::center_of_revolution() const {
     return { crs_.circle.x, crs_.circle.y };
+}
+
+curvy::circle curvy::puck::circle_of_revolution() const
+{
+    return crs_.circle;
 }
 
 double curvy::puck::radius_of_revolution() const {
@@ -139,6 +126,11 @@ void curvy::puck::set_theta(double theta)
 void curvy::puck::set_speed(double speed)
 {
     crs_.speed = speed;
+}
+
+void curvy::puck::set_radius_of_revolution(double r)
+{
+    crs_.circle.r = r;
 }
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)

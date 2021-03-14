@@ -13,6 +13,12 @@ namespace gdi = Gdiplus;
 
 namespace curvy {
 
+    enum class interaction {
+        dragging_b,
+        resizing_circle_of_rev,
+        none
+    };
+
     class impulse_viewer : public state {
 
     public:
@@ -29,13 +35,14 @@ namespace curvy {
     private:
 
         void render();
+        interaction get_interaction(const std::tuple<double, double>& click_location);
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         double logical_sz_;
         int pixel_sz_;
         puck puck_a_;
         puck puck_b_;
-        bool dragging_b_;
+        interaction interaction_;
     };
 
 }

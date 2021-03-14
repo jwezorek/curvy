@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="circle.cpp" />
     <ClCompile Include="puck.cpp" />
     <ClCompile Include="curvy_world_simulation.cpp" />
     <ClCompile Include="impulse_viewer.cpp" />
@@ -148,6 +149,7 @@
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="circle.h" />
     <ClInclude Include="colors.h" />
     <ClInclude Include="puck.h" />
     <ClInclude Include="curvy_world_simulation.h" />

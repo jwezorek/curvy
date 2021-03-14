@@ -3,9 +3,19 @@
 #include "impulse_viewer.h"
 #include "util.h"
 
+namespace {
+
+    void paint_circle(gdi::Graphics& g, const curvy::circle& c, gdi::Color color, double log_sz, int pix_sz) {
+        auto [x1, y1, x2, y2] = to_scr_coords(c.bounding_box(), log_sz, pix_sz);
+        gdi::Pen pen(color, 3);
+        g.DrawEllipse(&pen, x1, y1, x2 - x1, y2 - y1);
+    }
+}
+
 curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
-    logical_sz_(log_sz)
+    logical_sz_(log_sz),
+    interaction_(interaction::none)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -13,6 +23,7 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
 
 void curvy::impulse_viewer::initialize()
 {
+    puck_a_.set_circle_rotation_position(0, -3, 0, 3);
     puck_b_.set_circle_rotation_position(0, 0, 0, 2);
 }
 
@@ -25,15 +36,24 @@ void curvy::impulse_viewer::update(double dt)
 bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down)
 {
     auto loc = from_scr_coords(pt, logical_sz_, pixel_sz_);
-    if (mouse_down && puck_b_.contains_point(loc)) {
-        dragging_b_ = true;
-        puck_b_.set_color(colors::Aqua);
+
+    if (interaction_ == interaction::none && mouse_down) {
+        interaction_ = get_interaction(loc);
+        if (interaction_ == interaction::none)
+            return false;
+        switch (interaction_) {
+            case interaction::dragging_b:
+                puck_b_.set_color(colors::Aqua);
+                break;
+            case interaction::resizing_circle_of_rev:
+                break;
+        }
         render();
         return true;
     }
 
     if (!mouse_down) {
-        dragging_b_ = false;
+        interaction_ = interaction::none;
         puck_b_.set_color(colors::White);
         render();
         return true;
@@ -42,13 +62,23 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
     return false;
 }
 
-bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pt)
+bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt)
 {
-    if (dragging_b_) {
-        auto [dx, dy] = from_scr_coords(pt, logical_sz_, pixel_sz_);
-        puck_b_.set_theta(
-            std::atan2(dy,dx)
-        );
+    if (interaction_ != interaction::none) {
+        switch (interaction_) {
+            case interaction::dragging_b: {
+                    auto [dx, dy] = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
+                    puck_b_.set_theta(
+                        std::atan2(dy, dx)
+                    );
+                }
+                break;
+             case interaction::resizing_circle_of_rev: {
+                    auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
+                    puck_a_.set_radius_of_revolution(euclidean_distance(pt, puck_a_.circle_of_revolution().center()));
+                }
+                break;
+        }
         render();
         return true;
     }
@@ -88,8 +118,23 @@ void curvy::impulse_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
+    paint_circle(*g, puck_a_.circle_of_revolution(), colors::Yellow, logical_sz_, pixel_sz_);
+
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
+    paint_circle(*g, circle_through_point(puck_b_.position()), colors::White, logical_sz_, pixel_sz_);
+
     delete g;
+}
+
+curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location)
+{
+    if (puck_b_.contains_point(click_location))
+        return interaction::dragging_b;
+
+    if (is_pt_on_circle(puck_a_.circle_of_revolution(), click_location, 3.0))
+        return interaction::resizing_circle_of_rev;
+
+    return interaction::none;
 }
