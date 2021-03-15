@@ -141,6 +141,12 @@ void curvy::puck::set_circle_rotation_position(double theta, double cx, double c
     crs_.circle.r = r;
 }
 
+void curvy::puck::set_center_of_revolution(const std::tuple<double, double>& pt)
+{
+    crs_.circle.x = std::get<0>(pt);
+    crs_.circle.y = std::get<1>(pt);
+}
+
 curvy::circle curvy::puck::get_puck_circle() const
 {
     return circle(crs_.position(), puck_radius_);

@@ -37,6 +37,7 @@ namespace curvy {
         void set_speed(double speed);
         void set_radius_of_revolution(double r);
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
+        void set_center_of_revolution(const std::tuple<double, double>& pt);
         circle get_puck_circle() const;
         std::tuple<int, int, int, int> get_bounding_box_in_pixels(double log_sz, int pix_sz) const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;

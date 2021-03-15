@@ -74,12 +74,14 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
         switch (interaction_) {
             case interaction::dragging_a:
                 puck_a_.set_theta(get_angle_to_pt(puck_a_.center_of_revolution(), pt));
+                puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
             case interaction::dragging_b: 
                 puck_b_.set_theta( std::atan2(y, x)  );
                 break;
              case interaction::resizing_circle_of_rev: 
                 puck_a_.set_radius_of_revolution(euclidean_distance(pt, puck_a_.circle_of_revolution().center()));
+                puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
         }
         render();
