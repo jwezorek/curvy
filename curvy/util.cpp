@@ -83,12 +83,6 @@ double euclidean_distance(const point& p1, const point& p2) {
     return euclidean_distance(x1, y1, x2, y2);
 }
 
-double normalize(const double value, const double start, const double end) {
-    const double width = end - start;
-    const double offsetValue = value - start;
-    return (offsetValue - (floor(offsetValue / width) * width)) + start;
-}
-
 std::tuple<int, int> to_scr_coords(double x, double y, double logical_sz, int pixel_sz)
 {
     y *= -1;

@@ -7,6 +7,16 @@ double pi() {
     return g_pi;
 }
 
+double normalize(const double value, const double start, const double end) {
+    const double width = end - start;
+    const double offsetValue = value - start;
+    return (offsetValue - (floor(offsetValue / width) * width)) + start;
+}
+
+double normalize_angle(const double theta) {
+    return normalize(theta, 0, 2 * pi());
+}
+
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::circle::circle(double cx, double cy, double r) :
@@ -28,8 +38,7 @@ std::tuple<double, double, double, double> curvy::circle::bounding_box() const {
     };
 }
 
-std::tuple<double, double> curvy::circle::center() const
-{
+std::tuple<double, double> curvy::circle::center() const{
     return { x,y };
 }
 
@@ -42,10 +51,9 @@ std::tuple<double, double> curvy::circle_rotation_state::position() const {
     };
 }
 
-double curvy::circle_rotation_state::get_direction_angle() const
-{
-    if (speed > 0)
-        return theta + 0.5 * pi();
-    else
-        return theta + 1.5 * pi();
+double curvy::circle_rotation_state::get_direction_angle() const {
+    auto direction_angle = (speed > 0) ?
+        theta + 0.5 * pi():
+        theta + 1.5 * pi();
+    return normalize_angle(direction_angle);
 }

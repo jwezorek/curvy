@@ -35,7 +35,7 @@ curvy::puck::puck(const circle_rotation_state& crs, gdi::Color color, double puc
 { }
 
 void curvy::puck::update(double dt) {
-    crs_.theta = normalize(crs_.theta + dt * crs_.speed, 0, 2 * pi());
+    crs_.theta = normalize_angle(crs_.theta + dt * crs_.speed);
 }
 
 curvy::puck curvy::puck::update(double dt) const {

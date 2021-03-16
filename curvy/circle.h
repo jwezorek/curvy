@@ -3,6 +3,8 @@
 #include <tuple>
 
 double pi();
+double normalize(const double value, const double start, const double end);
+double normalize_angle(const double theta);
 
 namespace curvy {
 
