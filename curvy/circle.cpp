@@ -1,6 +1,12 @@
 #include "circle.h"
 #include <cmath>
 
+const long double g_pi = std::acos(-1.L);
+
+double pi() {
+    return g_pi;
+}
+
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::circle::circle(double cx, double cy, double r) :
@@ -34,4 +40,12 @@ std::tuple<double, double> curvy::circle_rotation_state::position() const {
         circle.x + circle.r * std::cos(theta),
         circle.y + circle.r * std::sin(theta)
     };
+}
+
+double curvy::circle_rotation_state::get_direction_angle() const
+{
+    if (speed > 0)
+        return theta + 0.5 * pi();
+    else
+        return theta + 1.5 * pi();
 }

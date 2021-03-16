@@ -128,7 +128,9 @@ void curvy::impulse_viewer::render()
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
-    paint_circle(*g, circle_through_point(puck_b_.position()), colors::White, logical_sz_, pixel_sz_);
+    auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
+    paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
+    //paint_circle(*g, circle_through_point(puck_b_.position()), colors::White, logical_sz_, pixel_sz_);
 
     delete g;
 }

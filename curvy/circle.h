@@ -2,6 +2,8 @@
 
 #include <tuple>
 
+double pi();
+
 namespace curvy {
 
     struct circle {
@@ -27,6 +29,7 @@ namespace curvy {
         {}
 
         std::tuple<double, double> position() const;
+        double get_direction_angle() const;
     };
 
 }

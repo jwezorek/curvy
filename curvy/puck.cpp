@@ -103,6 +103,11 @@ double curvy::puck::distance_from_intersection(const puck& p) const
     return dist - distance_when_touching;
 }
 
+double curvy::puck::direction() const
+{
+    return crs_.get_direction_angle();
+}
+
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
     return ::get_collision_time(*this, p, 0, dt, eps);
