@@ -5,10 +5,54 @@
 
 namespace {
 
+    gdi::Point to_scr_point(const point& p, double log_sz, int pix_sz) {
+        auto [x, y] = to_scr_coords(p, log_sz, pix_sz);
+        return { x,y };
+    }
+
+    void paint_triangle(gdi::Graphics& g, gdi::Color color, const point& p1, const point& p2, const point& p3, double log_sz, int pix_sz) {
+        gdi::Point ary[3] = {
+            to_scr_point(p1, log_sz, pix_sz),
+            to_scr_point(p2, log_sz, pix_sz),
+            to_scr_point(p3, log_sz, pix_sz)
+        };
+        gdi::SolidBrush brush(color);
+        g.FillPolygon(&brush, &(ary[0]), 3);
+    }
+
+    void paint_arrow_head(gdi::Graphics& g, gdi::Color color, const point& loc, double wd, double hgt, double direction, double log_sz, int pix_sz) {
+        point pts[3] = {
+            {wd, 0},
+            {-wd, hgt},
+            {-wd, -hgt}
+        };
+        matrix mat = translation_matrix(loc) * rotation_matrix(direction) ;
+        for (auto& pt : pts) 
+            pt = apply_matrix(mat, pt);
+        paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
+    }
+
+    gdi::Rect to_scr_rect(const std::tuple<double, double, double, double>& r, double log_sz, int pix_sz) {
+        auto [x1, y1, x2, y2] = to_scr_coords(r, log_sz, pix_sz);
+        auto x = (x1 < x2) ? x1 : x2;
+        auto y = (y1 < y2) ? y1 : y2;
+        return gdi::Rect(x, y, std::abs(x1 - x2), std::abs(y1 - y2));
+    }
+
     void paint_circle(gdi::Graphics& g, const curvy::circle& c, gdi::Color color, double log_sz, int pix_sz) {
-        auto [x1, y1, x2, y2] = to_scr_coords(c.bounding_box(), log_sz, pix_sz);
         gdi::Pen pen(color, 3);
-        g.DrawEllipse(&pen, x1, y1, x2 - x1, y2 - y1);
+        g.DrawEllipse(&pen, to_scr_rect( c.bounding_box(), log_sz, pix_sz));
+    }
+
+    double to_degrees(double radians) {
+        return radians * 180.0 / pi();
+    }
+
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::circle& c, double theta1, double theta2, gdi::Color color, double log_sz, int pix_sz) {
+        gdi::Pen pen(color, 3);
+        g.DrawArc(&pen, to_scr_rect(c.bounding_box(), log_sz, pix_sz), -to_degrees(theta1), -to_degrees(theta2));
+        point pt = {c.x + c.r * std::cos(theta1+theta2), c.y + c.r * std::sin(theta1 + theta2) };
+        paint_arrow_head(g, color, pt, 0.5, 0.25, theta1 + theta2 + pi() / 2.0, log_sz, pix_sz);
     }
 }
 
@@ -24,6 +68,7 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
 void curvy::impulse_viewer::initialize()
 {
     puck_a_.set_circle_rotation_position(0, -3, 0, 3);
+    puck_a_.set_speed(1.0);
     puck_b_.set_circle_rotation_position(0, 0, 0, 2);
 }
 
@@ -124,13 +169,14 @@ void curvy::impulse_viewer::render()
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
     paint_circle(*g, puck_a_.circle_of_revolution(), colors::Yellow, logical_sz_, pixel_sz_);
-
+    paint_arc_arrow(*g, puck_a_.circle_of_revolution(), puck_a_.theta(),  puck_a_.angular_speed(), colors::Red, logical_sz_, pixel_sz_);
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
     auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
     paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
-    //paint_circle(*g, circle_through_point(puck_b_.position()), colors::White, logical_sz_, pixel_sz_);
+
+
 
     delete g;
 }

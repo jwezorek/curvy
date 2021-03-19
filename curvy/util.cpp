@@ -15,6 +15,8 @@ point apply_matrix(const matrix& mat, const point& pt)
     return { v[0], v[1] };
 }
 
+
+
 curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c)
 {
     return curvy::circle(
@@ -99,6 +101,12 @@ std::tuple<int, int> to_scr_coords(double x, double y, double logical_sz, int pi
         static_cast<int>(std::round(x)),
         static_cast<int>(std::round(y))
     );
+}
+
+std::tuple<int, int> to_scr_coords(const point& p, double logical_sz, int pixel_sz)
+{
+    auto [x, y] = p; 
+    return to_scr_coords(x, y, logical_sz, pixel_sz);
 }
 
 std::tuple<double, double> from_scr_coords(int xx, int yy, double logical_sz, int pixel_sz)
