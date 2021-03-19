@@ -48,11 +48,16 @@ namespace {
         return radians * 180.0 / pi();
     }
 
-    void paint_arc_arrow(gdi::Graphics& g, const curvy::circle& c, double theta1, double theta2, gdi::Color color, double log_sz, int pix_sz) {
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::circle_rotation_state& crc, gdi::Color color, double log_sz, int pix_sz) {
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(c.bounding_box(), log_sz, pix_sz), -to_degrees(theta1), -to_degrees(theta2));
-        point pt = {c.x + c.r * std::cos(theta1+theta2), c.y + c.r * std::sin(theta1 + theta2) };
-        paint_arrow_head(g, color, pt, 0.5, 0.25, theta1 + theta2 + pi() / 2.0, log_sz, pix_sz);
+        g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.speed));
+        auto arrow_theta = crc.theta + crc.speed;
+        auto arror_direction = crc.get_direction_angle(arrow_theta, crc.speed);
+        point pt = {
+            crc.circle.x + crc.circle.r * std::cos(arrow_theta),
+            crc.circle.y + crc.circle.r * std::sin(arrow_theta)
+        };
+        paint_arrow_head(g, color, pt, 0.5, 0.25, arror_direction, log_sz, pix_sz);
     }
 }
 
@@ -169,7 +174,7 @@ void curvy::impulse_viewer::render()
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
     paint_circle(*g, puck_a_.circle_of_revolution(), colors::Yellow, logical_sz_, pixel_sz_);
-    paint_arc_arrow(*g, puck_a_.circle_of_revolution(), puck_a_.theta(),  puck_a_.angular_speed(), colors::Red, logical_sz_, pixel_sz_);
+    paint_arc_arrow(*g, puck_a_.circle_rot_state(), colors::Red, logical_sz_, pixel_sz_);
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 

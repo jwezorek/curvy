@@ -52,8 +52,12 @@ std::tuple<double, double> curvy::circle_rotation_state::position() const {
 }
 
 double curvy::circle_rotation_state::get_direction_angle() const {
-    auto direction_angle = (speed > 0) ?
-        theta + 0.5 * pi():
-        theta + 1.5 * pi();
+    return get_direction_angle(theta, speed);
+}
+
+double curvy::circle_rotation_state::get_direction_angle(double angle, double s) const {
+    auto direction_angle = (s > 0) ?
+        angle + 0.5 * pi() :
+        angle + 1.5 * pi();
     return normalize_angle(direction_angle);
 }

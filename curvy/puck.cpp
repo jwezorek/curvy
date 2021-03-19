@@ -108,6 +108,11 @@ double curvy::puck::direction() const
     return crs_.get_direction_angle();
 }
 
+curvy::circle_rotation_state curvy::puck::circle_rot_state() const
+{
+    return crs_;
+}
+
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
     return ::get_collision_time(*this, p, 0, dt, eps);

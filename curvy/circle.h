@@ -32,6 +32,7 @@ namespace curvy {
 
         std::tuple<double, double> position() const;
         double get_direction_angle() const;
+        double get_direction_angle(double angle, double speed) const;
     };
 
 }
