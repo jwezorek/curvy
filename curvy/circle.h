@@ -5,6 +5,8 @@
 double pi();
 double normalize(const double value, const double start, const double end);
 double normalize_angle(const double theta);
+double euclidean_distance(double x1, double y1, double x2, double y2);
+double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2);
 
 namespace curvy {
 
@@ -18,6 +20,7 @@ namespace curvy {
         std::tuple<double, double, double, double> bounding_box() const;
         std::tuple<double, double> center() const;
         double circumference() const;
+        std::tuple<double, double> invert(const std::tuple<double, double>& pt) const;
     };
 
     struct circular_vector {

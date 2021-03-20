@@ -17,6 +17,19 @@ double normalize_angle(const double theta) {
     return normalize(theta, 0, 2 * pi());
 }
 
+double euclidean_distance(double x1, double y1, double x2, double y2) {
+    auto diff_x = x2 - x1;
+    auto diff_y = y2 - y1;
+    return std::sqrt(diff_x * diff_x + diff_y * diff_y);
+}
+
+double euclidean_distance(const std::tuple<double,double>& p1, const std::tuple<double, double>& p2) {
+    auto [x1, y1] = p1;
+    auto [x2, y2] = p2;
+    return euclidean_distance(x1, y1, x2, y2);
+}
+
+
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::circle::circle(double cx, double cy, double r) :
@@ -45,6 +58,19 @@ std::tuple<double, double> curvy::circle::center() const{
 double curvy::circle::circumference() const
 {
     return 2.0 * pi() * r;
+}
+
+std::tuple<double, double> curvy::circle::invert(const std::tuple<double, double>& pt) const
+{
+    auto R = euclidean_distance( center(), pt );
+    auto [px, py] = pt;
+    auto cosine_theta = (px - x) / R;
+    auto sine_theta = (py - y) / R;
+    auto inverted_dist = r * r / R;
+    return {
+        inverted_dist * cosine_theta,
+        inverted_dist * sine_theta
+    };
 }
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/

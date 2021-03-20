@@ -32,6 +32,7 @@ namespace curvy {
         double distance_from_intersection(const puck& p) const;
         double direction() const;
         circular_vector circle_rot_state() const;
+        std::tuple<circular_vector, circular_vector> momentum_vector_through_point(const std::tuple<double, double>& pt);
         std::optional<double> get_collision_time(const puck& p, double dt, double eps) const;
         gdi::Color color() const;
         void set_color(gdi::Color color);

@@ -113,6 +113,12 @@ curvy::circular_vector curvy::puck::circle_rot_state() const
     return crs_;
 }
 
+std::tuple<curvy::circular_vector, curvy::circular_vector> curvy::puck::momentum_vector_through_point(const point& pt)
+{
+    //TODO:
+    return std::tuple<circular_vector, circular_vector>();
+}
+
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
     return ::get_collision_time(*this, p, 0, dt, eps);
