@@ -19,15 +19,15 @@ namespace curvy {
         std::tuple<double, double> center() const;
     };
 
-    struct circle_rotation_state {
+    struct circular_vector {
         double theta;
-        double speed;
+        double magnitude_angle;
         circle circle;
 
-        circle_rotation_state(
+        circular_vector(
             double theta = 0, double cx = 0, double cy = 0,
             double r = 0, double speed = 0
-        ) : theta(theta), circle(cx, cy, r), speed(speed)
+        ) : theta(theta), circle(cx, cy, r), magnitude_angle(speed)
         {}
 
         std::tuple<double, double> position() const;

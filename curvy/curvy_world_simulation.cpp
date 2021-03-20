@@ -18,12 +18,12 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
 void curvy::curvy_world_simulation::initialize()
 {
     insert({
-        curvy::circle_rotation_state{  0, 0,  0, 12.0, 4 },
+        curvy::circular_vector{  0, 0,  0, 12.0, 4 },
         colors::Red
     });
 
     insert({
-        curvy::circle_rotation_state{ pi(),  0, 0, 12.0, 0 },
+        curvy::circular_vector{ pi(),  0, 0, 12.0, 0 },
         colors::Yellow
     });
 }

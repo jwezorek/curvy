@@ -48,11 +48,11 @@ namespace {
         return radians * 180.0 / pi();
     }
 
-    void paint_arc_arrow(gdi::Graphics& g, const curvy::circle_rotation_state& crc, gdi::Color color, double log_sz, int pix_sz) {
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double log_sz, int pix_sz) {
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.speed));
-        auto arrow_theta = crc.theta + crc.speed;
-        auto arror_direction = crc.get_direction_angle(arrow_theta, crc.speed);
+        g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.magnitude_angle));
+        auto arrow_theta = crc.theta + crc.magnitude_angle;
+        auto arror_direction = crc.get_direction_angle(arrow_theta, crc.magnitude_angle);
         point pt = {
             crc.circle.x + crc.circle.r * std::cos(arrow_theta),
             crc.circle.y + crc.circle.r * std::sin(arrow_theta)

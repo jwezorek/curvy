@@ -44,18 +44,18 @@ std::tuple<double, double> curvy::circle::center() const{
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
-std::tuple<double, double> curvy::circle_rotation_state::position() const {
+std::tuple<double, double> curvy::circular_vector::position() const {
     return {
         circle.x + circle.r * std::cos(theta),
         circle.y + circle.r * std::sin(theta)
     };
 }
 
-double curvy::circle_rotation_state::get_direction_angle() const {
-    return get_direction_angle(theta, speed);
+double curvy::circular_vector::get_direction_angle() const {
+    return get_direction_angle(theta, magnitude_angle);
 }
 
-double curvy::circle_rotation_state::get_direction_angle(double angle, double s) const {
+double curvy::circular_vector::get_direction_angle(double angle, double s) const {
     auto direction_angle = (s > 0) ?
         angle + 0.5 * pi() :
         angle + 1.5 * pi();

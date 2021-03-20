@@ -15,7 +15,7 @@ namespace curvy {
 
     public:
 
-        puck(const circle_rotation_state& crs = {}, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
+        puck(const circular_vector& crs = {}, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
         void update(double dt);
         puck update(double dt) const;
         double theta() const;
@@ -31,7 +31,7 @@ namespace curvy {
         double distance_from_center(const puck& p) const;
         double distance_from_intersection(const puck& p) const;
         double direction() const;
-        circle_rotation_state circle_rot_state() const;
+        circular_vector circle_rot_state() const;
         std::optional<double> get_collision_time(const puck& p, double dt, double eps) const;
         gdi::Color color() const;
         void set_color(gdi::Color color);
@@ -46,7 +46,7 @@ namespace curvy {
 
     private:
 
-        circle_rotation_state crs_;
+        circular_vector crs_;
         double puck_radius_;
         double mass_;
         gdi::Color color_;
