@@ -44,20 +44,25 @@ namespace {
         g.DrawEllipse(&pen, to_scr_rect( c.bounding_box(), log_sz, pix_sz));
     }
 
-    double to_degrees(double radians) {
-        return radians * 180.0 / pi();
+    gdi::REAL to_degrees(double radians) {
+        return static_cast<gdi::REAL>( radians * 180.0 / pi() );
     }
 
     void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double log_sz, int pix_sz) {
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.magnitude_angle));
-        auto arrow_theta = crc.theta + crc.magnitude_angle;
-        auto arror_direction = crc.get_direction_angle(arrow_theta, crc.magnitude_angle);
+        g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.angular_magnitude));
+        auto arrow_theta = crc.theta + crc.angular_magnitude;
+        auto arror_direction = crc.direction_angle(arrow_theta, crc.angular_magnitude);
         point pt = {
             crc.circle.x + crc.circle.r * std::cos(arrow_theta),
             crc.circle.y + crc.circle.r * std::sin(arrow_theta)
         };
         paint_arrow_head(g, color, pt, 0.5, 0.25, arror_direction, log_sz, pix_sz);
+    }
+
+    void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double log_sz, int pix_sz) {
+        paint_circle(g, crc.circle, colors::White, log_sz, pix_sz);
+        paint_arc_arrow(g, crc, color, log_sz, pix_sz);
     }
 }
 
@@ -74,7 +79,9 @@ void curvy::impulse_viewer::initialize()
 {
     puck_a_.set_circle_rotation_position(0, -3, 0, 3);
     puck_a_.set_speed(1.0);
+    puck_a_.set_color(colors::Red);
     puck_b_.set_circle_rotation_position(0, 0, 0, 2);
+    puck_b_.set_color(colors::Yellow);
 }
 
 void curvy::impulse_viewer::update(double dt)
@@ -93,10 +100,10 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
             return false;
         switch (interaction_) {
             case interaction::dragging_a:
-                puck_a_.set_color(colors::Aqua);
+                puck_a_.set_color(colors::White);
                 break;
             case interaction::dragging_b:
-                puck_b_.set_color(colors::Aqua);
+                puck_b_.set_color(colors::White);
                 break;
             case interaction::resizing_circle_of_rev:
                 break;
@@ -107,8 +114,8 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
 
     if (!mouse_down) {
         interaction_ = interaction::none;
-        puck_a_.set_color(colors::White);
-        puck_b_.set_color(colors::White);
+        puck_a_.set_color(colors::Red);
+        puck_b_.set_color(colors::Yellow);
         render();
         return true;
     }
@@ -173,15 +180,13 @@ void curvy::impulse_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    paint_circle(*g, puck_a_.circle_of_revolution(), colors::Yellow, logical_sz_, pixel_sz_);
-    paint_arc_arrow(*g, puck_a_.circle_rot_state(), colors::Red, logical_sz_, pixel_sz_);
-    puck_a_.paint(*g, logical_sz_, pixel_sz_);
-    puck_b_.paint(*g, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.circle_rot_state(), colors::Red, logical_sz_, pixel_sz_);
 
     auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
     paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
 
-
+    puck_a_.paint(*g, logical_sz_, pixel_sz_);
+    puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
     delete g;
 }

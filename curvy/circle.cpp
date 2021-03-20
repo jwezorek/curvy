@@ -42,6 +42,11 @@ std::tuple<double, double> curvy::circle::center() const{
     return { x,y };
 }
 
+double curvy::circle::circumference() const
+{
+    return 2.0 * pi() * r;
+}
+
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 std::tuple<double, double> curvy::circular_vector::position() const {
@@ -51,13 +56,29 @@ std::tuple<double, double> curvy::circular_vector::position() const {
     };
 }
 
-double curvy::circular_vector::get_direction_angle() const {
-    return get_direction_angle(theta, magnitude_angle);
+double curvy::circular_vector::direction_angle() const {
+    return direction_angle(theta, angular_magnitude);
 }
 
-double curvy::circular_vector::get_direction_angle(double angle, double s) const {
+double curvy::circular_vector::direction_angle(double angle, double s) const {
     auto direction_angle = (s > 0) ?
         angle + 0.5 * pi() :
         angle + 1.5 * pi();
     return normalize_angle(direction_angle);
+}
+
+double curvy::circular_vector::linear_magnitude() const
+{
+    return angular_magnitude * circle.r;
+}
+
+double curvy::circular_vector::circumference() const
+{
+    return circle.circumference();
+}
+
+curvy::circular_vector curvy::circular_vector_from_linear_magnitude(const circle& circ, double theta, double linear_magnitude)
+{
+    auto angular_magnitude = linear_magnitude / circ.r;
+    return circular_vector(circ, theta, angular_magnitude);
 }

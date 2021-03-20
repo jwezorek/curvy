@@ -105,7 +105,6 @@ LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM 
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
     switch (message) {
         case WM_CREATE:
             g_state->initialize();

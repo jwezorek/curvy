@@ -35,7 +35,7 @@ curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radi
 { }
 
 void curvy::puck::update(double dt) {
-    crs_.theta = normalize_angle(crs_.theta + dt * crs_.magnitude_angle);
+    crs_.theta = normalize_angle(crs_.theta + dt * crs_.angular_magnitude);
 }
 
 curvy::puck curvy::puck::update(double dt) const {
@@ -63,7 +63,7 @@ double curvy::puck::radius_of_revolution() const {
 
 double curvy::puck::angular_speed() const
 {
-    return crs_.magnitude_angle;
+    return crs_.angular_magnitude;
 }
 
 double curvy::puck::radius() const
@@ -105,7 +105,7 @@ double curvy::puck::distance_from_intersection(const puck& p) const
 
 double curvy::puck::direction() const
 {
-    return crs_.get_direction_angle();
+    return crs_.direction_angle();
 }
 
 curvy::circular_vector curvy::puck::circle_rot_state() const
@@ -135,7 +135,7 @@ void curvy::puck::set_theta(double theta)
 
 void curvy::puck::set_speed(double speed)
 {
-    crs_.magnitude_angle = speed;
+    crs_.angular_magnitude = speed;
 }
 
 void curvy::puck::set_radius_of_revolution(double r)
