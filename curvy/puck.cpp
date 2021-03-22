@@ -23,9 +23,25 @@ namespace {
             return get_collision_time(p1, p2, half_time, t2, eps);
     }
 
-    double get_sign_of_impulse(const curvy::circular_vector& from, const point& to_point) {
-        return is_pt_in_circle(from.circle, to_point, 0.0000005) ? 1.0 : -1.0;
+    curvy::circle get_circle_of_impulse(const point& pt) {
+        auto [px, py] = pt;
+        double circle_of_impulse_y = (px * px + py * py) / (2 * py);
+        return curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y));
     }
+
+    curvy::circular_vector momentum_vec_through_point_canonical_orientation(const std::tuple<double, double>& cannonicalized_pt)
+    {
+        auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
+
+        auto amount_of_impulse_momentum = 1.0;
+        auto sign_of_impulse = (circle_of_impulse.y > 0) ? 1.0 : -1.0;
+        auto magnitude = sign_of_impulse * amount_of_impulse_momentum;
+
+        auto impulse = curvy::circular_vector(circle_of_impulse, get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), magnitude);
+
+        return impulse;
+    }
+
 }
 
 
@@ -130,20 +146,14 @@ curvy::circular_vector curvy::puck::momentum_vector() const
 
 curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& world_pt)
 {
-    matrix from_world_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
-    matrix to_world_coords = translation_matrix(position()) * rotation_matrix( direction());
-    auto pt = apply_matrix(from_world_coords, world_pt);
-    auto [px, py] = pt;
+    matrix to_canonical_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
+    matrix from_canonical_coords = translation_matrix(position()) * rotation_matrix( direction() );
 
-    double circle_of_impulse_y = (px * px + py * py) / (2 * py);
-    auto circle_of_impulse = curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y));
-
-    auto amount_of_impulse_momentum = 1.0;
-    auto sign_of_impulse = (circle_of_impulse_y > 0) ? 1.0 : -1.0;
-    auto magnitude = sign_of_impulse * amount_of_impulse_momentum;
-    auto impulse = curvy::circular_vector(circle_of_impulse, get_angle_to_pt(circle_of_impulse.center(), pt), magnitude);
-
-    return apply_matrix(to_world_coords, impulse);
+    return apply_matrix(from_canonical_coords,
+        momentum_vec_through_point_canonical_orientation(
+            apply_matrix(to_canonical_coords, world_pt)
+        )
+    );
 }
 
 
