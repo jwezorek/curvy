@@ -48,7 +48,7 @@ namespace {
         return static_cast<gdi::REAL>( radians * 180.0 / pi() );
     }
 
-    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double log_sz, int pix_sz) {
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
         gdi::Pen pen(color, 3);
         g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.angular_magnitude));
         auto arrow_theta = crc.theta + crc.angular_magnitude;
@@ -57,12 +57,12 @@ namespace {
             crc.circle.x + crc.circle.r * std::cos(arrow_theta),
             crc.circle.y + crc.circle.r * std::sin(arrow_theta)
         };
-        paint_arrow_head(g, color, pt, 0.5, 0.25, arror_direction, log_sz, pix_sz);
+        paint_arrow_head(g, color, pt, puck_sz*0.5, puck_sz*0.25, arror_direction, log_sz, pix_sz);
     }
 
-    void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double log_sz, int pix_sz) {
+    void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
         paint_circle(g, crc.circle, colors::White, log_sz, pix_sz);
-        paint_arc_arrow(g, crc, color, log_sz, pix_sz);
+        paint_arc_arrow(g, crc, color, puck_sz, log_sz, pix_sz);
     }
 }
 
@@ -77,11 +77,17 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
 
 void curvy::impulse_viewer::initialize()
 {
-    puck_a_.set_circle_rotation_position(0, -3, 0, 3);
+    auto r = 0.5;
+    const auto south = 3.0 * pi() / 2.0;
+
+    puck_a_.set_circle_rotation_position( south, 0, 3, 3 );
     puck_a_.set_speed(1.0);
     puck_a_.set_color(colors::Red);
-    puck_b_.set_circle_rotation_position(0, 0, 0, 2);
+    puck_a_.set_puck_radius(r);
+
+    puck_b_.set_circle_rotation_position( south, 0, 0, 2*r );
     puck_b_.set_color(colors::Yellow);
+    puck_b_.set_puck_radius(r);
 }
 
 void curvy::impulse_viewer::update(double dt)
@@ -175,14 +181,14 @@ void curvy::impulse_viewer::render()
 
     gdi::SolidBrush black_brush(colors::Black);
     gdi::Pen white_pen(colors::White, 1);
-    auto* g = gdi::Graphics::FromImage(back_buffer_.get());
+    std::unique_ptr<gdi::Graphics> g( gdi::Graphics::FromImage(back_buffer_.get()) );
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    paint_circle_vector(*g, puck_a_.circle_rot_state(), colors::Red, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.circle_rot_state(), colors::Red, puck_a_.puck_radius(), logical_sz_, pixel_sz_);
 
-    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, puck_b_.puck_radius(), logical_sz_, pixel_sz_);
 
     //auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
     //paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
@@ -190,13 +196,14 @@ void curvy::impulse_viewer::render()
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
+    /*
     double circle_of_revolution_diameter = puck_a_.circle_rot_state().circle.diameter();
     curvy::circle circle_of_inversion(-circle_of_revolution_diameter, 0, circle_of_revolution_diameter);
     auto ip = circle_of_inversion.invert(puck_b_.position());
     paint_circle(*g, curvy::circle(ip, 0.05), colors::Blue, logical_sz_, pixel_sz_);
     paint_circle(*g, circle_of_inversion, colors::AliceBlue, logical_sz_, pixel_sz_);
+    */
 
-    delete g;
 }
 
 curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location)

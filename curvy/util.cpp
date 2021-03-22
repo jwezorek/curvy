@@ -25,6 +25,18 @@ curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c)
     );
 }
 
+curvy::circular_vector apply_matrix(const matrix& mat, const curvy::circular_vector& cv)
+{
+    auto center = apply_matrix(mat, cv.circle.center());
+    auto pt = apply_matrix(mat, cv.position());
+    auto circle = curvy::circle(center, euclidean_distance(center, pt));
+    return curvy::circular_vector(
+        circle,
+        get_angle_to_pt(center, pt),
+        cv.angular_magnitude
+    );
+}
+
 matrix rotation_matrix(double cos_theta, double sin_theta) {
     matrix rotation;
     rotation <<
@@ -117,30 +129,6 @@ std::tuple<double, double> from_scr_coords(const std::tuple<int, int>& pt, doubl
     return from_scr_coords(x, y, logical_sz, pixel_sz);
 }
 
-curvy::circle circle_through_point(const point& pt)
-{
-    auto [x, y] = pt;
-    auto r = (x * x + y * y) / (2 * x);
-    return curvy::circle(r, 0, r);
-}
-
-curvy::circle circle_through_point(const point& from_pt, const point& to_pt, double from_direction)
-{
-    matrix mat1 = rotation_matrix(pi() / 2.0 - from_direction) * translation_matrix(-from_pt);
-    matrix mat2 = translation_matrix(from_pt) * rotation_matrix(from_direction - pi() / 2.0 );
-    point transform_pt = apply_matrix(mat1, to_pt);
-    auto c = circle_through_point(transform_pt);
-    c = apply_matrix(mat2, c);
-    return c;
-}
-
-double circular_angle_through_point(double r, const point& pt)
-{
-    double circle_of_revolution_diameter = 2.0 * r;
-    curvy::circle circle_of_inversion(-circle_of_revolution_diameter, 0, circle_of_revolution_diameter);
-    auto [dx,dy] = circle_of_inversion.invert(pt);
-    return  std::abs(pi()/2.0 - std::atan2(dy, dx));
-}
 
 bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps)
 {

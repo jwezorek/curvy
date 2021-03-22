@@ -113,6 +113,11 @@ double curvy::puck::direction() const
     return crs_.direction_angle();
 }
 
+double curvy::puck::puck_radius() const
+{
+    return puck_radius_;
+}
+
 curvy::circular_vector curvy::puck::circle_rot_state() const
 {
     return crs_;
@@ -123,20 +128,24 @@ curvy::circular_vector curvy::puck::momentum_vector() const
     return mass_ * crs_;
 }
 
-curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt)
+curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& world_pt)
 {
-    auto circle_of_impulse = circle_through_point(position(), pt, crs_.direction_angle());
-    auto theta = get_angle_to_pt(circle_of_impulse.center(), pt);
-    auto circular_angle = circular_angle_through_point(crs_.circle.r, pt); // TODO: make this general.
+    matrix from_world_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
+    matrix to_world_coords = translation_matrix(position()) * rotation_matrix( direction());
+    auto pt = apply_matrix(from_world_coords, world_pt);
+    auto [px, py] = pt;
 
-    std::string degrees = std::to_string(circular_angle * 180.0 / pi()) + "\n";
-    OutputDebugStringA(degrees.c_str());
+    double circle_of_impulse_y = (px * px + py * py) / (2 * py);
+    auto circle_of_impulse = curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y));
 
-    auto target_sign = (is_to_the_right_of(crs_.direction_angle(), position(), pt)) ? 1.0 : -1.0;
-    auto source_sign = (is_to_the_right_of(crs_.direction_angle(), position(), crs_.circle.center())) ? 1.0 : -1.0;
-    auto magnitude = crs_.angular_magnitude * target_sign * source_sign * std::cos( circular_angle );
-    return circular_vector(circle_of_impulse, theta, magnitude);
+    auto amount_of_impulse_momentum = 1.0;
+    auto sign_of_impulse = (circle_of_impulse_y > 0) ? 1.0 : -1.0;
+    auto magnitude = sign_of_impulse * amount_of_impulse_momentum;
+    auto impulse = curvy::circular_vector(circle_of_impulse, get_angle_to_pt(circle_of_impulse.center(), pt), magnitude);
+
+    return apply_matrix(to_world_coords, impulse);
 }
+
 
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
@@ -161,6 +170,11 @@ void curvy::puck::set_theta(double theta)
 void curvy::puck::set_speed(double speed)
 {
     crs_.angular_magnitude = speed;
+}
+
+void curvy::puck::set_puck_radius(double r)
+{
+    puck_radius_ = r;
 }
 
 void curvy::puck::set_radius_of_revolution(double r)

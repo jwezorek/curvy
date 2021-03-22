@@ -31,6 +31,7 @@ namespace curvy {
         double distance_from_center(const puck& p) const;
         double distance_from_intersection(const puck& p) const;
         double direction() const;
+        double puck_radius() const;
         circular_vector circle_rot_state() const;
         circular_vector momentum_vector() const;
         circular_vector momentum_vector_through_point(const std::tuple<double, double>& pt);
@@ -39,13 +40,13 @@ namespace curvy {
         void set_color(gdi::Color color);
         void set_theta(double theta);
         void set_speed(double speed);
+        void set_puck_radius(double r);
         void set_radius_of_revolution(double r);
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
         void set_center_of_revolution(const std::tuple<double, double>& pt);
         circle get_puck_circle() const;
         std::tuple<int, int, int, int> get_bounding_box_in_pixels(double log_sz, int pix_sz) const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
-
     private:
 
         circular_vector crs_;

@@ -38,7 +38,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!RegisterClass(&wc))
         return 1;
 
-    int sz = 1200;
+    int sz = 1400;
     RECT r = { 20, 20, sz, sz };
     AdjustWindowRect( &r, WS_BORDER | WS_SYSMENU | WS_VISIBLE, TRUE);
 
