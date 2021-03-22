@@ -138,14 +138,20 @@ double circular_angle_through_point(double r, const point& pt)
 {
     double circle_of_revolution_diameter = 2.0 * r;
     curvy::circle circle_of_inversion(-circle_of_revolution_diameter, 0, circle_of_revolution_diameter);
-    auto [dy,dx] = circle_of_inversion.invert(pt);
-    return std::abs(std::atan2(dy, dx) - (pi() / 2.0)) ;
+    auto [dx,dy] = circle_of_inversion.invert(pt);
+    return  std::abs(pi()/2.0 - std::atan2(dy, dx));
 }
 
 bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps)
 {
     auto distance = euclidean_distance(c.center(), pt);
     return std::abs(distance - c.r) <= eps;
+}
+
+bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps)
+{
+    auto distance = euclidean_distance(c.center(), pt);
+    return is_pt_on_circle(c, pt, eps) || (distance < c.r);
 }
 
 std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt)
@@ -166,6 +172,13 @@ double get_angle_to_pt(const point& from_pt, const point& to_pt)
     auto [fx, fy] = from_pt;
     auto [tx, ty] = to_pt;
     return std::atan2(ty - fy, tx - fx);
+}
+
+bool is_to_the_right_of(double from_direction, const point& from_pt, const point& to_pt)
+{
+    matrix mat1 = rotation_matrix( -from_direction) * translation_matrix(-from_pt);
+    auto rotated_pt = apply_matrix(mat1, to_pt);
+    return std::get<1>(to_pt) < 0;
 }
 
 std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz) 

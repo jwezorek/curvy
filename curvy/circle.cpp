@@ -62,15 +62,21 @@ double curvy::circle::circumference() const
 
 std::tuple<double, double> curvy::circle::invert(const std::tuple<double, double>& pt) const
 {
+    auto [cx, cy] = center();
     auto R = euclidean_distance( center(), pt );
     auto [px, py] = pt;
     auto cosine_theta = (px - x) / R;
     auto sine_theta = (py - y) / R;
     auto inverted_dist = r * r / R;
-    return {
-        inverted_dist * cosine_theta,
-        inverted_dist * sine_theta
+     return {
+        cx + inverted_dist * cosine_theta,
+        cy + inverted_dist * sine_theta
     };
+}
+
+double curvy::circle::diameter() const
+{
+    return 2.0 * r;
 }
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
@@ -107,4 +113,11 @@ curvy::circular_vector curvy::circular_vector_from_linear_magnitude(const circle
 {
     auto angular_magnitude = linear_magnitude / circ.r;
     return circular_vector(circ, theta, angular_magnitude);
+}
+
+curvy::circular_vector curvy::operator*(double scalar, const circular_vector& cv)
+{
+    auto scaled = curvy::circular_vector(cv);
+    scaled.angular_magnitude *= scalar;
+    return scaled;
 }

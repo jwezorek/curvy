@@ -1,6 +1,7 @@
 #include "puck.h"
 #include "util.h"
 #include <cmath>
+#include <string>
 
 namespace {
     std::optional<double> get_collision_time(const curvy::puck& p1, const curvy::puck& p2, double t1, double t2, double eps) {
@@ -20,6 +21,10 @@ namespace {
             return get_collision_time(p1, p2, t1, half_time, eps);
         else
             return get_collision_time(p1, p2, half_time, t2, eps);
+    }
+
+    double get_sign_of_impulse(const curvy::circular_vector& from, const point& to_point) {
+        return is_pt_in_circle(from.circle, to_point, 0.0000005) ? 1.0 : -1.0;
     }
 }
 
@@ -113,10 +118,24 @@ curvy::circular_vector curvy::puck::circle_rot_state() const
     return crs_;
 }
 
-std::tuple<curvy::circular_vector, curvy::circular_vector> curvy::puck::momentum_vector_through_point(const point& pt)
+curvy::circular_vector curvy::puck::momentum_vector() const
 {
-    //TODO:
-    return std::tuple<circular_vector, circular_vector>();
+    return mass_ * crs_;
+}
+
+curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt)
+{
+    auto circle_of_impulse = circle_through_point(position(), pt, crs_.direction_angle());
+    auto theta = get_angle_to_pt(circle_of_impulse.center(), pt);
+    auto circular_angle = circular_angle_through_point(crs_.circle.r, pt); // TODO: make this general.
+
+    std::string degrees = std::to_string(circular_angle * 180.0 / pi()) + "\n";
+    OutputDebugStringA(degrees.c_str());
+
+    auto target_sign = (is_to_the_right_of(crs_.direction_angle(), position(), pt)) ? 1.0 : -1.0;
+    auto source_sign = (is_to_the_right_of(crs_.direction_angle(), position(), crs_.circle.center())) ? 1.0 : -1.0;
+    auto magnitude = crs_.angular_magnitude * target_sign * source_sign * std::cos( circular_angle );
+    return circular_vector(circle_of_impulse, theta, magnitude);
 }
 
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const

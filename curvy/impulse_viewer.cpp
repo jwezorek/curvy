@@ -182,11 +182,19 @@ void curvy::impulse_viewer::render()
 
     paint_circle_vector(*g, puck_a_.circle_rot_state(), colors::Red, logical_sz_, pixel_sz_);
 
-    auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
-    paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, logical_sz_, pixel_sz_);
+
+    //auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
+    //paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
+
+    double circle_of_revolution_diameter = puck_a_.circle_rot_state().circle.diameter();
+    curvy::circle circle_of_inversion(-circle_of_revolution_diameter, 0, circle_of_revolution_diameter);
+    auto ip = circle_of_inversion.invert(puck_b_.position());
+    paint_circle(*g, curvy::circle(ip, 0.05), colors::Blue, logical_sz_, pixel_sz_);
+    paint_circle(*g, circle_of_inversion, colors::AliceBlue, logical_sz_, pixel_sz_);
 
     delete g;
 }

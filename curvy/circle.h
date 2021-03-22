@@ -21,6 +21,7 @@ namespace curvy {
         std::tuple<double, double> center() const;
         double circumference() const;
         std::tuple<double, double> invert(const std::tuple<double, double>& pt) const;
+        double diameter() const;
     };
 
     struct circular_vector {
@@ -46,4 +47,5 @@ namespace curvy {
     };
 
     circular_vector circular_vector_from_linear_magnitude(const circle& circ, double theta, double linear_magnitude);
+    circular_vector operator*(double scalar, const circular_vector& cv);
 }
