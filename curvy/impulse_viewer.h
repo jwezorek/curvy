@@ -14,6 +14,7 @@ namespace gdi = Gdiplus;
 namespace curvy {
 
     enum class interaction {
+        dragging_circle_of_rev,
         dragging_a,
         dragging_b,
         resizing_circle_of_rev,

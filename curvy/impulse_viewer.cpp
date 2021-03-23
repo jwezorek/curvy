@@ -105,6 +105,8 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
         if (interaction_ == interaction::none)
             return false;
         switch (interaction_) {
+            case interaction::dragging_circle_of_rev:
+                break;
             case interaction::dragging_a:
                 puck_a_.set_color(colors::White);
                 break;
@@ -135,6 +137,10 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
         auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
         auto [x, y] = pt;
         switch (interaction_) {
+            case interaction::dragging_circle_of_rev:
+                puck_a_.set_center_of_revolution(pt);
+                puck_b_.set_center_of_revolution(puck_a_.position());
+                break;
             case interaction::dragging_a:
                 puck_a_.set_theta(get_angle_to_pt(puck_a_.center_of_revolution(), pt));
                 puck_b_.set_center_of_revolution(puck_a_.position());
@@ -187,27 +193,17 @@ void curvy::impulse_viewer::render()
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
     paint_circle_vector(*g, puck_a_.circle_rot_state(), colors::Red, puck_a_.puck_radius(), logical_sz_, pixel_sz_);
-
     paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, puck_b_.puck_radius(), logical_sz_, pixel_sz_);
-
-    //auto c = circle_through_point(puck_a_.position(), puck_b_.position(), puck_a_.direction());
-    //paint_circle(*g, c, colors::White, logical_sz_, pixel_sz_);
-
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
-
-    /*
-    double circle_of_revolution_diameter = puck_a_.circle_rot_state().circle.diameter();
-    curvy::circle circle_of_inversion(-circle_of_revolution_diameter, 0, circle_of_revolution_diameter);
-    auto ip = circle_of_inversion.invert(puck_b_.position());
-    paint_circle(*g, curvy::circle(ip, 0.05), colors::Blue, logical_sz_, pixel_sz_);
-    paint_circle(*g, circle_of_inversion, colors::AliceBlue, logical_sz_, pixel_sz_);
-    */
 
 }
 
 curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location)
 {
+    if (is_pt_in_circle(curvy::circle(puck_a_.center_of_revolution(), 1.0), click_location))
+        return interaction::dragging_circle_of_rev;
+
     if (puck_a_.contains_point(click_location))
         return interaction::dragging_a;
 

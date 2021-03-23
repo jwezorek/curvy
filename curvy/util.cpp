@@ -138,8 +138,10 @@ bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps)
 
 bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps)
 {
-    auto distance = euclidean_distance(c.center(), pt);
-    return is_pt_on_circle(c, pt, eps) || (distance < c.r);
+    if (eps > 0 && is_pt_on_circle(c, pt, eps))
+        return true;
+    else
+        return  (euclidean_distance(c.center(), pt) < c.r);
 }
 
 std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt)
