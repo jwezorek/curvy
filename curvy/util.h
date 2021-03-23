@@ -1,21 +1,23 @@
 #pragma once
 
 #include <Eigen/Dense>
+
 using matrix = Eigen::Matrix<double, 3, 3>;
 using point = std::tuple<double, double>;
 
 #include <tuple>
-#include "circle.h"
 
 template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
+double pi();
+double normalize(const double value, const double start, const double end);
+double normalize_angle(const double theta);
+double euclidean_distance(double x1, double y1, double x2, double y2);
+double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2);
 point operator-(const point& a);
 point apply_matrix(const matrix& mat, const point& pt);
-void apply_matrix(const matrix& mat, const point& pts, int n);
-curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c);
-curvy::circular_vector apply_matrix(const matrix& mat, const curvy::circular_vector& c);
 matrix rotation_matrix(double cos_theta, double sin_theta);
 matrix rotation_matrix(double theta);
 matrix translation_matrix(double x, double y);
@@ -29,8 +31,5 @@ std::tuple<double, double> from_scr_coords(int x, int y, double logical_sz, int 
 std::tuple<double, double> from_scr_coords(const std::tuple<int,int>& pt, double logical_sz, int pixel_sz);
 std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz);
 std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect , double logical_sz, int pixel_sz);
-bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps);
-bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps = 0);
-std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt);
 double get_angle_to_pt(const point& from_pt, const point& to_pt);
 bool is_to_the_right_of(double direction, const point& from_pt, const point& to_pt);

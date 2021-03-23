@@ -1,5 +1,6 @@
 #include "puck.h"
 #include "util.h"
+#include "circle.h"
 #include <cmath>
 #include <string>
 

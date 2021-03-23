@@ -2,6 +2,35 @@
 #include <cmath>
 using vec = Eigen::Matrix<double, 3, 1>;
 
+const long double g_pi = std::acos(-1.L);
+
+double pi() {
+    return g_pi;
+}
+
+double normalize(const double value, const double start, const double end) {
+    const double width = end - start;
+    const double offsetValue = value - start;
+    return (offsetValue - (floor(offsetValue / width) * width)) + start;
+}
+
+double normalize_angle(const double theta) {
+    return normalize(theta, 0, 2 * pi());
+}
+
+double euclidean_distance(double x1, double y1, double x2, double y2) {
+    auto diff_x = x2 - x1;
+    auto diff_y = y2 - y1;
+    return std::sqrt(diff_x * diff_x + diff_y * diff_y);
+}
+
+double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2) {
+    auto [x1, y1] = p1;
+    auto [x2, y2] = p2;
+    return euclidean_distance(x1, y1, x2, y2);
+}
+
+
 point operator-(const point& a) {
     auto [x, y] = a;
     return { -x, -y };
@@ -15,27 +44,6 @@ point apply_matrix(const matrix& mat, const point& pt)
     return { v[0], v[1] };
 }
 
-
-
-curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c)
-{
-    return curvy::circle(
-        apply_matrix(mat, c.center()),
-        c.r
-    );
-}
-
-curvy::circular_vector apply_matrix(const matrix& mat, const curvy::circular_vector& cv)
-{
-    auto center = apply_matrix(mat, cv.circle.center());
-    auto pt = apply_matrix(mat, cv.position());
-    auto circle = curvy::circle(center, euclidean_distance(center, pt));
-    return curvy::circular_vector(
-        circle,
-        get_angle_to_pt(center, pt),
-        cv.angular_magnitude
-    );
-}
 
 matrix rotation_matrix(double cos_theta, double sin_theta) {
     matrix rotation;
@@ -127,34 +135,6 @@ std::tuple<double, double> from_scr_coords(const std::tuple<int, int>& pt, doubl
 {
     auto [x, y] = pt;
     return from_scr_coords(x, y, logical_sz, pixel_sz);
-}
-
-
-bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps)
-{
-    auto distance = euclidean_distance(c.center(), pt);
-    return std::abs(distance - c.r) <= eps;
-}
-
-bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps)
-{
-    if (eps > 0 && is_pt_on_circle(c, pt, eps))
-        return true;
-    else
-        return  (euclidean_distance(c.center(), pt) < c.r);
-}
-
-std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt)
-{
-    // https://math.stackexchange.com/a/127615/63016
-
-    auto [cx, cy] = c.center();
-    auto [px, py] = pt;
-    auto distance_to_center = euclidean_distance(cx, cy, px, py);
-    return {
-        cx + c.r * (px - cx) / distance_to_center,
-        cy + c.r * (py - cy) / distance_to_center
-    };
 }
 
 double get_angle_to_pt(const point& from_pt, const point& to_pt)

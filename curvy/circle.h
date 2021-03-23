@@ -1,12 +1,7 @@
 #pragma once
 
 #include <tuple>
-
-double pi();
-double normalize(const double value, const double start, const double end);
-double normalize_angle(const double theta);
-double euclidean_distance(double x1, double y1, double x2, double y2);
-double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2);
+#include "util.h"
 
 namespace curvy {
 
@@ -48,4 +43,11 @@ namespace curvy {
 
     circular_vector circular_vector_from_linear_magnitude(const circle& circ, double theta, double linear_magnitude);
     circular_vector operator*(double scalar, const circular_vector& cv);
+
 }
+
+curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c);
+curvy::circular_vector apply_matrix(const matrix& mat, const curvy::circular_vector& c);
+bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps);
+bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps = 0);
+std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt);

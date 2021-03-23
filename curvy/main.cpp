@@ -6,6 +6,7 @@
 #include "curvy_world_simulation.h"
 #include "impulse_viewer.h"
 #include "util.h"
+#include "circle.h"
 #include "colors.h"
 #include <gdiplus.h>
 #pragma comment (lib,"Gdiplus.lib")
