@@ -62,7 +62,8 @@ namespace {
 
     void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
         paint_circle(g, crc.circle, colors::White, log_sz, pix_sz);
-        paint_arc_arrow(g, crc, color, puck_sz, log_sz, pix_sz);
+        if (crc.angular_magnitude != 0)
+            paint_arc_arrow(g, crc, color, puck_sz, log_sz, pix_sz);
     }
 }
 
@@ -108,10 +109,8 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
             case interaction::dragging_circle_of_rev:
                 break;
             case interaction::dragging_a:
-                puck_a_.set_color(colors::White);
                 break;
             case interaction::dragging_b:
-                puck_b_.set_color(colors::White);
                 break;
             case interaction::resizing_circle_of_rev:
                 break;
@@ -120,10 +119,8 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
         return true;
     }
 
-    if (!mouse_down) {
+    if (!mouse_down && interaction_!= interaction::none) {
         interaction_ = interaction::none;
-        puck_a_.set_color(colors::Red);
-        puck_b_.set_color(colors::Yellow);
         render();
         return true;
     }

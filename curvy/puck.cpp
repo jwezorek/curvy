@@ -36,9 +36,19 @@ namespace {
         return cosine * cosine;
     }
 
+    bool is_pt_in_front_of_puck(const point& cannonicalized_pt) {
+        auto [dx, dy] = cannonicalized_pt;
+        auto angle = std::atan2(dy, dx);
+        return (angle > -pi() / 2.0 && angle < pi() / 2.0);
+    }
+
     curvy::circular_vector momentum_vec_through_point(const std::tuple<double, double>& cannonicalized_pt, double radius_of_revolution, double total_linear_momentum)
     {
         auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
+
+        if (!is_pt_in_front_of_puck(cannonicalized_pt)) {
+            return curvy::circular_vector(circle_of_impulse, 0, 0);
+        }
 
         auto amount_of_impulse_momentum = get_momentum_transfer_factor(radius_of_revolution, cannonicalized_pt);
         auto sign_of_impulse = (circle_of_impulse.y > 0) ? 1.0 : -1.0;
