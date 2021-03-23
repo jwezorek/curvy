@@ -199,7 +199,7 @@ void curvy::impulse_viewer::render()
 
 curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location)
 {
-    if (is_pt_in_circle(curvy::circle(puck_a_.center_of_revolution(), 1.0), click_location))
+    if (curvy::circle(puck_a_.center_of_revolution(), 1.0).contains(click_location))
         return interaction::dragging_circle_of_rev;
 
     if (puck_a_.puck_circle().contains(click_location))
@@ -208,7 +208,7 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     if (puck_b_.puck_circle().contains(click_location))
         return interaction::dragging_b;
 
-    if (is_pt_on_circle(puck_a_.circle_of_revolution(), click_location, 0.1))
+    if (puck_a_.circle_of_revolution().is_on( click_location, 0.1))
         return interaction::resizing_circle_of_rev;
 
     return interaction::none;

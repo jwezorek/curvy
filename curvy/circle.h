@@ -15,14 +15,13 @@ namespace curvy {
         std::tuple<double, double, double, double> bounding_box() const;
         point center() const;
         bool contains(const curvy::point& pt) const;
+        bool is_on(const curvy::point& pt, double eps) const;
         double circumference() const;
         point invert(const point& pt) const;
         double diameter() const;
     };
+
     curvy::circle apply_matrix(const curvy::matrix& mat, const curvy::circle& c);
-    bool is_pt_on_circle(const curvy::circle& c, const curvy::point& pt, double eps);
-    bool is_pt_in_circle(const curvy::circle& c, const curvy::point& pt, double eps = 0);
-    std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt);
 
 }
 
