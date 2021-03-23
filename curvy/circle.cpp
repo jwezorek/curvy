@@ -10,7 +10,7 @@ curvy::circle::circle(double cx, double cy, double r) :
 {
 }
 
-curvy::circle::circle(const std::tuple<double, double>& pt, double r) :
+curvy::circle::circle(const curvy::point& pt, double r) :
     circle( std::get<0>(pt), std::get<1>(pt), r)
 {
 }
@@ -24,8 +24,13 @@ std::tuple<double, double, double, double> curvy::circle::bounding_box() const {
     };
 }
 
-std::tuple<double, double> curvy::circle::center() const{
+curvy::point curvy::circle::center() const{
     return { x,y };
+}
+
+bool curvy::circle::contains(const curvy::point& pt) const
+{
+    return is_pt_in_circle(*this, pt);
 }
 
 double curvy::circle::circumference() const
@@ -33,7 +38,7 @@ double curvy::circle::circumference() const
     return 2.0 * pi() * r;
 }
 
-std::tuple<double, double> curvy::circle::invert(const std::tuple<double, double>& pt) const
+curvy::point curvy::circle::invert(const curvy::point& pt) const
 {
     auto [cx, cy] = center();
     auto R = euclidean_distance( center(), pt );
@@ -73,7 +78,7 @@ bool curvy::is_pt_in_circle(const curvy::circle& c, const curvy::point& pt, doub
     if (eps > 0 && is_pt_on_circle(c, pt, eps))
         return true;
     else
-        return (curvy::euclidean_distance(c.center(), pt) < c.r);
+        return (curvy::euclidean_distance(c.center(), pt) <= c.r);
 }
 
 std::tuple<double, double> curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt)

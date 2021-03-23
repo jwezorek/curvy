@@ -11,11 +11,12 @@ namespace curvy {
         double r;
 
         circle(double cx, double cy, double r);
-        circle(const std::tuple<double, double>& pt, double r);
+        circle(const point& pt, double r);
         std::tuple<double, double, double, double> bounding_box() const;
-        std::tuple<double, double> center() const;
+        point center() const;
+        bool contains(const curvy::point& pt) const;
         double circumference() const;
-        std::tuple<double, double> invert(const std::tuple<double, double>& pt) const;
+        point invert(const point& pt) const;
         double diameter() const;
     };
     curvy::circle apply_matrix(const curvy::matrix& mat, const curvy::circle& c);

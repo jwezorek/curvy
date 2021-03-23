@@ -6,11 +6,31 @@
 #include <string>
 
 namespace {
+
+    std::tuple<int, int, int, int> bounding_box_in_pixels(const curvy::puck& p, double log_sz, int pix_sz)  {
+        return curvy::to_scr_coords(
+            p.puck_circle().bounding_box(),
+            log_sz, pix_sz
+        );
+    }
+
+    double distance_from_intersection(const curvy::puck& p1, const curvy::puck& p2)
+    {
+        auto dist = curvy::euclidean_distance(p1.position(), p2.position());
+        auto distance_when_touching = p1.puck_circle().r + p2.puck_circle().r;
+        return dist - distance_when_touching;
+    }
+
+    bool intersects(const curvy::puck& p1, const curvy::puck& p2)
+    {
+        return distance_from_intersection(p1, p2) <= 0;
+    }
+
     std::optional<double> get_collision_time(const curvy::puck& p1, const curvy::puck& p2, double t1, double t2, double eps) {
         auto p1_at_t2 = p1.update(t2);
         auto p2_at_t2 = p2.update(t2);
 
-        auto distance_from_touching = p1_at_t2.distance_from_intersection(p2_at_t2);
+        auto distance_from_touching = distance_from_intersection(p1_at_t2 , p2_at_t2);
         if (distance_from_touching > 0)
             return std::nullopt;
 
@@ -18,7 +38,7 @@ namespace {
             return t2;
 
         auto half_time = (t1 + t2) / 2.0;
-        bool intersects_at_halftime = p1.update(half_time).intersects(p2.update(half_time));
+        bool intersects_at_halftime = intersects(p1.update(half_time), p2.update(half_time));
         if (intersects_at_halftime)
             return get_collision_time(p1, p2, t1, half_time, eps);
         else
@@ -62,8 +82,6 @@ namespace {
 
 }
 
-
-
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radius, double mass) :
@@ -105,41 +123,9 @@ double curvy::puck::angular_speed() const
     return state_.angular_magnitude;
 }
 
-double curvy::puck::radius() const
-{
-    return puck_radius_;
-}
-
 std::tuple<double, double> curvy::puck::position() const
 {
     return state_.position();
-}
-
-bool curvy::puck::contains_point(double x, double y) const
-{
-    return contains_point( { x,y } );
-}
-
-bool curvy::puck::contains_point(const std::tuple<double, double>& pt) const
-{
-    return euclidean_distance(position(), pt) <= puck_radius_;
-}
-
-bool curvy::puck::intersects(const puck& p) const
-{
-    return distance_from_intersection(p) <= 0;
-}
-
-double curvy::puck::distance_from_center(const puck& p) const
-{
-    return euclidean_distance(position(), p.position());
-}
-
-double curvy::puck::distance_from_intersection(const puck& p) const
-{
-    auto dist = distance_from_center(p);
-    auto distance_when_touching = puck_radius_ + p.radius();
-    return dist - distance_when_touching;
 }
 
 double curvy::puck::direction() const
@@ -147,12 +133,7 @@ double curvy::puck::direction() const
     return state_.direction_angle();
 }
 
-double curvy::puck::puck_radius() const
-{
-    return puck_radius_;
-}
-
-curvy::circular_vector curvy::puck::circle_rot_state() const
+curvy::circular_vector curvy::puck::state() const
 {
     return state_;
 }
@@ -162,7 +143,7 @@ curvy::circular_vector curvy::puck::momentum_vector() const
     return mass_ * state_;
 }
 
-curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt)
+curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt) const
 {
     auto to_canonical_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
     auto from_canonical_coords = translation_matrix(position()) * rotation_matrix( direction() );
@@ -176,7 +157,6 @@ curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tup
         )
     );
 }
-
 
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
@@ -227,33 +207,15 @@ void curvy::puck::set_center_of_revolution(const std::tuple<double, double>& pt)
     state_.circle.y = std::get<1>(pt);
 }
 
-curvy::circle curvy::puck::get_puck_circle() const
+curvy::circle curvy::puck::puck_circle() const
 {
     return circle(state_.position(), puck_radius_);
 }
 
-std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {
-    return to_scr_coords(
-        get_puck_circle().bounding_box(),
-        log_sz, pix_sz
-    );
-}
-
-/*
-std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {
-    auto [x, y] = crs_.position();
-    return to_scr_coords(
-        x - puck_radius_,  y - puck_radius_,
-        x + puck_radius_, y + puck_radius_, 
-        log_sz, pix_sz
-    );
-}
-*/
-
 void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
 {
     gdi::SolidBrush brush( color_ );
-    auto [x1, y1, x2, y2] = get_bounding_box_in_pixels(log_sz, pix_sz);
+    auto [x1, y1, x2, y2] = bounding_box_in_pixels(*this, log_sz, pix_sz);
     g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
 }
 

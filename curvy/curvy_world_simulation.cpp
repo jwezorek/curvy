@@ -109,11 +109,6 @@ void curvy::curvy_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
     p.paint(g, logical_sz_, pixel_sz_);
 }
 
-std::tuple<int, int, int, int> curvy::curvy_world_simulation::get_location_in_pixels(const puck& p) const
-{
-    return p.get_bounding_box_in_pixels(logical_sz_, pixel_sz_);
-}
-
 std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world_simulation::get_next_collisions(double dt, double eps) {
     std::map<double, collision> collisions;
     int n = static_cast<int>(pucks_.size());

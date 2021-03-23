@@ -190,8 +190,8 @@ void curvy::impulse_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    paint_circle_vector(*g, puck_a_.circle_rot_state(), colors::Red, puck_a_.puck_radius(), logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, puck_b_.puck_radius(), logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().r, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, puck_b_.puck_circle().r, logical_sz_, pixel_sz_);
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
@@ -202,10 +202,10 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     if (is_pt_in_circle(curvy::circle(puck_a_.center_of_revolution(), 1.0), click_location))
         return interaction::dragging_circle_of_rev;
 
-    if (puck_a_.contains_point(click_location))
+    if (puck_a_.puck_circle().contains(click_location))
         return interaction::dragging_a;
 
-    if (puck_b_.contains_point(click_location))
+    if (puck_b_.puck_circle().contains(click_location))
         return interaction::dragging_b;
 
     if (is_pt_on_circle(puck_a_.circle_of_revolution(), click_location, 0.1))
