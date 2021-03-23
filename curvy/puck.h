@@ -6,6 +6,7 @@
 #include <optional>
 #include "colors.h"
 #include "circle.h"
+#include "circular_vector.h"
 
 namespace gdi = Gdiplus;
 

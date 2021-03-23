@@ -2,6 +2,7 @@
 #include <cmath>
 #include "impulse_viewer.h"
 #include "util.h"
+#include "circular_vector.h"
 
 namespace {
 
