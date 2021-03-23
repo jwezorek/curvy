@@ -67,14 +67,14 @@ namespace {
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radius, double mass) :
-    crs_(crs),
+    state_(crs),
     color_(color),
     puck_radius_(puck_radius),
     mass_(mass)
 { }
 
 void curvy::puck::update(double dt) {
-    crs_.theta = normalize_angle(crs_.theta + dt * crs_.angular_magnitude);
+    state_.theta = normalize_angle(state_.theta + dt * state_.angular_magnitude);
 }
 
 curvy::puck curvy::puck::update(double dt) const {
@@ -84,25 +84,25 @@ curvy::puck curvy::puck::update(double dt) const {
 }
 
 double curvy::puck::theta() const {
-    return crs_.theta;
+    return state_.theta;
 }
 
 std::tuple<double, double> curvy::puck::center_of_revolution() const {
-    return { crs_.circle.x, crs_.circle.y };
+    return { state_.circle.x, state_.circle.y };
 }
 
 curvy::circle curvy::puck::circle_of_revolution() const
 {
-    return crs_.circle;
+    return state_.circle;
 }
 
 double curvy::puck::radius_of_revolution() const {
-    return crs_.circle.r;
+    return state_.circle.r;
 }
 
 double curvy::puck::angular_speed() const
 {
-    return crs_.angular_magnitude;
+    return state_.angular_magnitude;
 }
 
 double curvy::puck::radius() const
@@ -112,7 +112,7 @@ double curvy::puck::radius() const
 
 std::tuple<double, double> curvy::puck::position() const
 {
-    return crs_.position();
+    return state_.position();
 }
 
 bool curvy::puck::contains_point(double x, double y) const
@@ -144,7 +144,7 @@ double curvy::puck::distance_from_intersection(const puck& p) const
 
 double curvy::puck::direction() const
 {
-    return crs_.direction_angle();
+    return state_.direction_angle();
 }
 
 double curvy::puck::puck_radius() const
@@ -154,19 +154,19 @@ double curvy::puck::puck_radius() const
 
 curvy::circular_vector curvy::puck::circle_rot_state() const
 {
-    return crs_;
+    return state_;
 }
 
 curvy::circular_vector curvy::puck::momentum_vector() const
 {
-    return mass_ * crs_;
+    return mass_ * state_;
 }
 
 curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt)
 {
     auto to_canonical_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
     auto from_canonical_coords = translation_matrix(position()) * rotation_matrix( direction() );
-    auto linear_momentum = crs_.linear_magnitude() * mass_;
+    auto linear_momentum = state_.linear_magnitude() * mass_;
 
     return apply_matrix(from_canonical_coords,
         momentum_vec_through_point(
@@ -195,12 +195,12 @@ void curvy::puck::set_color(gdi::Color color)
 
 void curvy::puck::set_theta(double theta)
 {
-    crs_.theta = theta;
+    state_.theta = theta;
 }
 
 void curvy::puck::set_speed(double speed)
 {
-    crs_.angular_magnitude = speed;
+    state_.angular_magnitude = speed;
 }
 
 void curvy::puck::set_puck_radius(double r)
@@ -210,26 +210,26 @@ void curvy::puck::set_puck_radius(double r)
 
 void curvy::puck::set_radius_of_revolution(double r)
 {
-    crs_.circle.r = r;
+    state_.circle.r = r;
 }
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
-    crs_.theta = theta;
-    crs_.circle.x = cx;
-    crs_.circle.y = cy;
-    crs_.circle.r = r;
+    state_.theta = theta;
+    state_.circle.x = cx;
+    state_.circle.y = cy;
+    state_.circle.r = r;
 }
 
 void curvy::puck::set_center_of_revolution(const std::tuple<double, double>& pt)
 {
-    crs_.circle.x = std::get<0>(pt);
-    crs_.circle.y = std::get<1>(pt);
+    state_.circle.x = std::get<0>(pt);
+    state_.circle.y = std::get<1>(pt);
 }
 
 curvy::circle curvy::puck::get_puck_circle() const
 {
-    return circle(crs_.position(), puck_radius_);
+    return circle(state_.position(), puck_radius_);
 }
 
 std::tuple<int, int, int, int> curvy::puck::get_bounding_box_in_pixels(double log_sz, int pix_sz) const {

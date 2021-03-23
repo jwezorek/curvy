@@ -50,7 +50,7 @@ namespace curvy {
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
     private:
 
-        circular_vector crs_;
+        circular_vector state_;
         double puck_radius_;
         double mass_;
         gdi::Color color_;
