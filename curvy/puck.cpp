@@ -24,26 +24,27 @@ namespace {
             return get_collision_time(p1, p2, half_time, t2, eps);
     }
 
-    curvy::circle get_circle_of_impulse(const point& cannonicalized_pt) {
+    curvy::circle get_circle_of_impulse(const curvy::point& cannonicalized_pt) {
         auto [px, py] = cannonicalized_pt;
         double circle_of_impulse_y = (px * px + py * py) / (2 * py);
         return curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y));
     }
 
-    double get_momentum_transfer_factor(double radius_of_revolution, const point& cannonicalized_pt) {
+    double get_momentum_transfer_factor(double radius_of_revolution, const curvy::point& cannonicalized_pt) {
         auto circle_of_inversion = curvy::circle(0, 2 * radius_of_revolution, 2 * radius_of_revolution);
         auto [inverted_x, inverted_y] = circle_of_inversion.invert(cannonicalized_pt);
         auto cosine = inverted_x / std::hypot(inverted_x, inverted_y);
         return cosine * cosine;
     }
 
-    bool is_pt_in_front_of_puck(const point& cannonicalized_pt) {
+    bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
+        const auto pi = curvy::pi();
         auto [dx, dy] = cannonicalized_pt;
         auto angle = std::atan2(dy, dx);
-        return (angle > -pi() / 2.0 && angle < pi() / 2.0);
+        return (angle > -pi / 2.0 && angle < pi / 2.0);
     }
 
-    curvy::circular_vector momentum_vec_through_point(const std::tuple<double, double>& cannonicalized_pt, double radius_of_revolution, double total_linear_momentum)
+    curvy::circular_vector momentum_vec_through_point(const curvy::point& cannonicalized_pt, double radius_of_revolution, double total_linear_momentum)
     {
         auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
 
@@ -55,7 +56,7 @@ namespace {
         auto sign_of_impulse = (circle_of_impulse.y > 0) ? 1.0 : -1.0;
         auto linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * std::abs(total_linear_momentum);
 
-        return circular_vector_from_linear_magnitude(circle_of_impulse, get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), linear_magnitude);
+        return circular_vector_from_linear_magnitude(circle_of_impulse, curvy::get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), linear_magnitude);
     }
 
 }
@@ -162,9 +163,8 @@ curvy::circular_vector curvy::puck::momentum_vector() const
 
 curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt)
 {
-    matrix to_canonical_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
-    matrix from_canonical_coords = translation_matrix(position()) * rotation_matrix( direction() );
-
+    auto to_canonical_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
+    auto from_canonical_coords = translation_matrix(position()) * rotation_matrix( direction() );
     auto linear_momentum = crs_.linear_magnitude() * mass_;
 
     return apply_matrix(from_canonical_coords,

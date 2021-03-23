@@ -1,42 +1,43 @@
 #include "util.h"
 #include <cmath>
-using vec = Eigen::Matrix<double, 3, 1>;
 
-const long double g_pi = std::acos(-1.L);
+namespace {
+    using vec = Eigen::Matrix<double, 3, 1>;
+    const long double g_pi = std::acos(-1.L);
+}
 
-double pi() {
+double curvy::pi() {
     return g_pi;
 }
 
-double normalize(const double value, const double start, const double end) {
+double curvy::normalize(const double value, const double start, const double end) {
     const double width = end - start;
     const double offsetValue = value - start;
     return (offsetValue - (floor(offsetValue / width) * width)) + start;
 }
 
-double normalize_angle(const double theta) {
+double curvy::normalize_angle(const double theta) {
     return normalize(theta, 0, 2 * pi());
 }
 
-double euclidean_distance(double x1, double y1, double x2, double y2) {
+double curvy::euclidean_distance(double x1, double y1, double x2, double y2) {
     auto diff_x = x2 - x1;
     auto diff_y = y2 - y1;
     return std::sqrt(diff_x * diff_x + diff_y * diff_y);
 }
 
-double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2) {
+double curvy::euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2) {
     auto [x1, y1] = p1;
     auto [x2, y2] = p2;
     return euclidean_distance(x1, y1, x2, y2);
 }
 
-
-point operator-(const point& a) {
+curvy::point curvy::operator-(const curvy::point& a) {
     auto [x, y] = a;
     return { -x, -y };
 }
 
-point apply_matrix(const matrix& mat, const point& pt)
+curvy::point curvy::apply_matrix(const curvy::matrix& mat, const curvy::point& pt)
 {
     vec v;
     v << std::get<0>(pt), std::get<1>(pt), 1.0;
@@ -44,9 +45,8 @@ point apply_matrix(const matrix& mat, const point& pt)
     return { v[0], v[1] };
 }
 
-
-matrix rotation_matrix(double cos_theta, double sin_theta) {
-    matrix rotation;
+curvy::matrix curvy::rotation_matrix(double cos_theta, double sin_theta) {
+    curvy::matrix rotation;
     rotation <<
         cos_theta, -sin_theta, 0,
         sin_theta, cos_theta, 0,
@@ -54,11 +54,11 @@ matrix rotation_matrix(double cos_theta, double sin_theta) {
     return rotation;
 }
 
-matrix rotation_matrix(double theta) {
+curvy::matrix curvy::rotation_matrix(double theta) {
     return rotation_matrix(std::cos(theta), std::sin(theta));
 }
 
-matrix translation_matrix(double x, double y) {
+curvy::matrix curvy::translation_matrix(double x, double y) {
     matrix translation;
     translation <<
         1, 0, x,
@@ -67,7 +67,7 @@ matrix translation_matrix(double x, double y) {
     return translation;
 }
 
-matrix scale_matrix(double x_scale, double y_scale) {
+curvy::matrix curvy::scale_matrix(double x_scale, double y_scale) {
     matrix scale;
     scale <<
         x_scale, 0, 0,
@@ -76,8 +76,8 @@ matrix scale_matrix(double x_scale, double y_scale) {
     return scale;
 }
 
-matrix scale_matrix(double scale) {
-   matrix mat;
+curvy::matrix curvy::scale_matrix(double scale) {
+    matrix mat;
     mat <<
         scale, 0, 0,
         0, scale, 0,
@@ -85,15 +85,15 @@ matrix scale_matrix(double scale) {
     return mat;
 }
 
-matrix identity_matrix() {
+curvy::matrix curvy::identity_matrix() {
     return scale_matrix(1.0);
 }
 
-matrix translation_matrix(const point& pt) {
+curvy::matrix curvy::translation_matrix(const curvy::point& pt) {
     return translation_matrix( std::get<0>(pt), std::get<1>(pt) );
 }
 
-std::tuple<int, int> to_scr_coords(double x, double y, double logical_sz, int pixel_sz)
+std::tuple<int, int> curvy::to_scr_coords(double x, double y, double logical_sz, int pixel_sz)
 {
     y *= -1;
 
@@ -111,13 +111,13 @@ std::tuple<int, int> to_scr_coords(double x, double y, double logical_sz, int pi
     );
 }
 
-std::tuple<int, int> to_scr_coords(const point& p, double logical_sz, int pixel_sz)
+std::tuple<int, int> curvy::to_scr_coords(const curvy::point& p, double logical_sz, int pixel_sz)
 {
     auto [x, y] = p; 
     return to_scr_coords(x, y, logical_sz, pixel_sz);
 }
 
-std::tuple<double, double> from_scr_coords(int xx, int yy, double logical_sz, int pixel_sz)
+std::tuple<double, double> curvy::from_scr_coords(int xx, int yy, double logical_sz, int pixel_sz)
 {
     double scr_to_log = logical_sz / pixel_sz;
     double x = xx * scr_to_log;
@@ -131,27 +131,27 @@ std::tuple<double, double> from_scr_coords(int xx, int yy, double logical_sz, in
     return { x,y };
 }
 
-std::tuple<double, double> from_scr_coords(const std::tuple<int, int>& pt, double logical_sz, int pixel_sz)
+std::tuple<double, double> curvy::from_scr_coords(const std::tuple<int, int>& pt, double logical_sz, int pixel_sz)
 {
     auto [x, y] = pt;
     return from_scr_coords(x, y, logical_sz, pixel_sz);
 }
 
-double get_angle_to_pt(const point& from_pt, const point& to_pt)
+double curvy::get_angle_to_pt(const curvy::point& from_pt, const curvy::point& to_pt)
 {
     auto [fx, fy] = from_pt;
     auto [tx, ty] = to_pt;
     return std::atan2(ty - fy, tx - fx);
 }
 
-bool is_to_the_right_of(double from_direction, const point& from_pt, const point& to_pt)
+bool curvy::is_to_the_right_of(double from_direction, const point& from_pt, const point& to_pt)
 {
     matrix mat1 = rotation_matrix( -from_direction) * translation_matrix(-from_pt);
     auto rotated_pt = apply_matrix(mat1, to_pt);
     return std::get<1>(to_pt) < 0;
 }
 
-std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz) 
+std::tuple<int, int, int, int> curvy::to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz)
 {
     y1 *= -1;
     y2 *= -1;
@@ -176,7 +176,7 @@ std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, do
     );
 }
 
-std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect, double logical_sz, int pixel_sz) {
+std::tuple<int, int, int, int> curvy::to_scr_coords(const std::tuple<double, double, double, double>& rect, double logical_sz, int pixel_sz) {
     auto [x1, y1, x2, y2] = rect;
     return to_scr_coords(x1, y1, x2, y2, logical_sz, pixel_sz);
 }

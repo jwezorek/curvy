@@ -43,11 +43,10 @@ namespace curvy {
 
     circular_vector circular_vector_from_linear_magnitude(const circle& circ, double theta, double linear_magnitude);
     circular_vector operator*(double scalar, const circular_vector& cv);
-
+    curvy::circle apply_matrix(const curvy::matrix& mat, const curvy::circle& c);
+    curvy::circular_vector apply_matrix(const curvy::matrix& mat, const curvy::circular_vector& c);
 }
 
-curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c);
-curvy::circular_vector apply_matrix(const matrix& mat, const curvy::circular_vector& c);
-bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps);
-bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps = 0);
-std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt);
+bool is_pt_on_circle(const curvy::circle& c, const curvy::point& pt, double eps);
+bool is_pt_in_circle(const curvy::circle& c, const curvy::point& pt, double eps = 0);
+std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt);

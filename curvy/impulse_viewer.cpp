@@ -5,12 +5,12 @@
 
 namespace {
 
-    gdi::Point to_scr_point(const point& p, double log_sz, int pix_sz) {
-        auto [x, y] = to_scr_coords(p, log_sz, pix_sz);
+    gdi::Point to_scr_point(const curvy::point& p, double log_sz, int pix_sz) {
+        auto [x, y] = curvy::to_scr_coords(p, log_sz, pix_sz);
         return { x,y };
     }
 
-    void paint_triangle(gdi::Graphics& g, gdi::Color color, const point& p1, const point& p2, const point& p3, double log_sz, int pix_sz) {
+    void paint_triangle(gdi::Graphics& g, gdi::Color color, const curvy::point& p1, const curvy::point& p2, const curvy::point& p3, double log_sz, int pix_sz) {
         gdi::Point ary[3] = {
             to_scr_point(p1, log_sz, pix_sz),
             to_scr_point(p2, log_sz, pix_sz),
@@ -20,20 +20,20 @@ namespace {
         g.FillPolygon(&brush, &(ary[0]), 3);
     }
 
-    void paint_arrow_head(gdi::Graphics& g, gdi::Color color, const point& loc, double wd, double hgt, double direction, double log_sz, int pix_sz) {
-        point pts[3] = {
+    void paint_arrow_head(gdi::Graphics& g, gdi::Color color, const curvy::point& loc, double wd, double hgt, double direction, double log_sz, int pix_sz) {
+        curvy::point pts[3] = {
             {wd, 0},
             {-wd, hgt},
             {-wd, -hgt}
         };
-        matrix mat = translation_matrix(loc) * rotation_matrix(direction) ;
+        curvy::matrix mat = curvy::translation_matrix(loc) * curvy::rotation_matrix(direction) ;
         for (auto& pt : pts) 
-            pt = apply_matrix(mat, pt);
+            pt = curvy::apply_matrix(mat, pt);
         paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
     }
 
     gdi::Rect to_scr_rect(const std::tuple<double, double, double, double>& r, double log_sz, int pix_sz) {
-        auto [x1, y1, x2, y2] = to_scr_coords(r, log_sz, pix_sz);
+        auto [x1, y1, x2, y2] = curvy::to_scr_coords(r, log_sz, pix_sz);
         auto x = (x1 < x2) ? x1 : x2;
         auto y = (y1 < y2) ? y1 : y2;
         return gdi::Rect(x, y, std::abs(x1 - x2), std::abs(y1 - y2));
@@ -45,7 +45,7 @@ namespace {
     }
 
     gdi::REAL to_degrees(double radians) {
-        return static_cast<gdi::REAL>( radians * 180.0 / pi() );
+        return static_cast<gdi::REAL>( radians * 180.0 / curvy::pi() );
     }
 
     void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
@@ -53,7 +53,7 @@ namespace {
         g.DrawArc(&pen, to_scr_rect(crc.circle.bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta), -to_degrees(crc.angular_magnitude));
         auto arrow_theta = crc.theta + crc.angular_magnitude;
         auto arror_direction = crc.direction_angle(arrow_theta, crc.angular_magnitude);
-        point pt = {
+        curvy::point pt = {
             crc.circle.x + crc.circle.r * std::cos(arrow_theta),
             crc.circle.y + crc.circle.r * std::sin(arrow_theta)
         };

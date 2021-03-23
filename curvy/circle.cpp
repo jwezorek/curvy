@@ -95,47 +95,47 @@ curvy::circular_vector curvy::operator*(double scalar, const curvy::circular_vec
     return scaled;
 }
 
-curvy::circle apply_matrix(const matrix& mat, const curvy::circle& c)
+curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle& c)
 {
     return curvy::circle(
-        apply_matrix(mat, c.center()),
+        curvy::apply_matrix(mat, c.center()),
         c.r
     );
 }
 
-curvy::circular_vector apply_matrix(const matrix& mat, const curvy::circular_vector& cv)
+curvy::circular_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy::circular_vector& cv)
 {
-    auto center = apply_matrix(mat, cv.circle.center());
-    auto pt = apply_matrix(mat, cv.position());
-    auto circle = curvy::circle(center, euclidean_distance(center, pt));
+    auto center = curvy::apply_matrix(mat, cv.circle.center());
+    auto pt = curvy::apply_matrix(mat, cv.position());
+    auto circle = curvy::circle(center, curvy::euclidean_distance(center, pt));
     return curvy::circular_vector(
         circle,
-        get_angle_to_pt(center, pt),
+        curvy::get_angle_to_pt(center, pt),
         cv.angular_magnitude
     );
 }
 
-bool is_pt_on_circle(const curvy::circle& c, const point& pt, double eps)
+bool is_pt_on_circle(const curvy::circle& c, const curvy::point& pt, double eps)
 {
-    auto distance = euclidean_distance(c.center(), pt);
+    auto distance = curvy::euclidean_distance(c.center(), pt);
     return std::abs(distance - c.r) <= eps;
 }
 
-bool is_pt_in_circle(const curvy::circle& c, const point& pt, double eps)
+bool is_pt_in_circle(const curvy::circle& c, const curvy::point& pt, double eps)
 {
     if (eps > 0 && is_pt_on_circle(c, pt, eps))
         return true;
     else
-        return  (euclidean_distance(c.center(), pt) < c.r);
+        return (curvy::euclidean_distance(c.center(), pt) < c.r);
 }
 
-std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const point& pt)
+std::tuple<double, double> closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt)
 {
     // https://math.stackexchange.com/a/127615/63016
 
     auto [cx, cy] = c.center();
     auto [px, py] = pt;
-    auto distance_to_center = euclidean_distance(cx, cy, px, py);
+    auto distance_to_center = curvy::euclidean_distance(cx, cy, px, py);
     return {
         cx + c.r * (px - cx) / distance_to_center,
         cy + c.r * (py - cy) / distance_to_center
