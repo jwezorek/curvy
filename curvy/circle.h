@@ -21,7 +21,7 @@ namespace curvy {
         double diameter() const;
     };
 
-    curvy::circle apply_matrix(const curvy::matrix& mat, const curvy::circle& c);
+    circle apply_matrix(const matrix& mat, const circle& c);
 
 }
 

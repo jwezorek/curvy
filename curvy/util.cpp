@@ -181,4 +181,12 @@ std::tuple<int, int, int, int> curvy::to_scr_coords(const std::tuple<double, dou
     return to_scr_coords(x1, y1, x2, y2, logical_sz, pixel_sz);
 }
 
+double curvy::direction_on_circle( double angle, bool orientation)
+{
+    auto direction_angle = orientation ?
+        angle + 0.5 * pi() :
+        angle + 1.5 * pi();
+    return normalize_angle(direction_angle);
+}
+
 

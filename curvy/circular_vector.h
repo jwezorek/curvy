@@ -6,25 +6,22 @@
 namespace curvy {
 
     struct circular_vector {
+        bool orientation;
         double theta;
-        double angular_magnitude;
+        double angular_magnitude_;
         circle circle;
 
-        circular_vector(
-            double theta = 0, double cx = 0, double cy = 0,
-            double r = 0, double speed = 0
-        ) : theta(theta), circle(cx, cy, r), angular_magnitude(speed)
-        {}
+        circular_vector( double theta = 0, double cx = 0, double cy = 0, double r = 0, double m = 0 );
+        circular_vector(const curvy::circle& c, double t, double m);
 
-        circular_vector(const curvy::circle& c, double t, double am) :
-            circle(c), theta(t), angular_magnitude(am)
-        {}
+        void set_magnitude(double m);
 
         std::tuple<double, double> position() const;
         double direction_angle() const;
-        double direction_angle(double angle, double speed) const;
+        double signed_magnitude() const;
         double linear_magnitude() const;
         double circumference() const;
+        double sign() const;
     };
 
     circular_vector circular_vector_from_linear_magnitude(const circle& circ, double theta, double linear_magnitude);

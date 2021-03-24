@@ -8,10 +8,6 @@ namespace curvy {
     using matrix = Eigen::Matrix<double, 3, 3>;
     using point = std::tuple<double, double>;
 
-    template <typename T> int sgn(T val) {
-        return (T(0) < val) - (val < T(0));
-    }
-
     double pi();
     double normalize(const double value, const double start, const double end);
     double normalize_angle(const double theta);
@@ -34,5 +30,6 @@ namespace curvy {
     std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect, double logical_sz, int pixel_sz);
     double get_angle_to_pt(const point& from_pt, const point& to_pt);
     bool is_to_the_right_of(double direction, const point& from_pt, const point& to_pt);
+    double direction_on_circle(double theta, bool orientation);
 
 }

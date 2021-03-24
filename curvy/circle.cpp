@@ -73,6 +73,7 @@ curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle&
     );
 }
 
+
 /*
 std::tuple<double, double> curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt)
 {

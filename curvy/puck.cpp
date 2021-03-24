@@ -75,7 +75,7 @@ namespace {
 
         auto amount_of_impulse_momentum = get_momentum_transfer_factor(radius_of_revolution, cannonicalized_pt);
         auto sign_of_impulse = (circle_of_impulse.y > 0) ? 1.0 : -1.0;
-        auto linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * std::abs(total_linear_momentum);
+        auto linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * total_linear_momentum;
 
         return circular_vector_from_linear_magnitude(circle_of_impulse, curvy::get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), linear_magnitude);
     }
@@ -92,7 +92,7 @@ curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radi
 { }
 
 void curvy::puck::update(double dt) {
-    state_.theta = normalize_angle(state_.theta + dt * state_.angular_magnitude);
+    state_.theta = normalize_angle(state_.theta + dt * state_.signed_magnitude());
 }
 
 curvy::puck curvy::puck::update(double dt) const {
@@ -120,7 +120,7 @@ double curvy::puck::radius_of_revolution() const {
 
 double curvy::puck::angular_speed() const
 {
-    return state_.angular_magnitude;
+    return state_.signed_magnitude();
 }
 
 std::tuple<double, double> curvy::puck::position() const
@@ -180,7 +180,7 @@ void curvy::puck::set_theta(double theta)
 
 void curvy::puck::set_speed(double speed)
 {
-    state_.angular_magnitude = speed;
+    state_.set_magnitude(speed);
 }
 
 void curvy::puck::set_puck_radius(double r)
