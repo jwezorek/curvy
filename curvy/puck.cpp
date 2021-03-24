@@ -16,7 +16,7 @@ namespace {
 
     double distance_from_intersection(const curvy::puck& p1, const curvy::puck& p2)
     {
-        auto dist = curvy::euclidean_distance(p1.position(), p2.position());
+        auto dist = curvy::euclidean_distance(p1.state().position(), p2.state().position());
         auto distance_when_touching = p1.puck_circle().radius() + p2.puck_circle().radius();
         return dist - distance_when_touching;
     }
@@ -101,38 +101,6 @@ curvy::puck curvy::puck::update(double dt) const {
     return clone;
 }
 
-double curvy::puck::theta() const {
-    return state_.theta();
-}
-
-curvy::point curvy::puck::center_of_revolution() const {
-    return state_.circle().center();
-}
-
-curvy::circle curvy::puck::circle_of_revolution() const
-{
-    return state_.circle();
-}
-
-double curvy::puck::radius_of_revolution() const {
-    return state_.circle().radius();
-}
-
-double curvy::puck::angular_speed() const
-{
-    return state_.signed_magnitude();
-}
-
-std::tuple<double, double> curvy::puck::position() const
-{
-    return state_.position();
-}
-
-double curvy::puck::direction() const
-{
-    return state_.direction_angle();
-}
-
 curvy::circular_vector curvy::puck::state() const
 {
     return state_;
@@ -145,14 +113,15 @@ curvy::circular_vector curvy::puck::momentum_vector() const
 
 curvy::circular_vector curvy::puck::momentum_vector_through_point(const std::tuple<double, double>& pt) const
 {
-    auto to_canonical_coords = rotation_matrix( -direction() ) * translation_matrix( -position() );
-    auto from_canonical_coords = translation_matrix(position()) * rotation_matrix( direction() );
+    const auto& v = state();
+    auto to_canonical_coords = rotation_matrix( -v.direction_angle() ) * translation_matrix( -v.position() );
+    auto from_canonical_coords = translation_matrix(v.position()) * rotation_matrix( v.direction_angle() );
     auto linear_momentum = state_.linear_magnitude() * mass_;
 
     return apply_matrix(from_canonical_coords,
         momentum_vec_through_point(
             apply_matrix(to_canonical_coords, pt),
-            radius_of_revolution(),
+            v.circle().radius(),
             linear_momentum
         )
     );

@@ -27,13 +27,6 @@ namespace curvy {
         void set_center_of_revolution(const point& pt);
 
         puck update(double dt) const;
-        double theta() const;
-        std::tuple<double, double> center_of_revolution() const;
-        circle circle_of_revolution() const;
-        double radius_of_revolution() const;
-        double angular_speed() const;
-        std::tuple<double, double> position() const;
-        double direction() const;
         circular_vector state() const;
         circular_vector momentum_vector() const;
         circular_vector momentum_vector_through_point(const std::tuple<double, double>& pt) const;
