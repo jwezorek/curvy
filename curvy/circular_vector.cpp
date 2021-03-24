@@ -28,7 +28,7 @@ void curvy::circular_vector::increment_theta(double amt)
 
 void curvy::circular_vector::set_radius(double r)
 {
-    circle_.r = r;
+    circle_.set_radius( r );
 }
 
 void curvy::circular_vector::set_circle(const curvy::circle& c)
@@ -63,8 +63,8 @@ curvy::circle curvy::circular_vector::circle() const
 
 curvy::point curvy::circular_vector::position() const {
     return {
-        circle_.x + circle_.r * std::cos(theta_),
-        circle_.y + circle_.r * std::sin(theta_)
+        circle_.x() + circle_.radius() * std::cos(theta_),
+        circle_.y() + circle_.radius() * std::sin(theta_)
     };
 }
 
@@ -79,7 +79,7 @@ double curvy::circular_vector::signed_magnitude() const
 
 double curvy::circular_vector::linear_magnitude() const
 {
-    return angular_magnitude_ * circle_.r;
+    return angular_magnitude_ * circle_.radius();
 }
 
 double curvy::circular_vector::circumference() const
@@ -94,7 +94,7 @@ double curvy::circular_vector::sign() const
 
 curvy::circular_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double theta, double linear_magnitude)
 {
-    auto angular_magnitude = linear_magnitude / circ.r;
+    auto angular_magnitude = linear_magnitude / circ.radius();
     return curvy::circular_vector(circ, theta, angular_magnitude);
 }
 

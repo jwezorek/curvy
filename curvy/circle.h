@@ -5,14 +5,12 @@
 
 namespace curvy {
 
-    struct circle {
-        double x;
-        double y;
-        double r;
-
+    class circle {
+    public:
         circle(double cx, double cy, double r);
         circle(const point& pt, double r);
         void set_center(const point& pt);
+        void set_radius(double r);
 
         std::tuple<double, double, double, double> bounding_box() const;
         point center() const;
@@ -21,6 +19,13 @@ namespace curvy {
         double circumference() const;
         point invert(const point& pt) const;
         double diameter() const;
+        double x() const;
+        double y() const;
+        double radius() const;
+
+    private:
+        point center_;
+        double radius_;
     };
 
     circle apply_matrix(const matrix& mat, const circle& c);

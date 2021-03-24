@@ -55,8 +55,8 @@ namespace {
         auto arrow_theta = crc.theta() + crc.signed_magnitude();
         auto arror_direction = curvy::direction_on_circle( arrow_theta, crc.orientation() );
         curvy::point pt = {
-            crc.circle().x + crc.circle().r * std::cos(arrow_theta),
-            crc.circle().y + crc.circle().r * std::sin(arrow_theta)
+            crc.circle().x() + crc.circle().radius() * std::cos(arrow_theta),
+            crc.circle().y() + crc.circle().radius() * std::sin(arrow_theta)
         };
         paint_arrow_head(g, color, pt, puck_sz*0.5, puck_sz*0.25, arror_direction, log_sz, pix_sz);
     }
@@ -190,8 +190,8 @@ void curvy::impulse_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().r, logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, puck_b_.puck_circle().r, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.position()), colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 

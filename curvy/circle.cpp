@@ -6,58 +6,63 @@
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::circle::circle(double cx, double cy, double r) :
-    x(cx), y(cy), r( std::abs(r) )
+    center_(cx,cy), radius_( std::abs(r) )
 {
 }
 
 curvy::circle::circle(const curvy::point& pt, double r) :
-    circle( std::get<0>(pt), std::get<1>(pt), r)
+    center_(pt), radius_(std::abs(r))
 {
 }
 
 void curvy::circle::set_center(const point& pt)
 {
-    x = std::get<0>(pt);
-    y = std::get<1>(pt);
+    center_ = pt;
+}
+
+void curvy::circle::set_radius(double r)
+{
+    radius_ = r;
 }
 
 std::tuple<double, double, double, double> curvy::circle::bounding_box() const {
+    auto [x, y] = center_;
     return {
-        x - r,
-        y - r,
-        x + r,
-        y + r
+        x - radius_,
+        y - radius_,
+        x + radius_,
+        y + radius_
     };
 }
 
 curvy::point curvy::circle::center() const{
-    return { x,y };
+    return center_;
 }
 
 bool curvy::circle::contains(const curvy::point& pt) const
 {
-    return curvy::euclidean_distance(center(), pt) <= r;
+    return curvy::euclidean_distance(center_, pt) <= radius_;
 }
 
 bool curvy::circle::perimeter_contains(const curvy::point& pt, double eps) const
 {
-    auto distance = curvy::euclidean_distance( center(), pt);
-    return std::abs(distance - r) <= eps;
+    auto distance = curvy::euclidean_distance( center_, pt);
+    return std::abs(distance - radius_) <= eps;
 }
 
 double curvy::circle::circumference() const
 {
-    return 2.0 * pi() * r;
+    return 2.0 * pi() * radius_;
 }
 
 curvy::point curvy::circle::invert(const curvy::point& pt) const
 {
-    auto [cx, cy] = center();
+    auto [cx, cy] = center_;
     auto R = euclidean_distance( center(), pt );
     auto [px, py] = pt;
-    auto cosine_theta = (px - x) / R;
-    auto sine_theta = (py - y) / R;
-    auto inverted_dist = r * r / R;
+    auto cosine_theta = (px - cx) / R;
+    auto sine_theta = (py - cy) / R;
+    auto inverted_dist = radius_ * radius_ / R;
      return {
         cx + inverted_dist * cosine_theta,
         cy + inverted_dist * sine_theta
@@ -66,7 +71,22 @@ curvy::point curvy::circle::invert(const curvy::point& pt) const
 
 double curvy::circle::diameter() const
 {
-    return 2.0 * r;
+    return 2.0 * radius_;
+}
+
+double curvy::circle::x() const
+{
+    return std::get<0>(center_);
+}
+
+double curvy::circle::y() const
+{
+    return std::get<1>(center_);
+}
+
+double curvy::circle::radius() const
+{
+    return radius_;
 }
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
@@ -75,7 +95,7 @@ curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle&
 {
     return curvy::circle(
         curvy::apply_matrix(mat, c.center()),
-        c.r
+        c.radius()
     );
 }
 

@@ -17,7 +17,7 @@ namespace {
     double distance_from_intersection(const curvy::puck& p1, const curvy::puck& p2)
     {
         auto dist = curvy::euclidean_distance(p1.position(), p2.position());
-        auto distance_when_touching = p1.puck_circle().r + p2.puck_circle().r;
+        auto distance_when_touching = p1.puck_circle().radius() + p2.puck_circle().radius();
         return dist - distance_when_touching;
     }
 
@@ -74,7 +74,7 @@ namespace {
         }
 
         auto amount_of_impulse_momentum = get_momentum_transfer_factor(radius_of_revolution, cannonicalized_pt);
-        auto sign_of_impulse = (circle_of_impulse.y > 0) ? 1.0 : -1.0;
+        auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
         auto linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * total_linear_momentum;
 
         return circular_vector_from_linear_magnitude(circle_of_impulse, curvy::get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), linear_magnitude);
@@ -105,8 +105,8 @@ double curvy::puck::theta() const {
     return state_.theta();
 }
 
-std::tuple<double, double> curvy::puck::center_of_revolution() const {
-    return { state_.circle().x, state_.circle().y };
+curvy::point curvy::puck::center_of_revolution() const {
+    return state_.circle().center();
 }
 
 curvy::circle curvy::puck::circle_of_revolution() const
@@ -115,7 +115,7 @@ curvy::circle curvy::puck::circle_of_revolution() const
 }
 
 double curvy::puck::radius_of_revolution() const {
-    return state_.circle().r;
+    return state_.circle().radius();
 }
 
 double curvy::puck::angular_speed() const

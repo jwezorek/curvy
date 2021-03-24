@@ -24,7 +24,7 @@ namespace curvy {
         void set_puck_radius(double r);
         void set_radius_of_revolution(double r);
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
-        void set_center_of_revolution(const std::tuple<double, double>& pt);
+        void set_center_of_revolution(const point& pt);
 
         puck update(double dt) const;
         double theta() const;
