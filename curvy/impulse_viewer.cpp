@@ -192,7 +192,9 @@ void curvy::impulse_viewer::render()
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
     paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, puck_a_.momentum_vector_through_point(puck_b_.state().position()), colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
+
+    auto [cv, dummy] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position());
+    paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 

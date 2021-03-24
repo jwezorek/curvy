@@ -29,7 +29,6 @@ namespace curvy {
         puck update(double dt) const;
         circular_vector state() const;
         circular_vector momentum_vector() const;
-        circular_vector momentum_vector_through_point(const std::tuple<double, double>& pt) const;
         std::optional<double> get_collision_time(const puck& p, double dt, double eps) const;
         gdi::Color color() const;
         circle puck_circle() const;
