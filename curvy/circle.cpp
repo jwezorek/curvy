@@ -33,7 +33,7 @@ bool curvy::circle::contains(const curvy::point& pt) const
     return curvy::euclidean_distance(center(), pt) <= r;
 }
 
-bool curvy::circle::is_on(const curvy::point& pt, double eps) const
+bool curvy::circle::perimeter_contains(const curvy::point& pt, double eps) const
 {
     auto distance = curvy::euclidean_distance( center(), pt);
     return std::abs(distance - r) <= eps;

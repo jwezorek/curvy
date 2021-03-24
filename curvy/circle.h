@@ -15,7 +15,7 @@ namespace curvy {
         std::tuple<double, double, double, double> bounding_box() const;
         point center() const;
         bool contains(const curvy::point& pt) const;
-        bool is_on(const curvy::point& pt, double eps) const;
+        bool perimeter_contains(const curvy::point& pt, double eps) const;
         double circumference() const;
         point invert(const point& pt) const;
         double diameter() const;

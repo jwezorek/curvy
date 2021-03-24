@@ -208,7 +208,7 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     if (puck_b_.puck_circle().contains(click_location))
         return interaction::dragging_b;
 
-    if (puck_a_.circle_of_revolution().is_on( click_location, 0.1))
+    if (puck_a_.circle_of_revolution().perimeter_contains( click_location, 0.1))
         return interaction::resizing_circle_of_rev;
 
     return interaction::none;
