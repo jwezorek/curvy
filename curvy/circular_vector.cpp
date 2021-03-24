@@ -109,7 +109,7 @@ double curvy::circular_vector::direction_angle() const {
     return direction_on_circle(theta_, orientation_);
 }
 
-double curvy::circular_vector::signed_magnitude() const
+double curvy::circular_vector::signed_angular_magnitude() const
 {
     return sign() * angular_magnitude_;
 }

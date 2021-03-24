@@ -57,7 +57,7 @@ curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radi
 { }
 
 void curvy::puck::update(double dt) {
-    state_.increment_theta( dt * state_.signed_magnitude() );
+    state_.increment_theta( dt * state_.signed_angular_magnitude() );
 }
 
 curvy::puck curvy::puck::update(double dt) const {

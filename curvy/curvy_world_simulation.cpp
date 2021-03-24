@@ -141,8 +141,8 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
 
 void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto [p1, p2] = collision;
-    auto tmp = p1->state().signed_magnitude();
-    p1->set_speed( p2->state().signed_magnitude());
+    auto tmp = p1->state().signed_angular_magnitude();
+    p1->set_speed( p2->state().signed_angular_magnitude());
     p2->set_speed( tmp );
 }
 

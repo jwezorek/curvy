@@ -23,7 +23,7 @@ namespace curvy {
         curvy::circle circle() const;
         point position() const;
         double direction_angle() const;
-        double signed_magnitude() const;
+        double signed_angular_magnitude() const;
         double linear_magnitude() const;
         double circumference() const;
         double sign() const;

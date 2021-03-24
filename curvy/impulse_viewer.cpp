@@ -51,8 +51,8 @@ namespace {
 
     void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta()), -to_degrees(crc.signed_magnitude()));
-        auto arrow_theta = crc.theta() + crc.signed_magnitude();
+        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta()), -to_degrees(crc.signed_angular_magnitude()));
+        auto arrow_theta = crc.theta() + crc.signed_angular_magnitude();
         auto arror_direction = curvy::direction_on_circle( arrow_theta, crc.orientation() );
         curvy::point pt = {
             crc.circle().x() + crc.circle().radius() * std::cos(arrow_theta),
