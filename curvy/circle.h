@@ -12,6 +12,8 @@ namespace curvy {
 
         circle(double cx, double cy, double r);
         circle(const point& pt, double r);
+        void set_center(const point& pt);
+
         std::tuple<double, double, double, double> bounding_box() const;
         point center() const;
         bool contains(const curvy::point& pt) const;

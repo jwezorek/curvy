@@ -15,6 +15,12 @@ curvy::circle::circle(const curvy::point& pt, double r) :
 {
 }
 
+void curvy::circle::set_center(const point& pt)
+{
+    x = std::get<0>(pt);
+    y = std::get<1>(pt);
+}
+
 std::tuple<double, double, double, double> curvy::circle::bounding_box() const {
     return {
         x - r,

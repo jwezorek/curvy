@@ -92,7 +92,7 @@ curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radi
 { }
 
 void curvy::puck::update(double dt) {
-    state_.theta = normalize_angle(state_.theta + dt * state_.signed_magnitude());
+    state_.increment_theta( dt * state_.signed_magnitude() );
 }
 
 curvy::puck curvy::puck::update(double dt) const {
@@ -102,20 +102,20 @@ curvy::puck curvy::puck::update(double dt) const {
 }
 
 double curvy::puck::theta() const {
-    return state_.theta;
+    return state_.theta();
 }
 
 std::tuple<double, double> curvy::puck::center_of_revolution() const {
-    return { state_.circle.x, state_.circle.y };
+    return { state_.circle().x, state_.circle().y };
 }
 
 curvy::circle curvy::puck::circle_of_revolution() const
 {
-    return state_.circle;
+    return state_.circle();
 }
 
 double curvy::puck::radius_of_revolution() const {
-    return state_.circle.r;
+    return state_.circle().r;
 }
 
 double curvy::puck::angular_speed() const
@@ -175,7 +175,7 @@ void curvy::puck::set_color(gdi::Color color)
 
 void curvy::puck::set_theta(double theta)
 {
-    state_.theta = theta;
+    state_.set_theta( theta);
 }
 
 void curvy::puck::set_speed(double speed)
@@ -190,21 +190,18 @@ void curvy::puck::set_puck_radius(double r)
 
 void curvy::puck::set_radius_of_revolution(double r)
 {
-    state_.circle.r = r;
+    state_.set_radius(r);
 }
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
-    state_.theta = theta;
-    state_.circle.x = cx;
-    state_.circle.y = cy;
-    state_.circle.r = r;
+    state_.set_theta( theta );
+    state_.set_circle(curvy::circle(cx, cy, r));
 }
 
-void curvy::puck::set_center_of_revolution(const std::tuple<double, double>& pt)
+void curvy::puck::set_center_of_revolution(const point& pt)
 {
-    state_.circle.x = std::get<0>(pt);
-    state_.circle.y = std::get<1>(pt);
+    state_.circle().set_center(pt);
 }
 
 curvy::circle curvy::puck::puck_circle() const
