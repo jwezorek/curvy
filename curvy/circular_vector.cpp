@@ -160,8 +160,8 @@ double curvy::circular_vector::sign() const
 
 std::tuple<curvy::circular_vector, curvy::circular_vector> curvy::circular_vector::split_into_components(const point& pt) const
 {
-    auto to_canonical_coords = rotation_matrix(-direction_angle()) * translation_matrix(-position());
-    auto from_canonical_coords = translation_matrix(position()) * rotation_matrix(direction_angle());
+    matrix to_canonical_coords = rotation_matrix(-direction_angle()) * translation_matrix(-position());
+    matrix from_canonical_coords = translation_matrix(position()) * rotation_matrix(direction_angle());
 
     auto [impulse_vector, residual_vector] = split_canonicalized_vector_into_components(
         apply_matrix(to_canonical_coords, *this),
