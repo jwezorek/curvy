@@ -1,4 +1,5 @@
 #include "circular_vector.h"
+#include <Windows.h>
 
 namespace {
     curvy::circle get_circle_of_impulse(const curvy::point& cannonicalized_pt) {
@@ -7,10 +8,28 @@ namespace {
         return curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y));
     }
 
-    double get_momentum_transfer_factor(double radius_of_revolution, const curvy::point& cannonicalized_pt) {
-        auto circle_of_inversion = curvy::circle(0, 2 * radius_of_revolution, 2 * radius_of_revolution);
+    /*
+    double get_momentum_transfer_factor(const curvy::circle& c, const curvy::point& cannonicalized_pt) {
+        double distance_to_circle = curvy::euclidean_distance(
+            curvy::closest_pt_on_circle(c, cannonicalized_pt),
+            cannonicalized_pt
+        );
+
+        std::string msg = std::to_string(distance_to_circle / 0.7) + "\n";
+        OutputDebugStringA(msg.c_str());
+
+        return distance_to_circle / 0.7;
+    }
+    */
+    
+    double get_momentum_transfer_factor(const curvy::circle& c, const curvy::point& cannonicalized_pt) {
+        auto circle_of_inversion = curvy::circle(0, c.diameter(), c.diameter() );
         auto [inverted_x, inverted_y] = circle_of_inversion.invert(cannonicalized_pt);
         auto cosine = inverted_x / std::hypot(inverted_x, inverted_y);
+
+        std::string msg = std::to_string(cosine) + "\n";
+        OutputDebugStringA(msg.c_str());
+
         return cosine;
     }
 
@@ -20,6 +39,7 @@ namespace {
         auto angle = std::atan2(dy, dx);
         return (angle > -pi / 2.0 && angle < pi / 2.0);
     }
+
 
     
     std::tuple<curvy::circular_vector, curvy::circular_vector> split_canonicalized_vector_into_components(const curvy::circular_vector& cv, const curvy::point& cannonicalized_pt)
@@ -31,7 +51,7 @@ namespace {
             return { curvy::circular_vector(circle_of_impulse, 0, 0), {} };
         }
 
-        auto amount_of_impulse_momentum = get_momentum_transfer_factor(src_circle.radius(), cannonicalized_pt);
+        auto amount_of_impulse_momentum = get_momentum_transfer_factor(src_circle, cannonicalized_pt);
         auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
         auto impulse_signed_linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * cv.linear_magnitude();
         auto impulse_linear_magnitude = std::abs(impulse_signed_linear_magnitude);

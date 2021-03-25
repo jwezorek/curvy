@@ -29,6 +29,7 @@ namespace curvy {
     };
 
     circle apply_matrix(const matrix& mat, const circle& c);
+    point closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt);
 
 }
 

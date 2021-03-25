@@ -89,6 +89,8 @@ double curvy::circle::radius() const
     return radius_;
 }
 
+
+
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle& c)
@@ -100,8 +102,8 @@ curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle&
 }
 
 
-/*
-std::tuple<double, double> curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt)
+
+curvy::point curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt)
 {
     // https://math.stackexchange.com/a/127615/63016
 
@@ -109,8 +111,7 @@ std::tuple<double, double> curvy::closest_pt_on_circle(const curvy::circle& c, c
     auto [px, py] = pt;
     auto distance_to_center = curvy::euclidean_distance(cx, cy, px, py);
     return {
-        cx + c.r * (px - cx) / distance_to_center,
-        cy + c.r * (py - cy) / distance_to_center
+        cx + c.radius() * (px - cx) / distance_to_center,
+        cy + c.radius() * (py - cy) / distance_to_center
     };
 }
-*/
