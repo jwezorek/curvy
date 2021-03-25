@@ -11,7 +11,7 @@ namespace {
         auto circle_of_inversion = curvy::circle(0, 2 * radius_of_revolution, 2 * radius_of_revolution);
         auto [inverted_x, inverted_y] = circle_of_inversion.invert(cannonicalized_pt);
         auto cosine = inverted_x / std::hypot(inverted_x, inverted_y);
-        return cosine * cosine;
+        return cosine;
     }
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
@@ -21,20 +21,39 @@ namespace {
         return (angle > -pi / 2.0 && angle < pi / 2.0);
     }
 
-    curvy::circular_vector momentum_vec_through_point(const curvy::point& cannonicalized_pt, double radius_of_revolution, double total_linear_momentum)
+    
+    std::tuple<curvy::circular_vector, curvy::circular_vector> split_canonicalized_vector_into_components(const curvy::circular_vector& cv, const curvy::point& cannonicalized_pt)
     {
+        auto src_circle = cv.circle();
         auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
 
         if (!is_pt_in_front_of_puck(cannonicalized_pt)) {
-            return curvy::circular_vector(circle_of_impulse, 0, 0);
+            return { curvy::circular_vector(circle_of_impulse, 0, 0), {} };
         }
 
-        auto amount_of_impulse_momentum = get_momentum_transfer_factor(radius_of_revolution, cannonicalized_pt);
+        auto amount_of_impulse_momentum = get_momentum_transfer_factor(src_circle.radius(), cannonicalized_pt);
         auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
-        auto linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * total_linear_momentum;
+        auto impulse_signed_linear_magnitude = sign_of_impulse * amount_of_impulse_momentum * cv.linear_magnitude();
+        auto impulse_linear_magnitude = std::abs(impulse_signed_linear_magnitude);
 
-        return circular_vector_from_linear_magnitude(circle_of_impulse, curvy::get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), linear_magnitude);
+        auto impulse_vector = circular_vector_from_linear_magnitude(circle_of_impulse, curvy::get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), impulse_signed_linear_magnitude);
+
+        auto angular_momentum_total = src_circle.radius() * cv.signed_linear_magnitude();
+        auto angular_momentum_impulse = impulse_vector.circle().radius() * impulse_vector.signed_linear_magnitude();
+        auto linear_magnitude = cv.linear_magnitude();
+        auto residual_linear_momentum = linear_magnitude - impulse_linear_magnitude;
+        auto residual_angular_momentum = angular_momentum_total - angular_momentum_impulse;
+        auto orientation_of_residual = residual_angular_momentum > 0;
+        residual_angular_momentum = std::abs(residual_angular_momentum);
+        auto residual_angular_magnitude = (residual_linear_momentum * residual_linear_momentum) / residual_angular_momentum;
+        auto residual_radius = residual_angular_momentum / residual_linear_momentum;
+        auto residual_center_y = (orientation_of_residual) ? residual_radius : -residual_radius;
+        auto residual_theta = (orientation_of_residual) ? (3 * curvy::pi()/2.0) : curvy::pi() / 2.0;
+        auto residual_vector = curvy::circular_vector(curvy::circle(0, residual_center_y, residual_radius), residual_theta, orientation_of_residual, residual_angular_magnitude);
+
+        return { impulse_vector, residual_vector };
     }
+
 }
 
 curvy::circular_vector::circular_vector(double theta, double cx, double cy, double r, double m) : 
@@ -44,6 +63,11 @@ curvy::circular_vector::circular_vector(double theta, double cx, double cy, doub
 curvy::circular_vector::circular_vector(const curvy::circle & c, double t, double m) :
     orientation_(m >= 0), circle_(c), theta_(t), angular_magnitude_(std::abs(m))
 {}
+
+curvy::circular_vector::circular_vector(const curvy::circle & c, double t, bool o, double m) :
+    orientation_(o), circle_(c), theta_(t), angular_magnitude_(std::abs(m))
+{
+}
 
 void curvy::circular_vector::set_magnitude(double m)
 {
@@ -119,6 +143,11 @@ double curvy::circular_vector::linear_magnitude() const
     return angular_magnitude_ * circle_.radius();
 }
 
+double curvy::circular_vector::signed_linear_magnitude() const
+{
+    return sign() * linear_magnitude();
+}
+
 double curvy::circular_vector::circumference() const
 {
     return circle_.circumference();
@@ -133,17 +162,16 @@ std::tuple<curvy::circular_vector, curvy::circular_vector> curvy::circular_vecto
 {
     auto to_canonical_coords = rotation_matrix(-direction_angle()) * translation_matrix(-position());
     auto from_canonical_coords = translation_matrix(position()) * rotation_matrix(direction_angle());
-    auto linear_momentum = linear_magnitude();
 
-    auto impulse_vector = apply_matrix(from_canonical_coords,
-        momentum_vec_through_point(
-            apply_matrix(to_canonical_coords, pt),
-            circle().radius(),
-            linear_momentum
-        )
+    auto [impulse_vector, residual_vector] = split_canonicalized_vector_into_components(
+        apply_matrix(to_canonical_coords, *this),
+        apply_matrix(to_canonical_coords, pt)
     );
 
-    return { impulse_vector, curvy::circular_vector() };
+    return { 
+        apply_matrix(from_canonical_coords, impulse_vector), 
+        apply_matrix(from_canonical_coords, residual_vector)
+    };
 }
 
 curvy::circular_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double theta, double linear_magnitude)

@@ -10,6 +10,7 @@ namespace curvy {
 
         circular_vector( double theta = 0, double cx = 0, double cy = 0, double r = 0, double m = 0 );
         circular_vector(const curvy::circle& c, double t, double m);
+        circular_vector(const curvy::circle& c, double t, bool o, double m);
         void set_magnitude(double m);
         void set_theta(double theta);
         void increment_theta(double amt);
@@ -19,12 +20,13 @@ namespace curvy {
 
         bool orientation() const;
         double theta() const;
-        double angular_magnitude() const;
         curvy::circle circle() const;
         point position() const;
         double direction_angle() const;
+        double angular_magnitude() const;
         double signed_angular_magnitude() const;
         double linear_magnitude() const;
+        double signed_linear_magnitude() const;
         double circumference() const;
         double sign() const;
         std::tuple<circular_vector, circular_vector> split_into_components(const point& pt) const;

@@ -79,7 +79,7 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
 
 void curvy::impulse_viewer::initialize()
 {
-    auto r = 0.5;
+    auto r = 0.35;
     const auto south = 3.0 * pi() / 2.0;
 
     puck_a_.set_circle_rotation_position( south, 0, 3, 3 );
@@ -193,8 +193,10 @@ void curvy::impulse_viewer::render()
 
     paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), logical_sz_, pixel_sz_);
 
-    auto [cv, dummy] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position());
+    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position());
     paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
+
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 
