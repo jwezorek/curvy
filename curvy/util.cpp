@@ -10,6 +10,24 @@ double curvy::pi() {
     return g_pi;
 }
 
+double curvy::pi_over_two()
+{
+    static double pi_over_two = g_pi / 2.0;
+    return pi_over_two;
+}
+
+double curvy::three_pi_over_two()
+{
+    static double three_pi_over_two = 3.0 * g_pi / 2.0;
+    return three_pi_over_two;
+}
+
+double curvy::two_pi()
+{
+    static double two_pi = 2 * g_pi;
+    return two_pi;
+}
+
 double curvy::normalize(const double value, const double start, const double end) {
     const double width = end - start;
     const double offsetValue = value - start;
@@ -35,6 +53,13 @@ double curvy::euclidean_distance(const std::tuple<double, double>& p1, const std
 curvy::point curvy::operator-(const curvy::point& a) {
     auto [x, y] = a;
     return { -x, -y };
+}
+
+curvy::point curvy::operator+(const point& a, const point& b)
+{
+    auto [x1, y1] = a;
+    auto [x2, y2] = b;
+    return { x1 + x2 , y1 + y2 };
 }
 
 curvy::point curvy::apply_matrix(const curvy::matrix& mat, const curvy::point& pt)

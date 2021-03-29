@@ -1,7 +1,7 @@
 #include "circle.h"
 #include <cmath>
-
-
+#include <complex>
+#include <optional>
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
@@ -55,6 +55,11 @@ double curvy::circle::circumference() const
     return 2.0 * pi() * radius_;
 }
 
+curvy::point curvy::circle::get_point(double theta) const
+{
+    return center_ + point(radius_ *std::cos(theta), radius_*std::sin(theta));
+}
+
 curvy::point curvy::circle::invert(const curvy::point& pt) const
 {
     auto [cx, cy] = center_;
@@ -67,6 +72,14 @@ curvy::point curvy::circle::invert(const curvy::point& pt) const
         cx + inverted_dist * cosine_theta,
         cy + inverted_dist * sine_theta
     };
+}
+
+curvy::circle curvy::circle::invert(const circle& c) const
+{
+    auto east = invert(c.get_point(0));
+    auto north = invert(c.get_point(pi_over_two()));
+    auto west = invert(c.get_point(pi()));
+    return *circle_through_three_points(east, north, west);
 }
 
 double curvy::circle::diameter() const
@@ -103,8 +116,7 @@ curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle&
 
 
 
-curvy::point curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt)
-{
+curvy::point curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt) {
     // https://math.stackexchange.com/a/127615/63016
 
     auto [cx, cy] = c.center();
@@ -114,4 +126,25 @@ curvy::point curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::po
         cx + c.radius() * (px - cx) / distance_to_center,
         cy + c.radius() * (py - cy) / distance_to_center
     };
+}
+
+std::complex<double> pt_to_z(const curvy::point& pt) {
+    auto [x, y] = pt;
+    return { x,y };
+}
+
+std::optional<curvy::circle> curvy::circle_through_three_points(const point& pt1, const point& pt2, const point& pt3) {
+
+    using namespace std::complex_literals;
+    auto z1 = pt_to_z(pt1), z2 = pt_to_z(pt2), z3 = pt_to_z(pt3);
+    auto w = (z3 - z1) / (z2 - z1);
+
+    if (w.imag() == 0)
+        return std::nullopt; // the three points are colinear
+
+    auto magnitude_w = std::abs(w);
+    auto c = (z2 - z1) * (w - magnitude_w * magnitude_w) / (2i * w.imag()) + z1;
+    auto r = std::abs(z1 - c);
+
+    return curvy::circle(c.real(), c.imag(), r);
 }

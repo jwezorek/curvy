@@ -9,11 +9,15 @@ namespace curvy {
     using point = std::tuple<double, double>;
 
     double pi();
+    double pi_over_two();
+    double three_pi_over_two();
+    double two_pi();
     double normalize(const double value, const double start, const double end);
     double normalize_angle(const double theta);
     double euclidean_distance(double x1, double y1, double x2, double y2);
     double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2);
     point operator-(const point& a);
+    point operator+(const point& a, const point& b);
     point apply_matrix(const matrix& mat, const point& pt);
     matrix rotation_matrix(double cos_theta, double sin_theta);
     matrix rotation_matrix(double theta);

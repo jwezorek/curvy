@@ -26,10 +26,6 @@ namespace {
         auto circle_of_inversion = curvy::circle(0, c.diameter(), c.diameter() );
         auto [inverted_x, inverted_y] = circle_of_inversion.invert(cannonicalized_pt);
         auto cosine = inverted_x / std::hypot(inverted_x, inverted_y);
-
-        std::string msg = std::to_string(cosine) + "\n";
-        OutputDebugStringA(msg.c_str());
-
         return cosine;
     }
 
