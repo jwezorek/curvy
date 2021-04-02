@@ -29,7 +29,7 @@ namespace curvy {
         double signed_linear_magnitude() const;
         double circumference() const;
         double sign() const;
-        std::tuple<circular_vector, circular_vector> split_into_components(const point& pt) const;
+        std::tuple<circular_vector, circular_vector> split_into_components(const point& pt, double min_radius) const;
 
     private:
         bool orientation_;

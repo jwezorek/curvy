@@ -77,6 +77,33 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     set_pixel_dimensions(px_sz, true);
 }
 
+void DebugAngles(const curvy::puck& a, const curvy::puck& b) {
+    double d = a.puck_circle().radius() + b.puck_circle().radius();
+    double r = a.state().circle().radius();
+    auto on_circle_theta = std::asin(d / (2 * r));
+    auto equals_circle_theta = std::asin(-d / (2 * r));
+    auto half_circle_theta = std::atan(
+        (d * d) / std::sqrt(-d * d * d * d + d * d * r * r)
+    );
+
+    std::stringstream ss;
+    /*
+    ss << "negative pi over two => -90.0\n";
+    ss << "equals_circle_theta => " << equals_circle_theta * 180.0 / curvy::pi() << "\n";
+    ss << "on_circle_theta => " << on_circle_theta * 180.0 / curvy::pi() << "\n";
+    ss << "half_circle_theta =>" << half_circle_theta * 180.0 / curvy::pi() << "\n";
+    ss << "pi over two => 90.0\n";
+    */
+
+    ss << "negative pi over two => " << -curvy::pi_over_two() << "\n";
+    ss << "equals_circle_theta => " << equals_circle_theta  << "\n";
+    ss << "on_circle_theta => " << on_circle_theta  << "\n";
+    ss << "half_circle_theta =>" << half_circle_theta  << "\n";
+    ss << "pi over two => " << curvy::pi_over_two() << "\n";
+
+    OutputDebugStringA(ss.str().c_str());
+}
+
 void curvy::impulse_viewer::initialize()
 {
     auto r = 0.35;
@@ -90,6 +117,8 @@ void curvy::impulse_viewer::initialize()
     puck_b_.set_circle_rotation_position( south, 0, 0, 2*r );
     puck_b_.set_color(colors::Yellow);
     puck_b_.set_puck_radius(r);
+
+    DebugAngles(puck_a_, puck_b_);
 }
 
 void curvy::impulse_viewer::update(double dt)
@@ -179,6 +208,8 @@ gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
     return back_buffer_.get();
 }
 
+
+
 void curvy::impulse_viewer::render()
 {
     if (!pixel_sz_)
@@ -193,10 +224,11 @@ void curvy::impulse_viewer::render()
 
     paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), logical_sz_, pixel_sz_);
 
-    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position());
+    double min_radius = (puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius())/2.0;
+    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position(), min_radius);
     paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
-    paint_circle( *g, puck_a_.state().circle().invert(cv.circle()), colors::Blue, logical_sz_, pixel_sz_);
-    //paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
+    //paint_circle( *g, puck_a_.state().circle().invert(cv.circle()), colors::Blue, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
