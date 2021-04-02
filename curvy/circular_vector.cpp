@@ -24,16 +24,15 @@ namespace {
         auto min_radius = d / 2.0;
         auto r = c1.radius();
         auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
+        auto imposed_radius = c2.radius();
 
         if (theta < peak) {
             auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
             auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
-            auto ir = std::abs(((d * std::cos(t2)) * (d * std::cos(t2)) + (d * std::sin(t2)) * (d * std::sin(t2))) / (2.0 * d * std::sin(t2)));
-            return (ir - min_radius) / (r - min_radius);
-        } else {
-            return (c2.radius() - min_radius) / (r - min_radius);
-        }
-        
+            imposed_radius = std::abs(((d * std::cos(t2)) * (d * std::cos(t2)) + (d * std::sin(t2)) * (d * std::sin(t2))) / (2.0 * d * std::sin(t2)));
+        } 
+        auto val = (imposed_radius - min_radius) / (r - min_radius);
+        return val;
     }
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
