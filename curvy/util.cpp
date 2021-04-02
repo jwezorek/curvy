@@ -214,4 +214,10 @@ double curvy::direction_on_circle( double angle, bool orientation)
     return normalize_angle(direction_angle);
 }
 
+double curvy::atan_of_pt(const point& pt)
+{
+    auto [dx, dy] = pt;
+    return std::atan2(dy, dx);
+}
+
 

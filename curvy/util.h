@@ -35,5 +35,5 @@ namespace curvy {
     double get_angle_to_pt(const point& from_pt, const point& to_pt);
     bool is_to_the_right_of(double direction, const point& from_pt, const point& to_pt);
     double direction_on_circle(double theta, bool orientation);
-
+    double atan_of_pt(const point& pt);
 }

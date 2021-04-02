@@ -19,15 +19,22 @@ namespace {
     }
     */
 
-    double get_momentum_transfer_factor(const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
-        auto min_radius = puck_sz / 2;
-        auto numerator = std::min(c1.radius(), c2.radius());
-        auto denominator = std::max(c1.radius(), c2.radius());
+    double get_momentum_transfer_factor(double theta, const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
+        auto d = puck_sz;
+        auto min_radius = d / 2.0;
+        auto r = c1.radius();
+        auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
 
-        return (numerator - min_radius) / (denominator - min_radius);
+        if (theta < peak) {
+            auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
+            auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
+            auto ir = std::abs(((d * std::cos(t2)) * (d * std::cos(t2)) + (d * std::sin(t2)) * (d * std::sin(t2))) / (2.0 * d * std::sin(t2)));
+            return (ir - min_radius) / (r - min_radius);
+        } else {
+            return (c2.radius() - min_radius) / (r - min_radius);
+        }
+        
     }
-
-
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
         const auto pi = curvy::pi();
@@ -114,7 +121,7 @@ namespace {
 
         auto total_angular_momentum =  src_circle.radius() * cv.angular_magnitude();
 
-        auto transfer_coefficient = get_momentum_transfer_factor(src_circle, circle_of_impulse, min_radius);
+        auto transfer_coefficient = get_momentum_transfer_factor( curvy::atan_of_pt(cannonicalized_pt), src_circle, circle_of_impulse, min_radius);
 
         auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
         auto angular_momentum_of_impulse = transfer_coefficient * total_angular_momentum;
