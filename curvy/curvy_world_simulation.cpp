@@ -46,6 +46,11 @@ bool curvy::curvy_world_simulation::handle_mouse_move(const std::tuple<int, int>
     return false;
 }
 
+bool curvy::curvy_world_simulation::handle_key_press(unsigned int key, bool is_key_down)
+{
+    return false;
+}
+
 void curvy::curvy_world_simulation::set_pixel_dimensions(int px_sz, bool refresh) {
     pixel_sz_ = px_sz;
     if (logical_sz_ && pixel_sz_ && refresh) {

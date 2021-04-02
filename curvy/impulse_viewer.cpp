@@ -187,6 +187,14 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
     return false;
 }
 
+bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
+{
+    if (key == VK_SPACE && is_key_down) {
+        return true;
+    }
+    return false;
+}
+
 void curvy::impulse_viewer::set_logical_dimensions(double log_sz, bool refresh)
 {
     logical_sz_ = log_sz;

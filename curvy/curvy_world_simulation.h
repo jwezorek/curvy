@@ -22,6 +22,7 @@ namespace curvy {
         void set_logical_dimensions(double log_sz, bool refresh) override;
         bool handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down) override;
         bool handle_mouse_move(const std::tuple<int, int>& pt) override;
+        bool handle_key_press(unsigned int key, bool is_key_down) override;
         int get_size() const;
         void insert(const puck& p);
         gdi::Bitmap* get_bitmap() const override;

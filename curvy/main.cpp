@@ -96,6 +96,15 @@ LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM
 }
 
 
+LRESULT HandleKeyboardMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool keydown) {
+
+    if (state.handle_key_press(wParam, keydown)) {
+        InvalidateRect(hwnd, NULL, FALSE);
+    }
+    return 0;
+}
+
+
 LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam) {
     auto x = GET_X_LPARAM(lParam);
     auto y = GET_Y_LPARAM(lParam);
@@ -114,6 +123,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CLOSE:
             PostQuitMessage(0);
             break;
+        case WM_KEYDOWN:
+            return HandleKeyboardMsg(hwnd, *g_state, wParam, lParam, true);
+        case WM_KEYUP:
+            return HandleKeyboardMsg(hwnd, *g_state, wParam, lParam, false);
         case WM_LBUTTONDOWN:
             return HandleWmLButtonMsg(hwnd, *g_state, wParam, lParam, true);
         case WM_LBUTTONUP:
