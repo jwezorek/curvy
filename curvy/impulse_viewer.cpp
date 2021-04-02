@@ -246,8 +246,8 @@ void curvy::impulse_viewer::render()
 
     paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), logical_sz_, pixel_sz_);
 
-    double min_radius = (puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius())/2.0;
-    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position(), min_radius);
+    double puck_sz = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
+    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position(), puck_sz);
     paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
     //paint_circle( *g, puck_a_.state().circle().invert(cv.circle()), colors::Blue, logical_sz_, pixel_sz_);
     paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);

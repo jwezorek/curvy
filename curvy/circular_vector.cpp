@@ -9,7 +9,7 @@ namespace {
         return curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y));
     }
 
-
+    /*
     double get_momentum_transfer_factor(const curvy::circle& c1, const curvy::circle& c2, double min_radius) {
 
         auto numerator = std::min(c1.radius(), c2.radius());
@@ -17,6 +17,17 @@ namespace {
 
         return (numerator - min_radius) / (denominator - min_radius);
     }
+    */
+
+    double get_momentum_transfer_factor(const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
+        auto min_radius = puck_sz / 2;
+        auto numerator = std::min(c1.radius(), c2.radius());
+        auto denominator = std::max(c1.radius(), c2.radius());
+
+        return (numerator - min_radius) / (denominator - min_radius);
+    }
+
+
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
         const auto pi = curvy::pi();
