@@ -71,7 +71,8 @@ namespace {
 curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz),
-    interaction_(interaction::none)
+    interaction_(interaction::none),
+    in_motion_(false)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -117,14 +118,17 @@ void curvy::impulse_viewer::initialize()
     puck_b_.set_circle_rotation_position( south, 0, 0, 2*r );
     puck_b_.set_color(colors::Yellow);
     puck_b_.set_puck_radius(r);
+    puck_b_.set_speed(0.5);
 
     DebugAngles(puck_a_, puck_b_);
 }
 
 void curvy::impulse_viewer::update(double dt)
 {
-    auto [scr_x, scr_y] = to_scr_coords( 2.5, 6, logical_sz_, pixel_sz_);
-    auto [log_x, log_y] = from_scr_coords(scr_x, scr_y, logical_sz_, pixel_sz_);
+    if (in_motion_) {
+        puck_b_.update(dt);
+        render();
+    }
 }
 
 bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down)
@@ -189,10 +193,20 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
 
 bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
 {
-    if (key == VK_SPACE && is_key_down) {
-        return true;
+    if (key == VK_INSERT) {
+        if (is_key_down) {
+            in_motion_ = !in_motion_;
+            return true;
+        } 
     }
-    return false;
+
+    if (key == VK_SPACE) {
+        if (is_key_down) {
+            auto speed = puck_b_.state().signed_angular_magnitude();
+            puck_b_.state().set_magnitude(-1.0 * speed);
+            return true;
+        }
+    }
 }
 
 void curvy::impulse_viewer::set_logical_dimensions(double log_sz, bool refresh)

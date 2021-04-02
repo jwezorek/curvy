@@ -46,6 +46,7 @@ namespace curvy {
         puck puck_a_;
         puck puck_b_;
         interaction interaction_;
+        bool in_motion_;
     };
 
 }

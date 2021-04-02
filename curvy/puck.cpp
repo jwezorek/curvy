@@ -71,6 +71,11 @@ curvy::circular_vector curvy::puck::state() const
     return state_;
 }
 
+curvy::circular_vector& curvy::puck::state()
+{
+    return state_;
+}
+
 curvy::circular_vector curvy::puck::momentum_vector() const
 {
     return mass_ * state_;
