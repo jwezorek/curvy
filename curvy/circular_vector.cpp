@@ -10,15 +10,16 @@ namespace {
     }
 
     /*
-    double get_momentum_transfer_factor(const curvy::circle& c1, const curvy::circle& c2, double min_radius) {
-
+    double get_momentum_transfer_factor(double theta, const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
+        auto d = puck_sz;
+        auto min_radius = d / 2.0;
         auto numerator = std::min(c1.radius(), c2.radius());
         auto denominator = std::max(c1.radius(), c2.radius());
 
         return (numerator - min_radius) / (denominator - min_radius);
     }
     */
-
+    
     double get_momentum_transfer_factor(double theta, const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
         auto d = puck_sz;
         auto min_radius = d / 2.0;
@@ -148,6 +149,8 @@ namespace {
         return { impulse_vector, residual_vector };
     }
     */
+
+    
     // inverse radius
     std::tuple<curvy::circular_vector, curvy::circular_vector> split_canonicalized_vector_into_components(const curvy::circular_vector& cv, const curvy::point& cannonicalized_pt, double min_radius)
     {
@@ -164,8 +167,8 @@ namespace {
 
         auto impulse_vector = circular_vector_from_linear_magnitude(circle_of_impulse, curvy::get_angle_to_pt(circle_of_impulse.center(), cannonicalized_pt), sign_of_impulse * impulse_linear_magnitude);
 
-        auto radius_mom_total = cv.sign() * (1.0 / src_circle.radius());
-        auto radius_mom_impulse = impulse_vector.sign() * (1.0 / impulse_vector.circle().radius());
+        auto radius_mom_total = cv.signed_angular_magnitude() / src_circle.radius();
+        auto radius_mom_impulse = impulse_vector.signed_angular_magnitude() / impulse_vector.circle().radius();
         auto residual_radius_mom = radius_mom_total - radius_mom_impulse;
 
         auto orientation_of_residual = (residual_radius_mom > 0) ? 1.0 : -1.0;
@@ -175,14 +178,16 @@ namespace {
         residual_radius_mom = std::abs(residual_radius_mom);
         auto residual_linear_magnitude = cv.linear_magnitude() - impulse_linear_magnitude;
 
-        auto residual_radius = 1.0 / residual_radius_mom;
+        auto residual_angular_magnitude = std::sqrt(residual_linear_magnitude * residual_radius_mom);
+        auto residual_radius = residual_linear_magnitude / residual_angular_magnitude;
         auto residual_center_y = orientation_of_residual * residual_radius;
         auto residual_theta = (orientation_of_residual > 0) ? (3 * curvy::pi() / 2.0) : curvy::pi() / 2.0;
 
-        auto residual_vector = circular_vector_from_linear_magnitude(curvy::circle(0, residual_center_y, residual_radius), residual_theta, orientation_of_residual * residual_linear_magnitude);
+        auto residual_vector = curvy::circular_vector_from_linear_magnitude(curvy::circle(0, residual_center_y, residual_radius), residual_theta, orientation_of_residual * residual_linear_magnitude);
 
         return { impulse_vector, residual_vector };
     }
+    
 }
 
 curvy::circular_vector::circular_vector(double theta, double cx, double cy, double r, double m) : 
