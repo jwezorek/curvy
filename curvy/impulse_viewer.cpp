@@ -49,22 +49,23 @@ namespace {
         return static_cast<gdi::REAL>( radians * 180.0 / curvy::pi() );
     }
 
-    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
+        auto theta = curvy::normalize_angle(curvy::get_angle_to_pt(crc.circle().center(), pt));
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(crc.theta()), -to_degrees(crc.signed_angular_magnitude()));
-        auto arrow_theta = crc.theta() + crc.signed_angular_magnitude();
+        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(theta), -to_degrees(crc.signed_angular_magnitude()));
+        auto arrow_theta = theta + crc.signed_angular_magnitude();
         auto arror_direction = curvy::direction_on_circle( arrow_theta, crc.orientation() );
-        curvy::point pt = {
+        curvy::point arrow_pt = {
             crc.circle().x() + crc.circle().radius() * std::cos(arrow_theta),
             crc.circle().y() + crc.circle().radius() * std::sin(arrow_theta)
         };
-        paint_arrow_head(g, color, pt, puck_sz*0.5, puck_sz*0.25, arror_direction, log_sz, pix_sz);
+        paint_arrow_head(g, color, arrow_pt, puck_sz*0.5, puck_sz*0.25, arror_direction, log_sz, pix_sz);
     }
 
-    void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, double log_sz, int pix_sz) {
+    void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
         paint_circle(g, crc.circle(), colors::White, log_sz, pix_sz);
         if (crc.angular_magnitude() != 0)
-            paint_arc_arrow(g, crc, color, puck_sz, log_sz, pix_sz);
+            paint_arc_arrow(g, crc, color, puck_sz, pt, log_sz, pix_sz);
     }
 }
 
@@ -171,18 +172,18 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
         switch (interaction_) {
             case interaction::dragging_circle_of_rev:
                 puck_a_.set_center_of_revolution(pt);
-                puck_b_.set_center_of_revolution(puck_a_.state().position());
+                puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
             case interaction::dragging_a:
                 puck_a_.set_theta(get_angle_to_pt(circle_of_rev.center(), pt));
-                puck_b_.set_center_of_revolution(puck_a_.state().position());
+                puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
             case interaction::dragging_b: 
-                puck_b_.set_theta( get_angle_to_pt(puck_a_.state().position(), pt) );
+                puck_b_.set_theta( get_angle_to_pt(puck_a_.position(), pt) );
                 break;
              case interaction::resizing_circle_of_rev: 
                 puck_a_.set_radius_of_revolution(euclidean_distance(pt, circle_of_rev.center()));
-                puck_b_.set_center_of_revolution(puck_a_.state().position());
+                puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
         }
         render();
@@ -244,13 +245,13 @@ void curvy::impulse_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, puck_a_.state(), colors::Red, puck_a_.puck_circle().radius(), puck_a_.position(), logical_sz_, pixel_sz_);
 
     double puck_sz = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
-    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_b_.state().position(), puck_sz);
-    paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
+    auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_a_.position(), puck_b_.position(), puck_sz);
+    paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), puck_b_.position(), logical_sz_, pixel_sz_);
     //paint_circle( *g, puck_a_.state().circle().invert(cv.circle()), colors::Blue, logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), puck_a_.position(), logical_sz_, pixel_sz_);
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);

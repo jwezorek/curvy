@@ -16,7 +16,7 @@ namespace curvy {
 
     public:
 
-        puck(const circular_vector& crs = {}, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
+        puck(const circular_vector& crs = {}, double theta = 0, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
         void update(double dt);
         void set_color(gdi::Color color);
         void set_theta(double theta);
@@ -26,6 +26,8 @@ namespace curvy {
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
         void set_center_of_revolution(const point& pt);
 
+        point position() const;
+        double theta() const;
         puck update(double dt) const;
         circular_vector state() const;
         circular_vector& state();
@@ -36,7 +38,7 @@ namespace curvy {
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
 
     private:
-
+        double theta_;
         circular_vector state_;
         double puck_radius_;
         double mass_;

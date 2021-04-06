@@ -16,7 +16,7 @@ namespace {
 
     double distance_from_intersection(const curvy::puck& p1, const curvy::puck& p2)
     {
-        auto dist = curvy::euclidean_distance(p1.state().position(), p2.state().position());
+        auto dist = curvy::euclidean_distance(p1.position(), p2.position());
         auto distance_when_touching = p1.puck_circle().radius() + p2.puck_circle().radius();
         return dist - distance_when_touching;
     }
@@ -49,15 +49,17 @@ namespace {
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
-curvy::puck::puck(const circular_vector& crs, gdi::Color color, double puck_radius, double mass) :
+curvy::puck::puck(const circular_vector& crs, double theta, gdi::Color color, double puck_radius, double mass) :
     state_(crs),
+    theta_(theta),
     color_(color),
     puck_radius_(puck_radius),
     mass_(mass)
 { }
 
 void curvy::puck::update(double dt) {
-    state_.increment_theta( dt * state_.signed_angular_magnitude() );
+    theta_ += dt * state_.signed_angular_magnitude();
+    theta_ = normalize_angle(theta_);
 }
 
 curvy::puck curvy::puck::update(double dt) const {
@@ -98,7 +100,7 @@ void curvy::puck::set_color(gdi::Color color)
 
 void curvy::puck::set_theta(double theta)
 {
-    state_.set_theta( theta);
+    theta_ = normalize_angle(theta);
 }
 
 void curvy::puck::set_speed(double speed)
@@ -118,7 +120,7 @@ void curvy::puck::set_radius_of_revolution(double r)
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
-    state_.set_theta( theta );
+    set_theta( theta );
     state_.set_circle(curvy::circle(cx, cy, r));
 }
 
@@ -127,9 +129,19 @@ void curvy::puck::set_center_of_revolution(const point& pt)
     state_.circle().set_center(pt);
 }
 
+curvy::point curvy::puck::position() const
+{
+    return state_.circle().get_point(theta_);
+}
+
+double curvy::puck::theta() const
+{
+    return theta_;
+}
+
 curvy::circle curvy::puck::puck_circle() const
 {
-    return circle(state_.position(), puck_radius_);
+    return circle( position(), puck_radius_);
 }
 
 void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
