@@ -102,6 +102,11 @@ double curvy::circle::radius() const
     return radius_;
 }
 
+std::string curvy::circle::to_string() const
+{
+    return "{ " + curvy::to_string(center_) + " , " + std::to_string(radius_) + " }";
+}
+
 
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/

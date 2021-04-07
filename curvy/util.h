@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <tuple>
+#include <string>
 
 namespace curvy {
 
@@ -18,6 +19,9 @@ namespace curvy {
     double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2);
     point operator-(const point& a);
     point operator+(const point& a, const point& b);
+    point operator*(double scale, const point& a);
+    point operator*(const point& a, double scale);
+    std::string to_string(const point& pt);
     point apply_matrix(const matrix& mat, const point& pt);
     matrix rotation_matrix(double cos_theta, double sin_theta);
     matrix rotation_matrix(double theta);
@@ -36,4 +40,6 @@ namespace curvy {
     bool is_to_the_right_of(double direction, const point& from_pt, const point& to_pt);
     double direction_on_circle(double theta, bool orientation);
     double atan_of_pt(const point& pt);
+    double hypot_of_point(const point& pt);
+    void output_debug_message(const std::string& msg);
 }

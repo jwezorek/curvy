@@ -253,6 +253,12 @@ void curvy::impulse_viewer::render()
     //paint_circle( *g, puck_a_.state().circle().invert(cv.circle()), colors::Blue, logical_sz_, pixel_sz_);
     paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), puck_a_.position(), logical_sz_, pixel_sz_);
 
+    if (cv.angular_magnitude() > 0) {
+        auto test = cv.add(rv, puck_a_.position());
+        output_debug_message(test.to_string());
+        output_debug_message("");
+    }
+
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 

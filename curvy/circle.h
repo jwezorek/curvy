@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <optional>
+#include <string>
 #include "util.h"
 
 namespace curvy {
@@ -25,6 +26,7 @@ namespace curvy {
         double x() const;
         double y() const;
         double radius() const;
+        std::string to_string() const;
 
     private:
         point center_;
@@ -34,6 +36,5 @@ namespace curvy {
     circle apply_matrix(const matrix& mat, const circle& c);
     point closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt);
     std::optional<circle> circle_through_three_points(const point& pt1, const point& pt2, const point& pt3);
-
 }
 

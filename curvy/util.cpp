@@ -1,4 +1,5 @@
 #include "util.h"
+#include <Windows.h>
 #include <cmath>
 
 namespace {
@@ -60,6 +61,23 @@ curvy::point curvy::operator+(const point& a, const point& b)
     auto [x1, y1] = a;
     auto [x2, y2] = b;
     return { x1 + x2 , y1 + y2 };
+}
+
+curvy::point curvy::operator*(double scale, const point& a)
+{
+    auto [x, y] = a;
+    return point{ scale * x, scale * y };
+}
+
+curvy::point curvy::operator*(const point& a, double scale)
+{
+    return scale * a;
+}
+
+std::string curvy::to_string(const point& pt)
+{
+    auto [x, y] = pt;
+    return "( " + std::to_string(x) + " , " + std::to_string(y) + " )";
 }
 
 curvy::point curvy::apply_matrix(const curvy::matrix& mat, const curvy::point& pt)
@@ -218,6 +236,18 @@ double curvy::atan_of_pt(const point& pt)
 {
     auto [dx, dy] = pt;
     return std::atan2(dy, dx);
+}
+
+double curvy::hypot_of_point(const point& pt)
+{
+    auto [x, y] = pt;
+    return std::hypot(x, y);
+}
+
+void curvy::output_debug_message(const std::string& msg)
+{
+    std::string str = msg + "\n";
+    OutputDebugStringA(str.c_str());
 }
 
 
