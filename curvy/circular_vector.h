@@ -25,8 +25,6 @@ namespace curvy {
         double signed_linear_magnitude() const;
         double circumference() const;
         double sign() const;
-        std::tuple<circular_vector, circular_vector> split_into_components(const point& pt_from, const point& pt_to, double puck_sz) const;
-
         point newtonian_vector_at_point(const point& pt) const;
         circular_vector add(const circular_vector& cv, const point& where) const;
         circular_vector subtract(const circular_vector& cv, const point& where) const;
