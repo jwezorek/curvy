@@ -22,18 +22,22 @@ namespace {
     
     double get_momentum_transfer_factor(double theta, const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
 
+        //curvy::output_debug_message("old theta: " + std::to_string(theta));
         auto d = puck_sz;
         auto min_radius = d / 2.0;
         auto r = c1.radius();
         auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
+        //curvy::output_debug_message("old peak: " + std::to_string(peak));
         auto imposed_radius = c2.radius();
 
         if (theta < peak) {
+
             auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
             auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
             imposed_radius = std::abs(((d * std::cos(t2)) * (d * std::cos(t2)) + (d * std::sin(t2)) * (d * std::sin(t2))) / (2.0 * d * std::sin(t2)));
         }
         auto val = (imposed_radius - min_radius) / (r - min_radius);
+        //curvy::output_debug_message("old val: " + std::to_string(val));
         return val;
     }
 
@@ -374,13 +378,13 @@ curvy::circular_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy
     );
 }
 
-curvy::circle curvy::circle_in_direction_through_two_points(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2)
+std::tuple<curvy::circle, bool> curvy::circular_direction_through_two_points(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2)
 {
     matrix to_canonical_coords = rotation_matrix(-direction_at_pt1) * translation_matrix(-pt1);
     matrix from_canonical_coords = translation_matrix(pt1) * rotation_matrix(direction_at_pt1);
 
     auto [px, py] = apply_matrix(to_canonical_coords, pt2);
     double circle_of_impulse_y = (px * px + py * py) / (2 * py);
-    return apply_matrix(from_canonical_coords, curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y)));
-
+    auto c = apply_matrix(from_canonical_coords, curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y)));
+    return { c, py > 0 };
 }

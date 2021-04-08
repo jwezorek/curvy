@@ -36,7 +36,7 @@ double curvy::normalize(const double value, const double start, const double end
 }
 
 double curvy::normalize_angle(const double theta) {
-    return normalize(theta, 0, 2 * pi());
+    return normalize(theta, -pi(), pi());
 }
 
 double curvy::euclidean_distance(double x1, double y1, double x2, double y2) {
@@ -246,7 +246,7 @@ double curvy::hypot_of_point(const point& pt)
 
 double curvy::angle_to_point_relative_to_direction(const point& from_pt, double direction_at_from, const point& to_pt)
 {
-    return curvy::angle_to_pt(from_pt, to_pt) - direction_at_from;
+    return normalize_angle(curvy::angle_to_pt(from_pt, to_pt) - direction_at_from);
 }
 
 void curvy::output_debug_message(const std::string& msg)

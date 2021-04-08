@@ -46,5 +46,5 @@ namespace curvy {
     circular_vector circular_vector_from_linear_magnitude(const circle& circ, double linear_magnitude);
     circular_vector operator*(double scalar, const circular_vector& cv);
     curvy::circular_vector apply_matrix(const curvy::matrix& mat, const curvy::circular_vector& c);
-    circle circle_in_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);
+    std::tuple<circle, bool> circular_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);
 }

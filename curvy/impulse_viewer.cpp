@@ -120,6 +120,7 @@ void curvy::impulse_viewer::initialize()
     puck_b_.set_color(colors::Yellow);
     puck_b_.set_puck_radius(r);
     puck_b_.set_speed(0.5);
+    puck_b_.set_center_of_revolution(puck_a_.position());
 
     DebugAngles(puck_a_, puck_b_);
 }
@@ -233,21 +234,22 @@ gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
 
 double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, const curvy::point& pt2, double radius1, double radius2, double puck_sz) {
     auto theta = curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
-   // curvy::output_debug_message("new theta: " + std::to_string(theta));
+    //curvy::output_debug_message("new theta: " + std::to_string(theta));
     auto d = puck_sz;
     auto min_radius = d / 2.0;
     auto r = radius1;
     auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
-  //  curvy::output_debug_message("new peak: " + std::to_string(peak));
+    //curvy::output_debug_message("new peak: " + std::to_string(peak));
     auto imposed_radius = radius2;
 
     if (theta < peak) {
         auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
         auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
-        imposed_radius = std::abs(((d * std::cos(t2)) * (d * std::cos(t2)) + (d * std::sin(t2)) * (d * std::sin(t2))) / (2.0 * d * std::sin(t2)));
+        imposed_radius = std::abs( (d*d) / (2.0 * d * std::sin(t2)));
+
     }
     auto val = (imposed_radius - min_radius) / (r - min_radius);
- //   curvy::output_debug_message("new val: " + std::to_string(val));
+    //curvy::output_debug_message("new val: " + std::to_string(val));
     return val;
 }
 
@@ -267,17 +269,14 @@ void curvy::impulse_viewer::render()
 
     double puck_sz = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
     auto [cv, rv] = puck_a_.momentum_vector().split_into_components(puck_a_.position(), puck_b_.position(), puck_sz);
-    paint_circle_vector(*g, cv, colors::Yellow, puck_b_.puck_circle().radius(), puck_b_.position(), logical_sz_, pixel_sz_);
+
+    auto [circle_of_impulse, impulse_orientation] = circular_direction_through_two_points(puck_a_.position(), puck_a_.direction(), puck_b_.position());
+    auto coefficient = momentum_transfer_factor(puck_a_.position(), puck_a_.direction(), puck_b_.position(), puck_a_.state().circle().radius(), circle_of_impulse.radius(), puck_sz);
+    auto impulse_vector = curvy::circular_vector_from_linear_magnitude(circle_of_impulse, (impulse_orientation ? 1.0 : -1.0) * coefficient * puck_a_.state().linear_magnitude());
+    paint_circle_vector(*g, impulse_vector, colors::Yellow, puck_b_.puck_circle().radius(), puck_b_.position(), logical_sz_, pixel_sz_);
+
     //paint_circle( *g, puck_a_.state().circle().invert(cv.circle()), colors::Blue, logical_sz_, pixel_sz_);
     paint_circle_vector(*g, rv, colors::Blue, puck_b_.puck_circle().radius(), puck_a_.position(), logical_sz_, pixel_sz_);
-
-    if (cv.angular_magnitude() > 0) {
-        auto test = cv.add(rv, puck_a_.position());
-        auto circle_of_impulse = circle_in_direction_through_two_points(puck_a_.position(), puck_a_.direction(), puck_b_.position());
-        auto coefficient = momentum_transfer_factor(puck_a_.position(), puck_a_.direction(), puck_b_.position(), puck_a_.state().circle().radius(), circle_of_impulse.radius(), puck_sz);
-
-        output_debug_message("New => " + std::to_string(coefficient));
-    }
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
