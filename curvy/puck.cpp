@@ -139,6 +139,11 @@ double curvy::puck::theta() const
     return theta_;
 }
 
+double curvy::puck::direction() const
+{
+    return normalize_angle( state_.direction_at(position()) );
+}
+
 curvy::circle curvy::puck::puck_circle() const
 {
     return circle( position(), puck_radius_);

@@ -28,6 +28,7 @@ namespace curvy {
 
         point position() const;
         double theta() const;
+        double direction() const;
         puck update(double dt) const;
         circular_vector state() const;
         circular_vector& state();

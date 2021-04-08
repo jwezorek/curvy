@@ -180,7 +180,7 @@ std::tuple<double, double> curvy::from_scr_coords(const std::tuple<int, int>& pt
     return from_scr_coords(x, y, logical_sz, pixel_sz);
 }
 
-double curvy::get_angle_to_pt(const curvy::point& from_pt, const curvy::point& to_pt)
+double curvy::angle_to_pt(const curvy::point& from_pt, const curvy::point& to_pt)
 {
     auto [fx, fy] = from_pt;
     auto [tx, ty] = to_pt;
@@ -242,6 +242,11 @@ double curvy::hypot_of_point(const point& pt)
 {
     auto [x, y] = pt;
     return std::hypot(x, y);
+}
+
+double curvy::angle_to_point_relative_to_direction(const point& from_pt, double direction_at_from, const point& to_pt)
+{
+    return curvy::angle_to_pt(from_pt, to_pt) - direction_at_from;
 }
 
 void curvy::output_debug_message(const std::string& msg)

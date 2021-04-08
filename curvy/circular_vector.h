@@ -31,10 +31,9 @@ namespace curvy {
         circular_vector add(const circular_vector& cv, const point& where) const;
         circular_vector subtract(const circular_vector& cv, const point& where) const;
         std::string to_string() const;
+        double direction_at(const point& pt) const;
 
     private:
-
-        double direction_at(const point& pt) const;
 
         bool orientation_;
         double angular_magnitude_;

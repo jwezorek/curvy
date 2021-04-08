@@ -36,7 +36,8 @@ namespace curvy {
     std::tuple<double, double> from_scr_coords(const std::tuple<int, int>& pt, double logical_sz, int pixel_sz);
     std::tuple<int, int, int, int> to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz);
     std::tuple<int, int, int, int> to_scr_coords(const std::tuple<double, double, double, double>& rect, double logical_sz, int pixel_sz);
-    double get_angle_to_pt(const point& from_pt, const point& to_pt);
+    double angle_to_pt(const point& from_pt, const point& to_pt);
+    double angle_to_point_relative_to_direction(const point& from_pt, double direction_at_from, const point& to_pt);
     bool is_to_the_right_of(double direction, const point& from_pt, const point& to_pt);
     double direction_on_circle(double theta, bool orientation);
     double atan_of_pt(const point& pt);

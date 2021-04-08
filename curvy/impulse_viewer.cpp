@@ -50,7 +50,7 @@ namespace {
     }
 
     void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
-        auto theta = curvy::normalize_angle(curvy::get_angle_to_pt(crc.circle().center(), pt));
+        auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
         gdi::Pen pen(color, 3);
         g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(theta), -to_degrees(crc.signed_angular_magnitude()));
         auto arrow_theta = theta + crc.signed_angular_magnitude();
@@ -175,11 +175,11 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
                 puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
             case interaction::dragging_a:
-                puck_a_.set_theta(get_angle_to_pt(circle_of_rev.center(), pt));
+                puck_a_.set_theta(angle_to_pt(circle_of_rev.center(), pt));
                 puck_b_.set_center_of_revolution(puck_a_.position());
                 break;
             case interaction::dragging_b: 
-                puck_b_.set_theta( get_angle_to_pt(puck_a_.position(), pt) );
+                puck_b_.set_theta( angle_to_pt(puck_a_.position(), pt) );
                 break;
              case interaction::resizing_circle_of_rev: 
                 puck_a_.set_radius_of_revolution(euclidean_distance(pt, circle_of_rev.center()));
@@ -231,7 +231,25 @@ gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
     return back_buffer_.get();
 }
 
+double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, const curvy::point& pt2, double radius1, double radius2, double puck_sz) {
+    auto theta = curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
+   // curvy::output_debug_message("new theta: " + std::to_string(theta));
+    auto d = puck_sz;
+    auto min_radius = d / 2.0;
+    auto r = radius1;
+    auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
+  //  curvy::output_debug_message("new peak: " + std::to_string(peak));
+    auto imposed_radius = radius2;
 
+    if (theta < peak) {
+        auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
+        auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
+        imposed_radius = std::abs(((d * std::cos(t2)) * (d * std::cos(t2)) + (d * std::sin(t2)) * (d * std::sin(t2))) / (2.0 * d * std::sin(t2)));
+    }
+    auto val = (imposed_radius - min_radius) / (r - min_radius);
+ //   curvy::output_debug_message("new val: " + std::to_string(val));
+    return val;
+}
 
 void curvy::impulse_viewer::render()
 {
@@ -255,8 +273,10 @@ void curvy::impulse_viewer::render()
 
     if (cv.angular_magnitude() > 0) {
         auto test = cv.add(rv, puck_a_.position());
-        output_debug_message(test.to_string());
-        output_debug_message("");
+        auto circle_of_impulse = circle_in_direction_through_two_points(puck_a_.position(), puck_a_.direction(), puck_b_.position());
+        auto coefficient = momentum_transfer_factor(puck_a_.position(), puck_a_.direction(), puck_b_.position(), puck_a_.state().circle().radius(), circle_of_impulse.radius(), puck_sz);
+
+        output_debug_message("New => " + std::to_string(coefficient));
     }
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);

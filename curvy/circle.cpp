@@ -57,7 +57,7 @@ double curvy::circle::circumference() const
 
 curvy::point curvy::circle::get_point(double theta) const
 {
-    return center_ + point(radius_ *std::cos(theta), radius_*std::sin(theta));
+    return center_ + point(radius_ * std::cos(theta), radius_* std::sin(theta));
 }
 
 curvy::point curvy::circle::invert(const curvy::point& pt) const

@@ -21,6 +21,7 @@ namespace {
     */
     
     double get_momentum_transfer_factor(double theta, const curvy::circle& c1, const curvy::circle& c2, double puck_sz) {
+
         auto d = puck_sz;
         auto min_radius = d / 2.0;
         auto r = c1.radius();
@@ -177,6 +178,8 @@ namespace {
         }
 
         auto transfer_coefficient = get_momentum_transfer_factor(curvy::atan_of_pt(cannonicalized_pt), src_circle, circle_of_impulse, min_radius);
+        curvy::output_debug_message("Old => " + std::to_string(transfer_coefficient));
+
         auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
         auto impulse_linear_magnitude = transfer_coefficient * cv.linear_magnitude();
 
@@ -187,8 +190,6 @@ namespace {
         auto residual_radius_mom = radius_mom_total - radius_mom_impulse;
 
         auto orientation_of_residual = (residual_radius_mom > 0) ? 1.0 : -1.0;
-
-        //OutputDebugStringA((orientation_of_residual > 0) ? "+\n" : "-\n");
 
         residual_radius_mom = std::abs(residual_radius_mom);
         auto residual_linear_magnitude = cv.linear_magnitude() - impulse_linear_magnitude;
@@ -335,7 +336,7 @@ curvy::circular_vector curvy::circular_vector::add(const circular_vector& cv, co
 
 curvy::circular_vector curvy::circular_vector::subtract(const circular_vector& cv, const point& where) const
 {
-    return circular_vector();
+    return add(-1 * cv, where);
 }
 
 std::string curvy::circular_vector::to_string() const
@@ -345,7 +346,7 @@ std::string curvy::circular_vector::to_string() const
 
 double curvy::circular_vector::direction_at(const point& pt) const
 {
-    return direction_on_circle(get_angle_to_pt(circle_.center(), pt), orientation_);
+    return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
 curvy::circular_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double linear_magnitude)
