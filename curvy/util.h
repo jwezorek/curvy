@@ -19,6 +19,7 @@ namespace curvy {
     double euclidean_distance(const std::tuple<double, double>& p1, const std::tuple<double, double>& p2);
     point operator-(const point& a);
     point operator+(const point& a, const point& b);
+    point operator-(const point& a, const point& b);
     point operator*(double scale, const point& a);
     point operator*(const point& a, double scale);
     std::string to_string(const point& pt);
@@ -43,4 +44,5 @@ namespace curvy {
     double atan_of_pt(const point& pt);
     double hypot_of_point(const point& pt);
     void output_debug_message(const std::string& msg);
+    point pt_on_unit_circle(double theta);
 }

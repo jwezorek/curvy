@@ -129,6 +129,12 @@ void curvy::puck::set_center_of_revolution(const point& pt)
     state_.circle().set_center(pt);
 }
 
+void curvy::puck::set_position(const point& pt)
+{
+    auto offset = state_.circle().center() - position();
+    state_.circle().set_center(pt + offset);
+}
+
 curvy::point curvy::puck::position() const
 {
     return state_.circle().get_point(theta_);
@@ -155,5 +161,6 @@ void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
     auto [x1, y1, x2, y2] = bounding_box_in_pixels(*this, log_sz, pix_sz);
     g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
 }
+
 
 

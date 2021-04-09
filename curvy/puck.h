@@ -25,6 +25,7 @@ namespace curvy {
         void set_radius_of_revolution(double r);
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
         void set_center_of_revolution(const point& pt);
+        void set_position(const point& pt);
 
         point position() const;
         double theta() const;
@@ -39,6 +40,7 @@ namespace curvy {
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
 
     private:
+
         double theta_;
         circular_vector state_;
         double puck_radius_;

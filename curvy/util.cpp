@@ -63,6 +63,11 @@ curvy::point curvy::operator+(const point& a, const point& b)
     return { x1 + x2 , y1 + y2 };
 }
 
+curvy::point curvy::operator-(const point& a, const point& b)
+{
+    return a + (-b);
+}
+
 curvy::point curvy::operator*(double scale, const point& a)
 {
     auto [x, y] = a;
@@ -253,6 +258,14 @@ void curvy::output_debug_message(const std::string& msg)
 {
     std::string str = msg + "\n";
     OutputDebugStringA(str.c_str());
+}
+
+curvy::point curvy::pt_on_unit_circle(double theta)
+{
+    return {
+        std::cos(theta),
+        std::sin(theta)
+    };
 }
 
 

@@ -73,7 +73,8 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz),
     interaction_(interaction::none),
-    in_motion_(false)
+    in_motion_(false),
+    puck_b_theta_(0)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -116,13 +117,11 @@ void curvy::impulse_viewer::initialize()
     puck_a_.set_color(colors::Red);
     puck_a_.set_puck_radius(r);
 
-    puck_b_.set_circle_rotation_position( -0.062419, 0, 0, 2*r );
     puck_b_.set_color(colors::Yellow);
     puck_b_.set_puck_radius(r);
     puck_b_.set_speed(0.5);
-    puck_b_.set_center_of_revolution(puck_a_.position());
 
-    DebugAngles(puck_a_, puck_b_);
+    sync_b_with_a();
 }
 
 void curvy::impulse_viewer::update(double dt)
@@ -170,21 +169,23 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
         auto circle_of_rev = puck_a_.state().circle();
         auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
         auto [x, y] = pt;
+        double old_a_theta = puck_a_.theta();
         switch (interaction_) {
             case interaction::dragging_circle_of_rev:
                 puck_a_.set_center_of_revolution(pt);
-                puck_b_.set_center_of_revolution(puck_a_.position());
+                sync_b_with_a(old_a_theta);
                 break;
             case interaction::dragging_a:
                 puck_a_.set_theta(angle_to_pt(circle_of_rev.center(), pt));
-                puck_b_.set_center_of_revolution(puck_a_.position());
+                sync_b_with_a(old_a_theta);
                 break;
             case interaction::dragging_b: 
-                puck_b_.set_theta( angle_to_pt(puck_a_.position(), pt) );
+                puck_b_theta_ = angle_to_pt(puck_a_.position(), pt);
+                sync_b_with_a(old_a_theta);
                 break;
-             case interaction::resizing_circle_of_rev: 
+             case interaction::resizing_circle_of_rev:
                 puck_a_.set_radius_of_revolution(euclidean_distance(pt, circle_of_rev.center()));
-                puck_b_.set_center_of_revolution(puck_a_.position());
+                sync_b_with_a(old_a_theta);
                 break;
         }
         render();
@@ -299,4 +300,13 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
         return interaction::resizing_circle_of_rev;
 
     return interaction::none;
+}
+
+void curvy::impulse_viewer::sync_b_with_a(double old_a_theta)
+{
+    auto theta_offset = puck_a_.theta() - old_a_theta;
+    puck_b_theta_ += theta_offset;
+    auto r = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
+    auto synced_b_position = puck_a_.position() + r * pt_on_unit_circle(puck_b_theta_);
+    puck_b_.set_position(synced_b_position);
 }

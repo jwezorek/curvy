@@ -39,12 +39,14 @@ namespace curvy {
 
         void render();
         interaction get_interaction(const std::tuple<double, double>& click_location);
+        void sync_b_with_a(double old_a_theta = 0);
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         double logical_sz_;
         int pixel_sz_;
         puck puck_a_;
         puck puck_b_;
+        double puck_b_theta_;
         interaction interaction_;
         bool in_motion_;
     };
