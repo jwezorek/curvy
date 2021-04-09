@@ -74,7 +74,8 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     logical_sz_(log_sz),
     interaction_(interaction::none),
     in_motion_(false),
-    puck_b_theta_(0)
+    puck_b_theta_(0),
+    show_puck_b_vectors_(false)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -119,9 +120,15 @@ void curvy::impulse_viewer::initialize()
 
     puck_b_.set_color(colors::Yellow);
     puck_b_.set_puck_radius(r);
-    puck_b_.set_speed(0.5);
+    puck_b_.set_circle_rotation_position(south, 0, 3, 3);
+    puck_b_.set_speed(1.0);
 
     sync_b_with_a();
+}
+
+void curvy::impulse_viewer::update()
+{
+    render();
 }
 
 void curvy::impulse_viewer::update(double dt)
@@ -211,6 +218,11 @@ bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
         }
     }
 
+    if (key == '1' && is_key_down) {
+        show_puck_b_vectors_ = !show_puck_b_vectors_;
+        return true;
+    }
+
     return false;
 }
 
@@ -264,6 +276,7 @@ void curvy::impulse_viewer::render()
 
     double sz_constant = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
     auto circle_vector_a = puck_a_.state();
+    auto circle_vector_b = puck_b_.state();
     auto pt_a = puck_a_.position();
     auto radius_a = puck_a_.state().circle().radius();
     auto direction_a = puck_a_.direction();
@@ -277,7 +290,10 @@ void curvy::impulse_viewer::render()
     paint_circle_vector(*g, circle_vector_a, colors::Red, sz_constant, pt_a, logical_sz_, pixel_sz_);
     paint_circle_vector(*g, impulse_vector, colors::Yellow, sz_constant, pt_b, logical_sz_, pixel_sz_);
     paint_circle_vector(*g, residual_vector, colors::Blue, sz_constant, pt_a, logical_sz_, pixel_sz_);
-    
+
+    if (show_puck_b_vectors_) {
+        paint_circle_vector(*g, circle_vector_b, colors::Blue, sz_constant, pt_b, logical_sz_, pixel_sz_);
+    }
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
@@ -309,4 +325,5 @@ void curvy::impulse_viewer::sync_b_with_a(double old_a_theta)
     auto r = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
     auto synced_b_position = puck_a_.position() + r * pt_on_unit_circle(puck_b_theta_);
     puck_b_.set_position(synced_b_position);
+
 }

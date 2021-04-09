@@ -77,6 +77,11 @@ gdi::Bitmap* curvy::curvy_world_simulation::get_bitmap() const
     return back_buffer_.get();
 }
 
+void curvy::curvy_world_simulation::update()
+{
+    render();
+}
+
 void curvy::curvy_world_simulation::update(double dt)
 {
     while (dt > 0) {

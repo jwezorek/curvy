@@ -26,6 +26,7 @@ namespace curvy {
         int get_size() const;
         void insert(const puck& p);
         gdi::Bitmap* get_bitmap() const override;
+        void update() override;
         void update(double dt) override;
 
     private:

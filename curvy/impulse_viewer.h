@@ -27,6 +27,7 @@ namespace curvy {
         impulse_viewer(int px_sz, double log_sz);
 
         void initialize() override;
+        void update() override;
         void update(double dt) override;
         bool handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down) override;
         bool handle_mouse_move(const std::tuple<int, int>& pt) override;
@@ -49,6 +50,7 @@ namespace curvy {
         double puck_b_theta_;
         interaction interaction_;
         bool in_motion_;
+        bool show_puck_b_vectors_;
     };
 
 }

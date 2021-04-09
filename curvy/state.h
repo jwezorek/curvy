@@ -10,6 +10,7 @@ namespace curvy {
     class state {
     public:
         virtual void initialize() = 0;
+        virtual void update() = 0;
         virtual void update(double dt) = 0;
         virtual bool handle_mouse_click(const std::tuple<int,int>& pt, bool mouse_down) = 0;
         virtual bool handle_mouse_move(const std::tuple<int, int>& pt) = 0;

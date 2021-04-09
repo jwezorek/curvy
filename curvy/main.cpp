@@ -99,6 +99,7 @@ LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM
 LRESULT HandleKeyboardMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool keydown) {
 
     if (state.handle_key_press(wParam, keydown)) {
+        state.update();
         InvalidateRect(hwnd, NULL, FALSE);
     }
     return 0;
