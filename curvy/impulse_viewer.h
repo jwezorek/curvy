@@ -18,6 +18,7 @@ namespace curvy {
         dragging_a,
         dragging_b,
         resizing_circle_of_rev,
+        dragging_circle_b,
         none
     };
 
@@ -41,6 +42,7 @@ namespace curvy {
         void render();
         interaction get_interaction(const std::tuple<double, double>& click_location);
         void sync_b_with_a(double old_a_theta = 0);
+        void rotate_circle_b(const point& pt);
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         double logical_sz_;

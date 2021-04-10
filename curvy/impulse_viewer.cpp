@@ -194,6 +194,9 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
                 puck_a_.set_radius_of_revolution(euclidean_distance(pt, circle_of_rev.center()));
                 sync_b_with_a(old_a_theta);
                 break;
+             case interaction::dragging_circle_b:
+                rotate_circle_b(pt);
+                break;
         }
         render();
         return true;
@@ -315,6 +318,9 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     if (circle_of_rev.perimeter_contains( click_location, 0.1))
         return interaction::resizing_circle_of_rev;
 
+    if (show_puck_b_vectors_ && puck_b_.state().circle().perimeter_contains(click_location, 0.1))
+        return interaction::dragging_circle_b;
+
     return interaction::none;
 }
 
@@ -326,4 +332,16 @@ void curvy::impulse_viewer::sync_b_with_a(double old_a_theta)
     auto synced_b_position = puck_a_.position() + r * pt_on_unit_circle(puck_b_theta_);
     puck_b_.set_position(synced_b_position);
 
+}
+
+void curvy::impulse_viewer::rotate_circle_b(const point& pt)
+{
+    auto old_theta = puck_b_.theta();
+    auto old_position = puck_b_.position();
+    auto theta = angle_to_pt(pt, puck_b_.position());
+
+    matrix mat = translation_matrix(puck_b_.position()) * rotation_matrix(theta - old_theta)  * translation_matrix(-puck_b_.position());
+    auto transformed_circle = apply_matrix(mat, puck_b_.state().circle());
+    puck_b_.state().set_circle(transformed_circle);
+    puck_b_.set_theta(angle_to_pt(transformed_circle.center(), old_position));
 }
