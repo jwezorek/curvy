@@ -197,6 +197,10 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
              case interaction::dragging_circle_b:
                 rotate_circle_b(pt);
                 break;
+             case interaction::resizing_circle_b:
+                 resizing_circle_b(pt);
+                 break;
+
         }
         render();
         return true;
@@ -318,8 +322,12 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     if (circle_of_rev.perimeter_contains( click_location, 0.1))
         return interaction::resizing_circle_of_rev;
 
-    if (show_puck_b_vectors_ && puck_b_.state().circle().perimeter_contains(click_location, 0.1))
-        return interaction::dragging_circle_b;
+    if (show_puck_b_vectors_ && puck_b_.state().circle().perimeter_contains(click_location, 0.1)) {
+        if (GetAsyncKeyState(VK_SHIFT) & (1 << 15))
+            return interaction::resizing_circle_b;
+        else
+            return interaction::dragging_circle_b;
+    }
 
     return interaction::none;
 }
@@ -344,4 +352,15 @@ void curvy::impulse_viewer::rotate_circle_b(const point& pt)
     auto transformed_circle = apply_matrix(mat, puck_b_.state().circle());
     puck_b_.state().set_circle(transformed_circle);
     puck_b_.set_theta(angle_to_pt(transformed_circle.center(), old_position));
+}
+
+void curvy::impulse_viewer::resizing_circle_b(const point& pt)
+{
+    auto old_position = puck_b_.position();
+    auto angle_from_puck = angle_to_pt(puck_b_.position(), pt);
+    auto radius = euclidean_distance(puck_b_.position(), pt) / 2;
+    auto new_center = 0.5 * (pt + puck_b_.position());
+    auto c = circle(new_center, radius);
+    puck_b_.state().set_circle(c);
+    puck_b_.set_theta(angle_to_pt(c.center(), old_position));
 }
