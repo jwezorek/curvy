@@ -1,5 +1,6 @@
-#include <Windows.h>
 #include <cmath>
+#include <array>
+#include <Windows.h>
 #include "impulse_viewer.h"
 #include "util.h"
 #include "circular_vector.h"
@@ -21,16 +22,17 @@ namespace {
         g.FillPolygon(&brush, &(ary[0]), 3);
     }
 
-    void paint_arrow_head(gdi::Graphics& g, gdi::Color color, const curvy::point& loc, double wd, double hgt, double direction, double log_sz, int pix_sz) {
-        curvy::point pts[3] = {
-            {wd, 0},
-            {-wd, hgt},
-            {-wd, -hgt}
+    std::array<curvy::point, 3> get_arrow_poly(const curvy::point& loc, double wd, double hgt, double direction) {
+        std::array<curvy::point, 3> pts = {
+            curvy::point{wd, 0},
+            curvy::point{-wd, hgt},
+            curvy::point{-wd, -hgt}
         };
-        curvy::matrix mat = curvy::translation_matrix(loc) * curvy::rotation_matrix(direction) ;
-        for (auto& pt : pts) 
+        curvy::matrix mat = curvy::translation_matrix(loc) * curvy::rotation_matrix(direction);
+        for (auto& pt : pts)
             pt = curvy::apply_matrix(mat, pt);
-        paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
+
+        return pts;
     }
 
     gdi::Rect to_scr_rect(const std::tuple<double, double, double, double>& r, double log_sz, int pix_sz) {
@@ -49,17 +51,24 @@ namespace {
         return static_cast<gdi::REAL>( radians * 180.0 / curvy::pi() );
     }
 
-    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
+    std::array<curvy::point, 3> arrow_poly_from_circle_vec(const curvy::circular_vector& crc, const curvy::point& pt, double puck_sz) {
         auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
-        gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(theta), -to_degrees(crc.signed_angular_magnitude()));
         auto arrow_theta = theta + crc.signed_angular_magnitude();
-        auto arror_direction = curvy::direction_on_circle( arrow_theta, crc.orientation() );
+        auto arror_direction = curvy::direction_on_circle(arrow_theta, crc.orientation());
         curvy::point arrow_pt = {
             crc.circle().x() + crc.circle().radius() * std::cos(arrow_theta),
             crc.circle().y() + crc.circle().radius() * std::sin(arrow_theta)
         };
-        paint_arrow_head(g, color, arrow_pt, puck_sz * 0.25, puck_sz * 0.125, arror_direction, log_sz, pix_sz);
+        auto pts = get_arrow_poly(arrow_pt, puck_sz * 0.25, puck_sz * 0.125, arror_direction);
+        return pts;
+    }
+
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
+        auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
+        gdi::Pen pen(color, 3);
+        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(theta), -to_degrees(crc.signed_angular_magnitude()));
+        auto pts = arrow_poly_from_circle_vec(crc, pt, puck_sz);
+        paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
     }
 
     void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
@@ -198,9 +207,11 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
                 rotate_circle_b(pt);
                 break;
              case interaction::resizing_circle_b:
-                 resizing_circle_b(pt);
+                 resize_circle_b(pt);
                  break;
-
+             case interaction::dragging_arrow_b:
+                 drag_arrow_b(pt);
+                 break;
         }
         render();
         return true;
@@ -282,8 +293,8 @@ void curvy::impulse_viewer::render()
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
     double sz_constant = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
-    auto circle_vector_a = puck_a_.state();
-    auto circle_vector_b = puck_b_.state();
+    const auto& circle_vector_a = puck_a_.state();
+    const auto& circle_vector_b = puck_b_.state();
     auto pt_a = puck_a_.position();
     auto radius_a = puck_a_.state().circle().radius();
     auto direction_a = puck_a_.direction();
@@ -307,9 +318,9 @@ void curvy::impulse_viewer::render()
 
 }
 
-curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location)
+curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location) const
 {
-    auto circle_of_rev = puck_a_.state().circle();
+    const auto& circle_of_rev = puck_a_.state().circle();
     if (curvy::circle(circle_of_rev.center(), 1.0).contains(click_location))
         return interaction::dragging_circle_of_rev;
 
@@ -322,11 +333,17 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     if (circle_of_rev.perimeter_contains( click_location, 0.1))
         return interaction::resizing_circle_of_rev;
 
-    if (show_puck_b_vectors_ && puck_b_.state().circle().perimeter_contains(click_location, 0.1)) {
-        if (GetAsyncKeyState(VK_SHIFT) & (1 << 15))
-            return interaction::resizing_circle_b;
-        else
-            return interaction::dragging_circle_b;
+    if (show_puck_b_vectors_) {
+
+        if (is_in_arrow_b(click_location))
+            return interaction::dragging_arrow_b;
+
+        if (puck_b_.state().circle().perimeter_contains(click_location, 0.1)) {
+            if (GetAsyncKeyState(VK_SHIFT) & (1 << 15))
+                return interaction::resizing_circle_b;
+            else
+                return interaction::dragging_circle_b;
+        }
     }
 
     return interaction::none;
@@ -354,7 +371,7 @@ void curvy::impulse_viewer::rotate_circle_b(const point& pt)
     puck_b_.set_theta(angle_to_pt(transformed_circle.center(), old_position));
 }
 
-void curvy::impulse_viewer::resizing_circle_b(const point& pt)
+void curvy::impulse_viewer::resize_circle_b(const point& pt)
 {
     auto old_position = puck_b_.position();
     auto angle_from_puck = angle_to_pt(puck_b_.position(), pt);
@@ -363,4 +380,18 @@ void curvy::impulse_viewer::resizing_circle_b(const point& pt)
     auto c = circle(new_center, radius);
     puck_b_.state().set_circle(c);
     puck_b_.set_theta(angle_to_pt(c.center(), old_position));
+}
+
+void curvy::impulse_viewer::drag_arrow_b(const point& pt)
+{
+    auto angle = angle_to_pt(puck_b_.state().circle().center(), pt);
+    auto omega = angle - puck_b_.theta();
+    puck_b_.set_speed(omega);
+}
+
+bool curvy::impulse_viewer::is_in_arrow_b(const point& pt) const
+{
+    double sz_constant = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
+    auto pts = arrow_poly_from_circle_vec(puck_b_.state(), puck_b_.position(), sz_constant);
+    return pt_in_triangle( pt, pts[0], pts[1], pts[2] );
 }

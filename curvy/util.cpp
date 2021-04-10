@@ -5,6 +5,14 @@
 namespace {
     using vec = Eigen::Matrix<double, 3, 1>;
     const long double g_pi = std::acos(-1.L);
+
+    double get_triangle_orientation(const curvy::point& p1, const curvy::point& p2, const curvy::point& p3) {
+        auto [x1, y1] = p1;
+        auto [x2, y2] = p2;
+        auto [x3, y3] = p3;
+        return (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
+    }
+
 }
 
 double curvy::pi() {
@@ -266,6 +274,18 @@ curvy::point curvy::pt_on_unit_circle(double theta)
         std::cos(theta),
         std::sin(theta)
     };
+}
+
+bool curvy::pt_in_triangle(const curvy::point& pt, const curvy::point& v1, const curvy::point& v2, const curvy::point& v3)
+{
+    auto d1 = get_triangle_orientation(pt, v1, v2);
+    auto d2 = get_triangle_orientation(pt, v2, v3);
+    auto d3 = get_triangle_orientation(pt, v3, v1);
+
+    auto has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    auto has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(has_neg && has_pos);
 }
 
 

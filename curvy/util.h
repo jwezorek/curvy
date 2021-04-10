@@ -45,4 +45,5 @@ namespace curvy {
     double hypot_of_point(const point& pt);
     void output_debug_message(const std::string& msg);
     point pt_on_unit_circle(double theta);
+    bool pt_in_triangle(const point& pt, const point& v1, const point& v2, const point& v3);
 }
