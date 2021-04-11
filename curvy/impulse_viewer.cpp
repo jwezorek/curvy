@@ -90,33 +90,6 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     set_pixel_dimensions(px_sz, true);
 }
 
-void DebugAngles(const curvy::puck& a, const curvy::puck& b) {
-    double d = a.puck_circle().radius() + b.puck_circle().radius();
-    double r = a.state().circle().radius();
-    auto on_circle_theta = std::asin(d / (2 * r));
-    auto equals_circle_theta = std::asin(-d / (2 * r));
-    auto half_circle_theta = std::atan(
-        (d * d) / std::sqrt(-d * d * d * d + d * d * r * r)
-    );
-
-    std::stringstream ss;
-    /*
-    ss << "negative pi over two => -90.0\n";
-    ss << "equals_circle_theta => " << equals_circle_theta * 180.0 / curvy::pi() << "\n";
-    ss << "on_circle_theta => " << on_circle_theta * 180.0 / curvy::pi() << "\n";
-    ss << "half_circle_theta =>" << half_circle_theta * 180.0 / curvy::pi() << "\n";
-    ss << "pi over two => 90.0\n";
-    */
-
-    ss << "negative pi over two => " << -curvy::pi_over_two() << "\n";
-    ss << "equals_circle_theta => " << equals_circle_theta  << "\n";
-    ss << "on_circle_theta => " << on_circle_theta  << "\n";
-    ss << "half_circle_theta =>" << half_circle_theta  << "\n";
-    ss << "pi over two => " << curvy::pi_over_two() << "\n";
-
-    OutputDebugStringA(ss.str().c_str());
-}
-
 void curvy::impulse_viewer::initialize()
 {
     auto r = 0.35;
@@ -127,7 +100,7 @@ void curvy::impulse_viewer::initialize()
     puck_a_.set_color(colors::Red);
     puck_a_.set_puck_radius(r);
 
-    puck_b_.set_color(colors::Yellow);
+    puck_b_.set_color(colors::DodgerBlue);
     puck_b_.set_puck_radius(r);
     puck_b_.set_circle_rotation_position(south, 0, 3, 3);
     puck_b_.set_speed(1.0);
@@ -207,11 +180,11 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
                 rotate_circle_b(pt);
                 break;
              case interaction::resizing_circle_b:
-                 resize_circle_b(pt);
-                 break;
+                resize_circle_b(pt);
+                break;
              case interaction::dragging_arrow_b:
-                 drag_arrow_b(pt);
-                 break;
+                drag_arrow_b(pt);
+                break;
         }
         render();
         return true;
@@ -236,7 +209,7 @@ bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
         }
     }
 
-    if (key == '1' && is_key_down) {
+    if (key == 'B' && is_key_down) {
         show_puck_b_vectors_ = !show_puck_b_vectors_;
         return true;
     }
@@ -280,6 +253,102 @@ double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, c
     return val;
 }
 
+std::array<double, 4> get_four_levels(double bottom) {
+    auto delta = (1.0 - bottom) / 3.0;
+    return {
+        bottom,
+        bottom + delta,
+        bottom + 2 * delta,
+        1.0
+    };
+}
+
+std::tuple< gdi::Color, gdi::Color, gdi::Color, gdi::Color> get_four_color_levels(gdi::Color color) {
+    double red = static_cast<double>( color.GetR() );
+    double green = static_cast<double>(color.GetG() );
+    double blue = static_cast<double>(color.GetB() );
+    auto levels = get_four_levels(0.35);
+    auto level_to_color = [&](int n)->gdi::Color {
+        BYTE rb = static_cast<BYTE>(std::round(levels[n] * red));
+        BYTE gb = static_cast<BYTE>(std::round(levels[n] * green));
+        BYTE bb = static_cast<BYTE>(std::round(levels[n] * blue));
+        return gdi::Color(rb, gb, bb);
+    };
+    return {
+        level_to_color(0),
+        level_to_color(1),
+        level_to_color(2),
+        level_to_color(3)
+    };
+}
+
+struct collision_vectors {
+    curvy::circular_vector initial;
+    curvy::circular_vector residual;
+    curvy::circular_vector received;
+    curvy::circular_vector final;
+
+    void paint(gdi::Graphics& g, gdi::Color color, const curvy::point& pt, double sz_const, double log_sz, int pix_sz) {
+        auto [initial_color, residual_color, received_color, final_color] = get_four_color_levels(color);
+
+        if (initial.angular_magnitude() > 0)
+            paint_circle_vector(g, initial, initial_color, sz_const, pt, log_sz, pix_sz);
+
+        if (residual.angular_magnitude() > 0)
+            paint_circle_vector(g, residual, residual_color, sz_const, pt, log_sz, pix_sz);
+
+        if (received.angular_magnitude() > 0)
+            paint_circle_vector(g, received, received_color, sz_const, pt, log_sz, pix_sz);
+
+        if (final.angular_magnitude() > 0)
+            paint_circle_vector(g, final, final_color, sz_const, pt, log_sz, pix_sz);
+    }
+
+};
+
+std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is_moving, const curvy::puck& puck_a, const curvy::puck& puck_b) {
+    static const auto nil = curvy::circular_vector();
+
+    double sz_constant = puck_a.puck_circle().radius() + puck_b.puck_circle().radius();
+    const auto& a = puck_a.state();
+    const auto& b = puck_b.state();
+    auto pt_a = puck_a.position();
+    auto pt_b = puck_b.position();
+    auto radius_a = puck_a.state().circle().radius();
+    auto radius_b = puck_b.state().circle().radius();
+    auto direction_a = puck_a.direction();
+    auto direction_b = puck_a.direction();
+
+    auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
+    auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, pt_b, radius_a, a_to_b_circle.radius(), sz_constant);
+    auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
+
+    if (!b_is_moving) {
+        return {
+            {a, nil, nil, residual_vector_a_to_b},
+            {nil, nil, impulse_a_to_b, nil}
+        };
+    }
+
+    auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
+    auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, pt_a, radius_b, b_to_a_circle.radius(), sz_constant);
+    auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
+
+    return {{
+        a,
+        residual_vector_a_to_b,
+        impulse_b_to_a,
+        residual_vector_a_to_b.add(impulse_b_to_a, pt_a)
+    },{
+        b,
+        residual_vector_b_to_a,
+        impulse_a_to_b,
+        residual_vector_b_to_a.add(impulse_a_to_b, pt_b)
+    }};
+}
+
 void curvy::impulse_viewer::render()
 {
     if (!pixel_sz_)
@@ -291,27 +360,12 @@ void curvy::impulse_viewer::render()
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
+   
+    auto [a, b] = get_collision_vectors(show_puck_b_vectors_, puck_a_, puck_b_);
+    auto sz_const = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
 
-    double sz_constant = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
-    const auto& circle_vector_a = puck_a_.state();
-    const auto& circle_vector_b = puck_b_.state();
-    auto pt_a = puck_a_.position();
-    auto radius_a = puck_a_.state().circle().radius();
-    auto direction_a = puck_a_.direction();
-    auto pt_b = puck_b_.position();
-
-    auto [circle_of_impulse, impulse_orientation] = circular_direction_through_two_points(pt_a, direction_a, pt_b);
-    auto coefficient = momentum_transfer_factor(pt_a, direction_a, pt_b, radius_a, circle_of_impulse.radius(), sz_constant);
-    auto impulse_vector = curvy::circular_vector_from_linear_magnitude(circle_of_impulse, (impulse_orientation ? 1.0 : -1.0) * coefficient * circle_vector_a.linear_magnitude());
-    auto residual_vector = circle_vector_a.subtract(impulse_vector, puck_a_.position());
-
-    paint_circle_vector(*g, circle_vector_a, colors::Red, sz_constant, pt_a, logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, impulse_vector, colors::Yellow, sz_constant, pt_b, logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, residual_vector, colors::Blue, sz_constant, pt_a, logical_sz_, pixel_sz_);
-
-    if (show_puck_b_vectors_) {
-        paint_circle_vector(*g, circle_vector_b, colors::Blue, sz_constant, pt_b, logical_sz_, pixel_sz_);
-    }
+    a.paint(*g, puck_a_.color(), puck_a_.position(), sz_const, logical_sz_, pixel_sz_);
+    b.paint(*g, puck_b_.color(), puck_b_.position(), sz_const, logical_sz_, pixel_sz_);
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
