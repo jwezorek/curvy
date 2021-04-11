@@ -72,7 +72,7 @@ namespace {
     }
 
     void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
-        paint_circle(g, crc.circle(), colors::White, log_sz, pix_sz);
+        paint_circle(g, crc.circle(), gdi::Color(100, color.GetR(), color.GetG(), color.GetB()), log_sz, pix_sz);
         if (crc.angular_magnitude() != 0)
             paint_arc_arrow(g, crc, color, puck_sz, pt, log_sz, pix_sz);
     }
@@ -82,7 +82,7 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz),
     interaction_(interaction::none),
-    in_motion_(false),
+    b_speed_(0),
     puck_b_theta_(0),
     show_puck_b_vectors_(false)
 {
@@ -115,8 +115,10 @@ void curvy::impulse_viewer::update()
 
 void curvy::impulse_viewer::update(double dt)
 {
-    if (in_motion_) {
-        puck_b_.update(dt);
+    if (b_speed_ != 0) {
+        double old_a_theta = puck_a_.theta();
+        puck_b_theta_ += b_speed_ * dt;
+        sync_b_with_a(old_a_theta);
         render();
     }
 }
@@ -196,15 +198,14 @@ bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
 {
     if (key == VK_INSERT) {
         if (is_key_down) {
-            in_motion_ = !in_motion_;
+            b_speed_ = (b_speed_ == 0) ? 0.15 : 0;
             return true;
         } 
     }
 
     if (key == VK_SPACE) {
         if (is_key_down) {
-            auto speed = puck_b_.state().signed_angular_magnitude();
-            puck_b_.state().set_magnitude(-1.0 * speed);
+            b_speed_ *= -1;
             return true;
         }
     }

@@ -56,7 +56,7 @@ namespace curvy {
         puck puck_b_;
         double puck_b_theta_;
         interaction interaction_;
-        bool in_motion_;
+        double b_speed_;
         bool show_puck_b_vectors_;
     };
 
