@@ -238,8 +238,9 @@ gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
     return back_buffer_.get();
 }
 
-double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, const curvy::point& pt2, double r1, double r2, double d) {
-    auto theta = curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
+double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r1, double r2, double d) {
+
+    auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
     auto min_radius = d / 2.0;
     auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r1 * r1));
 
@@ -314,13 +315,15 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     const auto& b = puck_b.state();
     auto pt_a = puck_a.position();
     auto pt_b = puck_b.position();
+    auto orientation_a = a.orientation();
+    auto orientation_b = b.orientation();
     auto radius_a = puck_a.state().circle().radius();
     auto radius_b = puck_b.state().circle().radius();
     auto direction_a = puck_a.direction();
-    auto direction_b = puck_a.direction();
+    auto direction_b = puck_b.direction();
 
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
-    auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, pt_b, radius_a, a_to_b_circle.radius(), sz_constant);
+    auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a,  pt_b, radius_a, a_to_b_circle.radius(), sz_constant);
     auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
 
@@ -332,7 +335,7 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     }
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
-    auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, pt_a, radius_b, b_to_a_circle.radius(), sz_constant);
+    auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, b_to_a_circle.radius(), sz_constant);
     auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
     auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
