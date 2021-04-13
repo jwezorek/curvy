@@ -252,7 +252,7 @@ double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, b
     }
 
     auto val = (r2 - min_radius) / (r1 - min_radius);
-    return val;
+    return std::sqrt(val);
 }
 
 std::array<double, 4> get_four_levels(double bottom) {

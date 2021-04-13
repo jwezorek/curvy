@@ -111,6 +111,48 @@ std::string curvy::circle::to_string() const
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
+std::tuple<std::tuple<curvy::point, curvy::point>, std::tuple<curvy::point, curvy::point>> curvy::mutual_tangents(const curvy::circle& c1, const curvy::circle& c2)
+{
+    return {};
+}
+
+std::optional<std::tuple<curvy::point, curvy::point>> curvy::intersections(const circle& c1, const circle& c2)
+{
+    auto [x1, y1] = c1.center();
+    auto [x2, y2] = c2.center();
+    auto r1 = c1.radius();
+    auto r2 = c2.radius();
+
+    auto centerdx = x1 - x2;
+    auto centerdy = y1 - y2;
+    auto R = std::sqrt(centerdx * centerdx + centerdy * centerdy);
+
+    if (!(std::abs(r1 - r2) <= R && R <= r1 + r2)) { // no intersection
+        return std::nullopt;
+    }
+    // intersection(s) should exist
+
+    auto R2 = R * R;
+    auto R4 = R2 * R2;
+    auto a = (r1 * r1 - r2 * r2) / (2 * R2);
+    auto r2r2 = (r1 * r1 - r2 * r2);
+    auto c = std::sqrt(2 * (r1 * r1 + r2 * r2) / R2 - (r2r2 * r2r2) / R4 - 1);
+
+    auto fx = (x1 + x2) / 2 + a * (x2 - x1);
+    auto gx = c * (y2 - y1) / 2;
+    auto ix1 = fx + gx;
+    auto ix2 = fx - gx;
+
+    auto fy = (y1 + y2) / 2 + a * (y2 - y1);
+    auto gy = c * (x1 - x2) / 2;
+    auto iy1 = fy + gy;
+    auto iy2 = fy - gy;
+
+    // note if gy == 0 and gx == 0 then the circles are tangent and there is only one solution
+    // but that one solution will just be duplicated as the code is currently written
+    return { { {ix1, iy1},{ix2, iy2} } };
+}
+
 curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle& c)
 {
     return curvy::circle(
