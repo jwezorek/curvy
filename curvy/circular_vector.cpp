@@ -25,113 +25,19 @@ namespace {
         return curvy::circular_vector(curvy::circle(0, center_y, radius), orientation * angular_magnitude);
     }
 
-    /*
-    // angular momentum
-    std::tuple<curvy::circular_vector, curvy::circular_vector> split_canonicalized_vector_into_components(const curvy::circular_vector& cv, const curvy::point& cannonicalized_pt, double min_radius)
+    curvy::circular_vector circular_vector_arithmetic_aux(const curvy::circular_vector& v1, const curvy::circular_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
     {
-        auto src_circle = cv.circle();
-        auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
+        using namespace curvy;
+        auto linear_magnitude_of_sum = op(v1.linear_magnitude() , v2.linear_magnitude());
+        auto direction_of_sum = atan_of_pt(v1.newtonian_vector_at_point(where) + v2.newtonian_vector_at_point(where));
 
-        if (!is_pt_in_front_of_puck(cannonicalized_pt)) {
-            return { curvy::circular_vector(circle_of_impulse, 0, 0), {} };
-        }
+        matrix from_canonical_coords = translation_matrix(where) * rotation_matrix(direction_of_sum);
+        auto curvy_energy = op( get_curvy_energy(v1) , get_curvy_energy(v2));
+        auto cv_sum = unpack_curvy_energy(curvy_energy, linear_magnitude_of_sum);
 
-        auto transfer_coefficient = get_momentum_transfer_factor(curvy::atan_of_pt(cannonicalized_pt), src_circle, circle_of_impulse, min_radius);
-        auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
-        auto impulse_signed_linear_magnitude = sign_of_impulse * transfer_coefficient * cv.linear_magnitude();
-        auto impulse_linear_magnitude = std::abs(impulse_signed_linear_magnitude);
-
-        auto impulse_vector = circular_vector_from_linear_magnitude(circle_of_impulse, impulse_signed_linear_magnitude);
-
-        auto angular_momentum_total = src_circle.radius() * cv.signed_linear_magnitude();
-        auto angular_momentum_impulse = impulse_vector.circle().radius() * impulse_vector.signed_linear_magnitude();
-        auto linear_magnitude = cv.linear_magnitude();
-        auto residual_linear_momentum = linear_magnitude - impulse_linear_magnitude;
-        auto residual_angular_momentum = angular_momentum_total - angular_momentum_impulse;
-        auto orientation_of_residual = residual_angular_momentum > 0;
-        residual_angular_momentum = std::abs(residual_angular_momentum);
-        auto residual_angular_magnitude = (residual_linear_momentum * residual_linear_momentum) / residual_angular_momentum;
-        auto residual_radius = residual_angular_momentum / residual_linear_momentum;
-        auto residual_center_y = (orientation_of_residual) ? residual_radius : -residual_radius;
-        auto residual_theta = (orientation_of_residual) ? (3 * curvy::pi()/2.0) : curvy::pi() / 2.0;
-        auto residual_vector = curvy::circular_vector(curvy::circle(0, residual_center_y, residual_radius), orientation_of_residual, residual_angular_magnitude);
-
-        return { impulse_vector, residual_vector };
+        return apply_matrix(from_canonical_coords, cv_sum);
     }
-    */
 
-    /*
-    // circle inversion + linear momentum...
-    std::tuple<curvy::circular_vector, curvy::circular_vector> split_canonicalized_vector_into_components(const curvy::circular_vector& cv, const curvy::point& cannonicalized_pt, double min_radius)
-    {
-        auto src_circle = cv.circle();
-        auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
-        auto residual_circle = src_circle.invert(circle_of_impulse);
-
-        if (!is_pt_in_front_of_puck(cannonicalized_pt)) {
-            return { curvy::circular_vector(circle_of_impulse, 0, 0), {} };
-        }
-
-        auto total_angular_momentum =  src_circle.radius() * cv.angular_magnitude();
-
-        auto transfer_coefficient = get_momentum_transfer_factor( curvy::atan_of_pt(cannonicalized_pt), src_circle, circle_of_impulse, min_radius);
-
-        auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
-        auto angular_momentum_of_impulse = transfer_coefficient * total_angular_momentum;
-        auto angular_speed_of_impulse = sign_of_impulse * angular_momentum_of_impulse / (circle_of_impulse.radius());
-
-        auto residual_angular_momentum = total_angular_momentum - angular_momentum_of_impulse;
-        auto sign_of_residual = (residual_circle.y() > 0) ? 1.0 : -1.0;
-        auto residual_angular_speed = sign_of_residual * residual_angular_momentum / (residual_circle.radius());
-
-        auto residual_center_y = (sign_of_residual > 0) ? residual_circle.radius() : -residual_circle.radius();
-        auto residual_theta = (sign_of_residual > 0) ? (3 * curvy::pi() / 2.0) : curvy::pi() / 2.0;
-
-        return {
-            curvy::circular_vector(circle_of_impulse, angular_speed_of_impulse),
-            curvy::circular_vector(residual_circle, residual_angular_speed)
-        };
-    }
-    */
-
-
-    /*
-    // centripetal_force
-    std::tuple<curvy::circular_vector, curvy::circular_vector> split_canonicalized_vector_into_components(const curvy::circular_vector& cv, const curvy::point& cannonicalized_pt, double min_radius)
-    {
-        auto src_circle = cv.circle();
-        auto circle_of_impulse = get_circle_of_impulse(cannonicalized_pt);
-
-        if (!is_pt_in_front_of_puck(cannonicalized_pt)) {
-            return { curvy::circular_vector(circle_of_impulse, 0, 0), {} };
-        }
-
-        auto transfer_coefficient = get_momentum_transfer_factor(curvy::atan_of_pt(cannonicalized_pt), src_circle, circle_of_impulse, min_radius);
-        auto sign_of_impulse = (circle_of_impulse.y() > 0) ? 1.0 : -1.0;
-        auto impulse_linear_magnitude = transfer_coefficient * cv.linear_magnitude();
-
-        auto impulse_vector = circular_vector_from_linear_magnitude(circle_of_impulse, sign_of_impulse * impulse_linear_magnitude);
-
-        auto centripetal_force_total = cv.sign() * src_circle.radius() * cv.angular_magnitude() * cv.angular_magnitude();
-        auto centripetal_force_impulse = impulse_vector.sign() * impulse_vector.circle().radius() * impulse_vector.angular_magnitude() * impulse_vector.angular_magnitude();
-        auto residual_centripetal_force = centripetal_force_total - centripetal_force_impulse;
-
-        auto orientation_of_residual = (residual_centripetal_force > 0) ? 1.0: -1.0;
-
-        OutputDebugStringA( (orientation_of_residual > 0) ? "+\n" : "-\n" );
-
-        residual_centripetal_force = std::abs(residual_centripetal_force);
-        auto residual_linear_magnitude = cv.linear_magnitude() - impulse_linear_magnitude;
-
-        auto residual_radius = (residual_linear_magnitude * residual_linear_magnitude) / residual_centripetal_force;
-        auto residual_center_y = orientation_of_residual * residual_radius;
-        auto residual_theta = (orientation_of_residual > 0) ? (3 * curvy::pi() / 2.0) : curvy::pi() / 2.0;
-
-        auto residual_vector = circular_vector_from_linear_magnitude(curvy::circle(0, residual_center_y, residual_radius), orientation_of_residual * residual_linear_magnitude);
-
-        return { impulse_vector, residual_vector };
-    }
-    */
 }
 
 curvy::circular_vector::circular_vector(double cx, double cy, double r, double m) : 
@@ -232,23 +138,12 @@ curvy::point curvy::circular_vector::newtonian_vector_at_point(const point& pt) 
 
 curvy::circular_vector curvy::circular_vector::add(const circular_vector& cv, const point& where) const
 {
-    auto this_vec = newtonian_vector_at_point(where);
-    auto that_vec = cv.newtonian_vector_at_point(where);
-
-    auto vector_sum = this_vec + that_vec;
-    auto linear_magnitude_of_sum = hypot_of_point(vector_sum);
-    auto direction_of_sum = atan_of_pt(vector_sum);
-
-    matrix from_canonical_coords = translation_matrix(where) * rotation_matrix(direction_of_sum);
-    auto curvy_energy = get_curvy_energy(*this) + get_curvy_energy(cv);
-    auto cv_sum = unpack_curvy_energy(curvy_energy, linear_magnitude_of_sum);
-
-    return apply_matrix(from_canonical_coords, cv_sum);
+    return circular_vector_arithmetic_aux(*this, cv, where, [](double v1, double v2) {return v1 + v2; });
 }
 
 curvy::circular_vector curvy::circular_vector::subtract(const circular_vector& cv, const point& where) const
 {
-    return add(-1 * cv, where);
+    return circular_vector_arithmetic_aux(*this, cv, where, [](double v1, double v2) {return v1 - v2; });
 }
 
 std::string curvy::circular_vector::to_string() const
