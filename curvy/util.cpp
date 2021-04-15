@@ -47,6 +47,13 @@ double curvy::normalize_angle(const double theta) {
     return normalize(theta, -pi(), pi());
 }
 
+curvy::point curvy::normalize_pt(const point& pt)
+{
+    auto [x, y] = pt;
+    auto hypot = std::hypot(x, y);
+    return { x / hypot, y / hypot };
+}
+
 double curvy::euclidean_distance(double x1, double y1, double x2, double y2) {
     auto diff_x = x2 - x1;
     auto diff_y = y2 - y1;
