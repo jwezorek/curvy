@@ -19,8 +19,10 @@ LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lPar
 LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool button_down);
 LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
 
-//static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::curvy_world_simulation>(0, 40);
-static std::unique_ptr<curvy::state> g_state = std::make_unique<curvy::impulse_viewer>(0, 20);
+std::unique_ptr<curvy::state> g_simulation = std::make_unique<curvy::curvy_world_simulation>(0, 40);
+std::unique_ptr<curvy::state> g_viewer = std::make_unique<curvy::impulse_viewer>(0, 20);
+
+curvy::state* g_state = g_viewer.get();
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -95,9 +97,21 @@ LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM
     return 0;
 }
 
+int get_client_width(HWND hwnd) {
+    RECT r;
+    GetClientRect(hwnd, &r);
+    return r.right - r.left;
+}
 
 LRESULT HandleKeyboardMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool keydown) {
-
+    if (wParam == VK_RETURN && keydown) {
+        g_state = (g_state == g_simulation.get()) ? g_viewer.get() : g_simulation.get();
+        g_state->set_pixel_dimensions( get_client_width(hwnd) );
+        g_state->initialize();
+        state.update();
+        InvalidateRect(hwnd, NULL, FALSE);
+        return 0;
+    }
     if (state.handle_key_press(wParam, keydown)) {
         state.update();
         InvalidateRect(hwnd, NULL, FALSE);

@@ -17,6 +17,7 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
 
 void curvy::curvy_world_simulation::initialize()
 {
+    pucks_.clear();
     insert({
         curvy::circular_vector{  0,  0, 12.0, 4 },
         0,
@@ -24,7 +25,7 @@ void curvy::curvy_world_simulation::initialize()
     });
 
     insert({
-        curvy::circular_vector{ 0, 0, 12.0, 0 },
+        curvy::circular_vector{ 0, 0, 10.7, 0 },
         pi(),
         colors::Yellow
     });
