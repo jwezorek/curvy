@@ -20,7 +20,7 @@ namespace {
         curvy_energy = std::abs(curvy_energy);
 
         auto angular_magnitude = std::sqrt( linear_magnitude * curvy_energy);
-        auto radius = angular_magnitude / curvy_energy;
+        auto radius = std::sqrt(linear_magnitude) / std::sqrt(curvy_energy);
         auto center_y = orientation * radius;
         return curvy::circular_vector(curvy::circle(0, center_y, radius), orientation * angular_magnitude);
     }

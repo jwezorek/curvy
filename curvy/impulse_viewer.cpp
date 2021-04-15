@@ -340,16 +340,21 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
     auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+
+    curvy::output_debug_message(std::to_string(final_a.linear_magnitude() + final_b.linear_magnitude()));
+
     return {{
         a,
         residual_vector_a_to_b,
         impulse_b_to_a,
-        residual_vector_a_to_b.add(impulse_b_to_a, pt_a)
+        final_a
     },{
         b,
         residual_vector_b_to_a,
         impulse_a_to_b,
-        residual_vector_b_to_a.add(impulse_a_to_b, pt_b)
+        final_b
     }};
 }
 
