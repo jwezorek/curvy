@@ -20,7 +20,7 @@ LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM
 LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
 
 std::unique_ptr<curvy::state> g_simulation = std::make_unique<curvy::curvy_world_simulation>(0, 40);
-std::unique_ptr<curvy::state> g_viewer = std::make_unique<curvy::impulse_viewer>(0, 20);
+std::unique_ptr<curvy::state> g_viewer = std::make_unique<curvy::curvy_vector_viewer>(0, 20);
 
 curvy::state* g_state = g_viewer.get();
 

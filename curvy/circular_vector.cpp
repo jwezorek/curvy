@@ -11,21 +11,21 @@ namespace {
         return (angle > -pi / 2.0 && angle < pi / 2.0);
     }
 
-    double get_curvy_energy(const curvy::circular_vector& cv) {
+    double get_curvy_energy(const curvy::curvy_vector& cv) {
         return cv.signed_angular_magnitude() / cv.circle().radius();
     }
 
-    curvy::circular_vector unpack_curvy_energy(double curvy_energy, double linear_magnitude) {
+    curvy::curvy_vector unpack_curvy_energy(double curvy_energy, double linear_magnitude) {
         auto orientation = (curvy_energy > 0) ? 1.0 : -1.0;
         curvy_energy = std::abs(curvy_energy);
 
         auto angular_magnitude = std::sqrt( linear_magnitude * curvy_energy);
         auto radius = std::sqrt(linear_magnitude) / std::sqrt(curvy_energy);
         auto center_y = orientation * radius;
-        return curvy::circular_vector(curvy::circle(0, center_y, radius), orientation * angular_magnitude);
+        return curvy::curvy_vector(curvy::circle(0, center_y, radius), orientation * angular_magnitude);
     }
 
-    curvy::circular_vector circular_vector_arithmetic_aux(const curvy::circular_vector& v1, const curvy::circular_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
+    curvy::curvy_vector circular_vector_arithmetic_aux(const curvy::curvy_vector& v1, const curvy::curvy_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
     {
         using namespace curvy;
         auto linear_magnitude_of_sum = op(v1.linear_magnitude() , v2.linear_magnitude());
@@ -40,52 +40,52 @@ namespace {
 
 }
 
-curvy::circular_vector::circular_vector(double cx, double cy, double r, double m) : 
+curvy::curvy_vector::curvy_vector(double cx, double cy, double r, double m) : 
     orientation_(m >= 0), circle_(cx, cy, r), angular_magnitude_(std::abs(m))
 {}
 
-curvy::circular_vector::circular_vector(const curvy::circle & c, double m) :
+curvy::curvy_vector::curvy_vector(const curvy::circle & c, double m) :
     orientation_(m >= 0), circle_(c), angular_magnitude_(std::abs(m))
 {}
 
-curvy::circular_vector::circular_vector(const curvy::circle & c, bool o, double m) :
+curvy::curvy_vector::curvy_vector(const curvy::circle & c, bool o, double m) :
     orientation_(o), circle_(c), angular_magnitude_(std::abs(m))
 {
 }
 
-void curvy::circular_vector::set_magnitude(double m)
+void curvy::curvy_vector::set_magnitude(double m)
 {
     orientation_ = m > 0;
     angular_magnitude_ = std::abs(m);
 }
 
-void curvy::circular_vector::set_radius(double r)
+void curvy::curvy_vector::set_radius(double r)
 {
     circle_.set_radius( r );
 }
 
-void curvy::circular_vector::set_circle(const curvy::circle& c)
+void curvy::curvy_vector::set_circle(const curvy::circle& c)
 {
     circle_ = c;
 }
 
-curvy::circle& curvy::circular_vector::circle()
+curvy::circle& curvy::curvy_vector::circle()
 {
     return circle_;
 }
 
-bool curvy::circular_vector::orientation() const
+bool curvy::curvy_vector::orientation() const
 {
     return orientation_;
 }
 
 
-double curvy::circular_vector::angular_magnitude() const
+double curvy::curvy_vector::angular_magnitude() const
 {
     return angular_magnitude_;
 }
 
-curvy::circle curvy::circular_vector::circle() const
+curvy::circle curvy::curvy_vector::circle() const
 {
     return circle_;
 }
@@ -103,32 +103,32 @@ double curvy::circular_vector::direction_angle() const {
 }
 */
 
-double curvy::circular_vector::signed_angular_magnitude() const
+double curvy::curvy_vector::signed_angular_magnitude() const
 {
     return sign() * angular_magnitude_;
 }
 
-double curvy::circular_vector::linear_magnitude() const
+double curvy::curvy_vector::linear_magnitude() const
 {
     return angular_magnitude_ * circle_.radius();
 }
 
-double curvy::circular_vector::signed_linear_magnitude() const
+double curvy::curvy_vector::signed_linear_magnitude() const
 {
     return sign() * linear_magnitude();
 }
 
-double curvy::circular_vector::circumference() const
+double curvy::curvy_vector::circumference() const
 {
     return circle_.circumference();
 }
 
-double curvy::circular_vector::sign() const
+double curvy::curvy_vector::sign() const
 {
     return orientation_ ? 1.0 : -1.0;
 }
 
-curvy::point curvy::circular_vector::newtonian_vector_at_point(const point& pt) const
+curvy::point curvy::curvy_vector::newtonian_vector_at_point(const point& pt) const
 {
     auto angle = direction_at(pt);
     auto magnitude = linear_magnitude();
@@ -136,46 +136,46 @@ curvy::point curvy::circular_vector::newtonian_vector_at_point(const point& pt) 
     return magnitude * vec;
 }
 
-curvy::circular_vector curvy::circular_vector::add(const circular_vector& cv, const point& where) const
+curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& where) const
 {
     return circular_vector_arithmetic_aux(*this, cv, where, [](double v1, double v2) {return v1 + v2; });
 }
 
-curvy::circular_vector curvy::circular_vector::subtract(const circular_vector& cv, const point& where) const
+curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& where) const
 {
     return circular_vector_arithmetic_aux(*this, cv, where, [](double v1, double v2) {return v1 - v2; });
 }
 
-std::string curvy::circular_vector::to_string() const
+std::string curvy::curvy_vector::to_string() const
 {
     return "[ " + circle_.to_string() + " , " + std::to_string(angular_magnitude_) + " ]";
 }
 
-double curvy::circular_vector::direction_at(const point& pt) const
+double curvy::curvy_vector::direction_at(const point& pt) const
 {
     return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
-curvy::circular_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double linear_magnitude)
+curvy::curvy_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double linear_magnitude)
 {
     auto angular_magnitude = linear_magnitude / circ.radius();
-    return curvy::circular_vector(circ, angular_magnitude);
+    return curvy::curvy_vector(circ, angular_magnitude);
 }
 
-curvy::circular_vector curvy::operator*(double scale, const circular_vector& cv)
+curvy::curvy_vector curvy::operator*(double scale, const curvy_vector& cv)
 {
-    return circular_vector(cv.circle(), scale * cv.signed_angular_magnitude());
+    return curvy_vector(cv.circle(), scale * cv.signed_angular_magnitude());
 }
 
-curvy::circular_vector curvy::operator*(const circular_vector& cv, double scale)
+curvy::curvy_vector curvy::operator*(const curvy_vector& cv, double scale)
 {
     return scale * cv;
 }
 
-curvy::circular_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy::circular_vector& cv)
+curvy::curvy_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy::curvy_vector& cv)
 {
     auto circle = curvy::apply_matrix(mat, cv.circle());
-    return curvy::circular_vector(
+    return curvy::curvy_vector(
         circle,
         cv.sign() * cv.angular_magnitude()
     );

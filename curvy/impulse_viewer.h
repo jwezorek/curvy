@@ -24,10 +24,10 @@ namespace curvy {
         none
     };
 
-    class impulse_viewer : public state {
+    class curvy_vector_viewer : public state {
 
     public:
-        impulse_viewer(int px_sz, double log_sz);
+        curvy_vector_viewer(int px_sz, double log_sz);
 
         void initialize() override;
         void update() override;

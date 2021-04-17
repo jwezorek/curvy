@@ -6,12 +6,12 @@
 
 namespace curvy {
 
-    class circular_vector {
+    class curvy_vector {
     public:
 
-        circular_vector( double cx = 0, double cy = 0, double r = 0, double m = 0 );
-        circular_vector(const curvy::circle& c, double m);
-        circular_vector(const curvy::circle& c, bool o, double m);
+        curvy_vector( double cx = 0, double cy = 0, double r = 0, double m = 0 );
+        curvy_vector(const curvy::circle& c, double m);
+        curvy_vector(const curvy::circle& c, bool o, double m);
         void set_magnitude(double m);
         void set_radius(double r);
         void set_circle(const circle& c);
@@ -26,8 +26,8 @@ namespace curvy {
         double circumference() const;
         double sign() const;
         point newtonian_vector_at_point(const point& pt) const;
-        circular_vector add(const circular_vector& cv, const point& where) const;
-        circular_vector subtract(const circular_vector& cv, const point& where) const;
+        curvy_vector add(const curvy_vector& cv, const point& where) const;
+        curvy_vector subtract(const curvy_vector& cv, const point& where) const;
         std::string to_string() const;
         double direction_at(const point& pt) const;
 
@@ -38,12 +38,12 @@ namespace curvy {
         curvy::circle circle_;
     };
 
-    circular_vector operator*(const circular_vector& cv, double scale);
-    circular_vector operator*(double scale, const circular_vector& cv);
+    curvy_vector operator*(const curvy_vector& cv, double scale);
+    curvy_vector operator*(double scale, const curvy_vector& cv);
 
-    circular_vector circular_vector_from_linear_magnitude(const circle& circ, double linear_magnitude);
-    circular_vector operator*(double scalar, const circular_vector& cv);
-    curvy::circular_vector apply_matrix(const curvy::matrix& mat, const curvy::circular_vector& c);
+    curvy_vector circular_vector_from_linear_magnitude(const circle& circ, double linear_magnitude);
+    curvy_vector operator*(double scalar, const curvy_vector& cv);
+    curvy::curvy_vector apply_matrix(const curvy::matrix& mat, const curvy::curvy_vector& c);
     std::tuple<circle, bool> circular_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);
     bool is_in_front_of(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2);
 }

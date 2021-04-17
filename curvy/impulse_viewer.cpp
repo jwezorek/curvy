@@ -51,7 +51,7 @@ namespace {
         return static_cast<gdi::REAL>( radians * 180.0 / curvy::pi() );
     }
 
-    std::array<curvy::point, 3> arrow_poly_from_circle_vec(const curvy::circular_vector& crc, const curvy::point& pt, double puck_sz) {
+    std::array<curvy::point, 3> arrow_poly_from_circle_vec(const curvy::curvy_vector& crc, const curvy::point& pt, double puck_sz) {
         auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
         auto arrow_theta = theta + crc.signed_angular_magnitude();
         auto arror_direction = curvy::direction_on_circle(arrow_theta, crc.orientation());
@@ -63,7 +63,7 @@ namespace {
         return pts;
     }
 
-    void paint_arc_arrow(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
+    void paint_arc_arrow(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
         auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
         gdi::Pen pen(color, 3);
         g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(theta), -to_degrees(crc.signed_angular_magnitude()));
@@ -71,14 +71,14 @@ namespace {
         paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
     }
 
-    void paint_circle_vector(gdi::Graphics& g, const curvy::circular_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
+    void paint_circle_vector(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
         paint_circle(g, crc.circle(), gdi::Color(100, color.GetR(), color.GetG(), color.GetB()), log_sz, pix_sz);
         if (crc.angular_magnitude() != 0)
             paint_arc_arrow(g, crc, color, puck_sz, pt, log_sz, pix_sz);
     }
 }
 
-curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
+curvy::curvy_vector_viewer::curvy_vector_viewer(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz),
     interaction_(interaction::none),
@@ -90,7 +90,7 @@ curvy::impulse_viewer::impulse_viewer(int px_sz, double log_sz) :
     set_pixel_dimensions(px_sz, true);
 }
 
-void curvy::impulse_viewer::initialize()
+void curvy::curvy_vector_viewer::initialize()
 {
     auto r = 0.35;
     const auto south = 3.0 * pi() / 2.0;
@@ -108,12 +108,12 @@ void curvy::impulse_viewer::initialize()
     sync_b_with_a();
 }
 
-void curvy::impulse_viewer::update()
+void curvy::curvy_vector_viewer::update()
 {
     render();
 }
 
-void curvy::impulse_viewer::update(double dt)
+void curvy::curvy_vector_viewer::update(double dt)
 {
     if (b_speed_ != 0) {
         double old_a_theta = puck_a_.theta();
@@ -123,7 +123,7 @@ void curvy::impulse_viewer::update(double dt)
     }
 }
 
-bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down)
+bool curvy::curvy_vector_viewer::handle_mouse_click(const std::tuple<int, int>& pt, bool mouse_down)
 {
     auto loc = from_scr_coords(pt, logical_sz_, pixel_sz_);
 
@@ -154,7 +154,7 @@ bool curvy::impulse_viewer::handle_mouse_click(const std::tuple<int, int>& pt, b
     return false;
 }
 
-bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt)
+bool curvy::curvy_vector_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt)
 {
     if (interaction_ != interaction::none) {
         auto circle_of_rev = puck_a_.state().circle();
@@ -194,7 +194,7 @@ bool curvy::impulse_viewer::handle_mouse_move(const std::tuple<int, int>& pix_pt
     return false;
 }
 
-bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
+bool curvy::curvy_vector_viewer::handle_key_press(unsigned int key, bool is_key_down)
 {
     if (key == VK_INSERT) {
         if (is_key_down) {
@@ -218,7 +218,7 @@ bool curvy::impulse_viewer::handle_key_press(unsigned int key, bool is_key_down)
     return false;
 }
 
-void curvy::impulse_viewer::set_logical_dimensions(double log_sz, bool refresh)
+void curvy::curvy_vector_viewer::set_logical_dimensions(double log_sz, bool refresh)
 {
     logical_sz_ = log_sz;
     if (logical_sz_ && pixel_sz_ && refresh) {
@@ -226,7 +226,7 @@ void curvy::impulse_viewer::set_logical_dimensions(double log_sz, bool refresh)
         render();
     }
 }
-void curvy::impulse_viewer::set_pixel_dimensions(int px_sz, bool refresh) {
+void curvy::curvy_vector_viewer::set_pixel_dimensions(int px_sz, bool refresh) {
     pixel_sz_ = px_sz;
     if (logical_sz_ && pixel_sz_ && refresh) {
         back_buffer_ = std::make_unique<gdi::Bitmap>(px_sz, px_sz);
@@ -234,7 +234,7 @@ void curvy::impulse_viewer::set_pixel_dimensions(int px_sz, bool refresh) {
     }
 }
 
-gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
+gdi::Bitmap* curvy::curvy_vector_viewer::get_bitmap() const
 {
     return back_buffer_.get();
 }
@@ -288,10 +288,10 @@ std::tuple< gdi::Color, gdi::Color, gdi::Color, gdi::Color> get_four_color_level
 }
 
 struct collision_vectors {
-    curvy::circular_vector initial;
-    curvy::circular_vector residual;
-    curvy::circular_vector received;
-    curvy::circular_vector final;
+    curvy::curvy_vector initial;
+    curvy::curvy_vector residual;
+    curvy::curvy_vector received;
+    curvy::curvy_vector final;
 
     void paint(gdi::Graphics& g, gdi::Color color, const curvy::point& pt, double sz_const, double log_sz, int pix_sz) {
         auto [initial_color, residual_color, received_color, final_color] = get_four_color_levels(color);
@@ -312,7 +312,7 @@ struct collision_vectors {
 };
 
 std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is_moving, const curvy::puck& puck_a, const curvy::puck& puck_b) {
-    static const auto nil = curvy::circular_vector();
+    static const auto nil = curvy::curvy_vector();
 
     double sz_constant = puck_a.puck_circle().radius() + puck_b.puck_circle().radius();
     const auto& a = puck_a.state();
@@ -354,7 +354,7 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     }};
 }
 
-void curvy::impulse_viewer::render()
+void curvy::curvy_vector_viewer::render()
 {
     if (!pixel_sz_)
         return;
@@ -377,7 +377,7 @@ void curvy::impulse_viewer::render()
 
 }
 
-curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<double, double>& click_location) const
+curvy::interaction curvy::curvy_vector_viewer::get_interaction(const std::tuple<double, double>& click_location) const
 {
     const auto& circle_of_rev = puck_a_.state().circle();
     if (curvy::circle(circle_of_rev.center(), 1.0).contains(click_location))
@@ -408,7 +408,7 @@ curvy::interaction curvy::impulse_viewer::get_interaction(const std::tuple<doubl
     return interaction::none;
 }
 
-void curvy::impulse_viewer::sync_b_with_a(double old_a_theta)
+void curvy::curvy_vector_viewer::sync_b_with_a(double old_a_theta)
 {
     auto theta_offset = puck_a_.theta() - old_a_theta;
     puck_b_theta_ += theta_offset;
@@ -418,7 +418,7 @@ void curvy::impulse_viewer::sync_b_with_a(double old_a_theta)
 
 }
 
-void curvy::impulse_viewer::rotate_circle_b(const point& pt)
+void curvy::curvy_vector_viewer::rotate_circle_b(const point& pt)
 {
     auto old_theta = puck_b_.theta();
     auto old_position = puck_b_.position();
@@ -430,7 +430,7 @@ void curvy::impulse_viewer::rotate_circle_b(const point& pt)
     puck_b_.set_theta(angle_to_pt(transformed_circle.center(), old_position));
 }
 
-void curvy::impulse_viewer::resize_circle_b(const point& pt)
+void curvy::curvy_vector_viewer::resize_circle_b(const point& pt)
 {
     auto old_position = puck_b_.position();
     auto angle_from_puck = angle_to_pt(puck_b_.position(), pt);
@@ -441,14 +441,14 @@ void curvy::impulse_viewer::resize_circle_b(const point& pt)
     puck_b_.set_theta(angle_to_pt(c.center(), old_position));
 }
 
-void curvy::impulse_viewer::drag_arrow_b(const point& pt)
+void curvy::curvy_vector_viewer::drag_arrow_b(const point& pt)
 {
     auto angle = angle_to_pt(puck_b_.state().circle().center(), pt);
     auto omega = angle - puck_b_.theta();
     puck_b_.set_speed(omega);
 }
 
-bool curvy::impulse_viewer::is_in_arrow_b(const point& pt) const
+bool curvy::curvy_vector_viewer::is_in_arrow_b(const point& pt) const
 {
     double sz_constant = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
     auto pts = arrow_poly_from_circle_vec(puck_b_.state(), puck_b_.position(), sz_constant);

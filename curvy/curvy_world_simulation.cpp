@@ -19,13 +19,13 @@ void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
     insert({
-        curvy::circular_vector{  0,  0, 12.0, 4 },
+        curvy::curvy_vector{  0,  0, 12.0, 4 },
         0,
         colors::Red
     });
 
     insert({
-        curvy::circular_vector{ 0, 0, 10.7, 0 },
+        curvy::curvy_vector{ 0, 0, 10.7, 0 },
         pi(),
         colors::Yellow
     });
@@ -152,7 +152,7 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
     return { curvy::curvy_world_simulation::collisions(), dt };
 }
 
-std::tuple<curvy::circular_vector, curvy::circular_vector> split_into_components(const curvy::puck& subject, const curvy::puck& object) {
+std::tuple<curvy::curvy_vector, curvy::curvy_vector> split_into_components(const curvy::puck& subject, const curvy::puck& object) {
     return { {},{} };
 }
 
