@@ -86,7 +86,7 @@ void curvy::curvy_world_simulation::update()
 void curvy::curvy_world_simulation::update(double dt)
 {
     while (dt > 0) {
-        auto [collisions, when] = get_next_collisions(dt, 1e-10);
+        auto [collisions, when] = get_next_collisions(dt, eps() );
         for (auto& p : pucks_)
             p.update(when);
 
@@ -152,11 +152,23 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
     return { curvy::curvy_world_simulation::collisions(), dt };
 }
 
+std::tuple<curvy::circular_vector, curvy::circular_vector> split_into_components(const curvy::puck& subject, const curvy::puck& object) {
+    return { {},{} };
+}
+
 void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto [p1, p2] = collision;
+    if (p1->is_in_contact_list(*p2))
+        return;
+
     auto tmp = p1->state().signed_angular_magnitude();
     p1->set_speed( p2->state().signed_angular_magnitude());
     p2->set_speed( tmp );
+
+    if (is_in_contact_or_intersecting(*p1, *p2)) {
+        p1->add_to_contact_list(*p2);
+        p2->add_to_contact_list(*p1);
+    }
 }
 
 void curvy::curvy_world_simulation::handle_collisions( collisions& pairs)

@@ -9,6 +9,7 @@ namespace curvy {
     using matrix = Eigen::Matrix<double, 3, 3>;
     using point = std::tuple<double, double>;
 
+    double eps();
     double pi();
     double pi_over_two();
     double three_pi_over_two();

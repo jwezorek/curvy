@@ -4,6 +4,7 @@
 #include <gdiplus.h>
 #include <tuple>
 #include <optional>
+#include <unordered_set>
 #include "colors.h"
 #include "circle.h"
 #include "circular_vector.h"
@@ -38,13 +39,19 @@ namespace curvy {
         gdi::Color color() const;
         circle puck_circle() const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
-
+        void add_to_contact_list(const puck& p);
+        bool is_in_contact_list(const puck& p) const;
     private:
 
+        void update_contact_list();
+
+        std::unordered_set<const puck*> contact_list_;
         double theta_;
         circular_vector state_;
         double puck_radius_;
         double mass_;
         gdi::Color color_;
     };
+
+    bool is_in_contact_or_intersecting(const puck& p1, const puck& p2);
 }

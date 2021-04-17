@@ -21,24 +21,27 @@ namespace {
         return dist - distance_when_touching;
     }
 
-    bool intersects(const curvy::puck& p1, const curvy::puck& p2)
+    bool is_intersecting(const curvy::puck& p1, const curvy::puck& p2)
     {
         return distance_from_intersection(p1, p2) <= 0;
+    }
+
+    bool is_in_contact(const curvy::puck& p1, const curvy::puck& p2, double eps) {
+        return std::abs(distance_from_intersection(p1, p2)) <= eps;
     }
 
     std::optional<double> get_collision_time(const curvy::puck& p1, const curvy::puck& p2, double t1, double t2, double eps) {
         auto p1_at_t2 = p1.update(t2);
         auto p2_at_t2 = p2.update(t2);
 
-        auto distance_from_touching = distance_from_intersection(p1_at_t2 , p2_at_t2);
-        if (distance_from_touching > 0)
+        if (!is_intersecting(p1_at_t2 , p2_at_t2))
             return std::nullopt;
 
-        if (std::abs(distance_from_touching) <= eps)
+        if (is_in_contact(p1_at_t2, p2_at_t2, eps))
             return t2;
 
         auto half_time = (t1 + t2) / 2.0;
-        bool intersects_at_halftime = intersects(p1.update(half_time), p2.update(half_time));
+        bool intersects_at_halftime = is_intersecting(p1.update(half_time), p2.update(half_time));
         if (intersects_at_halftime)
             return get_collision_time(p1, p2, t1, half_time, eps);
         else
@@ -58,6 +61,7 @@ curvy::puck::puck(const circular_vector& crs, double theta, gdi::Color color, do
 { }
 
 void curvy::puck::update(double dt) {
+    update_contact_list();
     theta_ += dt * state_.signed_angular_magnitude();
     theta_ = normalize_angle(theta_);
 }
@@ -162,5 +166,26 @@ void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
     g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
 }
 
+void curvy::puck::add_to_contact_list(const puck& p)
+{
+    contact_list_.insert(&p);
+}
 
+bool curvy::puck::is_in_contact_list(const puck& p) const
+{
+    return contact_list_.find(&p) != contact_list_.end();
+}
 
+void curvy::puck::update_contact_list()
+{
+    std::unordered_set<const puck*> contact_list;
+    std::copy_if(contact_list_.begin(), contact_list_.end(), std::inserter(contact_list, contact_list.end()),
+        [&](const puck* p) { return is_in_contact(*this, *p, eps()); }
+    );
+    contact_list_ = contact_list;
+}
+
+bool curvy::is_in_contact_or_intersecting(const puck& p1, const puck& p2)
+{
+    return is_in_contact(p1, p2, eps()) || is_intersecting(p1, p2);
+}

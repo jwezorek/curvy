@@ -15,6 +15,11 @@ namespace {
 
 }
 
+double curvy::eps()
+{
+    return 1e-10;
+}
+
 double curvy::pi() {
     return g_pi;
 }
