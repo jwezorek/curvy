@@ -45,4 +45,5 @@ namespace curvy {
     circular_vector operator*(double scalar, const circular_vector& cv);
     curvy::circular_vector apply_matrix(const curvy::matrix& mat, const curvy::circular_vector& c);
     std::tuple<circle, bool> circular_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);
+    bool is_in_front_of(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2);
 }

@@ -181,6 +181,13 @@ curvy::circular_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy
     );
 }
 
+bool curvy::is_in_front_of(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2) {
+    matrix to_canonical_coords = rotation_matrix(-direction_at_pt1) * translation_matrix(-pt1);
+    auto [px, py] = curvy::apply_matrix(to_canonical_coords, pt2);
+    auto theta = std::atan2(py, px);
+    return  theta >= -pi() / 2.0 && theta <= pi() / 2.0;
+}
+
 std::tuple<curvy::circle, bool> curvy::circular_direction_through_two_points(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2)
 {
     matrix to_canonical_coords = rotation_matrix(-direction_at_pt1) * translation_matrix(-pt1);

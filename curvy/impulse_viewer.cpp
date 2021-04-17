@@ -241,6 +241,9 @@ gdi::Bitmap* curvy::impulse_viewer::get_bitmap() const
 
 double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r1, double r2, double d) {
 
+    if (!curvy::is_in_front_of(pt1, pt1_direction, pt2))
+        return 0.0;
+
     auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
     auto min_radius = d / 2.0;
     auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r1 * r1));
@@ -313,7 +316,7 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
 
     double sz_constant = puck_a.puck_circle().radius() + puck_b.puck_circle().radius();
     const auto& a = puck_a.state();
-    const auto& b = puck_b.state();
+    const auto& b = (b_is_moving ? 1.0 : 0.0) * puck_b.state();
     auto pt_a = puck_a.position();
     auto pt_b = puck_b.position();
     auto orientation_a = a.orientation();
@@ -327,13 +330,6 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a,  pt_b, radius_a, a_to_b_circle.radius(), sz_constant);
     auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
-
-    if (!b_is_moving) {
-        return {
-            {a, nil, nil, residual_vector_a_to_b},
-            {nil, nil, impulse_a_to_b, nil}
-        };
-    }
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, b_to_a_circle.radius(), sz_constant);
