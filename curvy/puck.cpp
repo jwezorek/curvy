@@ -1,7 +1,7 @@
 #include "puck.h"
 #include "util.h"
 #include "circle.h"
-#include "circular_vector.h"
+#include "curvy_vector.h"
 #include <cmath>
 #include <string>
 

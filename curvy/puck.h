@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include "colors.h"
 #include "circle.h"
-#include "circular_vector.h"
+#include "curvy_vector.h"
 
 namespace gdi = Gdiplus;
 

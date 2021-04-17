@@ -4,7 +4,7 @@
 #include <memory>
 #include "state.h"
 #include "curvy_world_simulation.h"
-#include "impulse_viewer.h"
+#include "curvy_vector_viewer.h"
 #include "util.h"
 #include "circle.h"
 #include "colors.h"
@@ -112,7 +112,7 @@ LRESULT HandleKeyboardMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM 
         InvalidateRect(hwnd, NULL, FALSE);
         return 0;
     }
-    if (state.handle_key_press(wParam, keydown)) {
+    if (state.handle_key_press(static_cast<unsigned int>(wParam), keydown)) {
         state.update();
         InvalidateRect(hwnd, NULL, FALSE);
     }

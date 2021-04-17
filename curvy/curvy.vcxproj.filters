@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="impulse_viewer.cpp">
+    <ClCompile Include="curvy_vector_viewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="puck.cpp">
@@ -33,7 +33,7 @@
     <ClCompile Include="circle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="circular_vector.cpp">
+    <ClCompile Include="curvy_vector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClInclude Include="colors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="impulse_viewer.h">
+    <ClInclude Include="curvy_vector_viewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="state.h">
@@ -59,7 +59,7 @@
     <ClInclude Include="circle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="circular_vector.h">
+    <ClInclude Include="curvy_vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

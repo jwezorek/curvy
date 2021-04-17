@@ -1,9 +1,9 @@
 #include <cmath>
 #include <array>
 #include <Windows.h>
-#include "impulse_viewer.h"
+#include "curvy_vector_viewer.h"
 #include "util.h"
-#include "circular_vector.h"
+#include "curvy_vector.h"
 
 namespace {
 
