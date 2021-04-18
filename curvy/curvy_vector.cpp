@@ -16,6 +16,7 @@ namespace {
     }
 
     curvy::curvy_vector unpack_curvy_energy(double curvy_energy, double linear_magnitude) {
+
         auto orientation = (curvy_energy > 0) ? 1.0 : -1.0;
         curvy_energy = std::abs(curvy_energy);
 
@@ -27,6 +28,12 @@ namespace {
 
     curvy::curvy_vector circular_vector_arithmetic_aux(const curvy::curvy_vector& v1, const curvy::curvy_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
     {
+        if (v1.angular_magnitude() == 0)
+            return v2;
+
+        if (v2.angular_magnitude() == 0)
+            return v1;
+
         using namespace curvy;
         auto linear_magnitude_of_sum = op(v1.linear_magnitude() , v2.linear_magnitude());
         auto direction_of_sum = atan_of_pt(v1.newtonian_vector_at_point(where) + v2.newtonian_vector_at_point(where));
@@ -197,4 +204,30 @@ std::tuple<curvy::circle, bool> curvy::circular_direction_through_two_points(con
     double circle_of_impulse_y = (px * px + py * py) / (2 * py);
     auto c = apply_matrix(from_canonical_coords, curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y)));
     return { c, py > 0 };
+}
+
+double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r, double d) {
+
+    auto min_radius = d / 2.0;
+    if (r < min_radius) {
+        auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
+        auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
+        return r / ir;
+    }
+
+    if (!curvy::is_in_front_of(pt1, pt1_direction, pt2))
+        return 0.0;
+
+    auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
+    auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
+    auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
+
+    if (theta < peak) {
+        auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
+        auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
+        ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
+    }
+
+    auto val = (ir - min_radius) / std::abs( r - min_radius);
+    return std::sqrt(val);
 }

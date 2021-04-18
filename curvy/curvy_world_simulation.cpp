@@ -19,13 +19,13 @@ void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
     insert({
-        curvy::curvy_vector{  0,  0, 12.0, 4 },
+        curvy::curvy_vector{  0,  0, 6, 4 },
         0,
         colors::Red
     });
 
     insert({
-        curvy::curvy_vector{ 0, 0, 10.7, 0 },
+        curvy::curvy_vector{ 0, 0, 5.6, 0 },
         pi(),
         colors::Yellow
     });
@@ -85,6 +85,10 @@ void curvy::curvy_world_simulation::update()
 
 void curvy::curvy_world_simulation::update(double dt)
 {
+    for (auto& p : pucks_) {
+        p.update_contact_list();
+    }
+
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, eps() );
         for (auto& p : pucks_)
@@ -95,6 +99,7 @@ void curvy::curvy_world_simulation::update(double dt)
 
         dt -= when;
     }
+
     render();
 }
 
@@ -130,6 +135,10 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
         for (int j = i + 1; j < n; ++j) {
             puck* p1 = &(pucks_[i]);
             puck* p2 = &(pucks_[j]);
+
+            if (p1->is_in_contact_list(*p2))
+                continue;
+
             auto collision_time = p1->get_collision_time(*p2, dt, eps);
             if (collision_time) {
                 collisions[*collision_time] = { p1,p2 };
@@ -156,14 +165,47 @@ std::tuple<curvy::curvy_vector, curvy::curvy_vector> split_into_components(const
     return { {},{} };
 }
 
+
 void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto [p1, p2] = collision;
     if (p1->is_in_contact_list(*p2))
         return;
 
-    auto tmp = p1->state().signed_angular_magnitude();
-    p1->set_speed( p2->state().signed_angular_magnitude());
-    p2->set_speed( tmp );
+    auto& puck_a = *p1;
+    auto& puck_b = *p2;
+
+    double sz_constant = puck_a.puck_circle().radius() + puck_b.puck_circle().radius();
+    const auto& a = puck_a.state();
+    const auto& b = puck_b.state();
+    auto pt_a = puck_a.position();
+    auto pt_b = puck_b.position();
+    auto orientation_a = a.orientation();
+    auto orientation_b = b.orientation();
+    auto radius_a = puck_a.state().circle().radius();
+    auto radius_b = puck_b.state().circle().radius();
+    auto direction_a = puck_a.direction();
+    auto direction_b = puck_b.direction();
+
+    auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
+    auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a, pt_b, radius_a, sz_constant);
+    auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
+
+    auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
+    auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, sz_constant);
+    auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
+
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+
+    if (std::isnan(final_a.angular_magnitude()) || std::isnan(final_b.angular_magnitude())) {
+        int aaa;
+        aaa=5;
+    }
+
+    puck_a.set_vector(final_a);
+    puck_b.set_vector(final_b);
 
     if (is_in_contact_or_intersecting(*p1, *p2)) {
         p1->add_to_contact_list(*p2);

@@ -61,7 +61,6 @@ curvy::puck::puck(const curvy_vector& crs, double theta, gdi::Color color, doubl
 { }
 
 void curvy::puck::update(double dt) {
-    update_contact_list();
     theta_ += dt * state_.signed_angular_magnitude();
     theta_ = normalize_angle(theta_);
 }
@@ -139,6 +138,13 @@ void curvy::puck::set_position(const point& pt)
     state_.circle().set_center(pt + offset);
 }
 
+void curvy::puck::set_vector(const curvy_vector& v)
+{
+    auto pt = position();
+    state_ = v;
+    theta_ = angle_to_pt(v.circle().center(), pt);
+}
+
 curvy::point curvy::puck::position() const
 {
     return state_.circle().get_point(theta_);
@@ -180,7 +186,7 @@ void curvy::puck::update_contact_list()
 {
     std::unordered_set<const puck*> contact_list;
     std::copy_if(contact_list_.begin(), contact_list_.end(), std::inserter(contact_list, contact_list.end()),
-        [&](const puck* p) { return is_in_contact(*this, *p, eps()); }
+        [&](const puck* p) { return is_in_contact_or_intersecting(*this, *p); }
     );
     contact_list_ = contact_list;
 }

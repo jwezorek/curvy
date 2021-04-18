@@ -27,6 +27,8 @@ namespace curvy {
         void set_circle_rotation_position(double theta, double cx, double cy, double r);
         void set_center_of_revolution(const point& pt);
         void set_position(const point& pt);
+        void set_vector(const curvy_vector& v);
+        void update_contact_list();
 
         point position() const;
         double theta() const;
@@ -43,7 +45,7 @@ namespace curvy {
         bool is_in_contact_list(const puck& p) const;
     private:
 
-        void update_contact_list();
+        
 
         std::unordered_set<const puck*> contact_list_;
         double theta_;
