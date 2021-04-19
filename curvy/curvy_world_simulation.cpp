@@ -9,7 +9,8 @@
 
 curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
-    logical_sz_(log_sz)
+    logical_sz_(log_sz),
+    running_(false)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -25,10 +26,25 @@ void curvy::curvy_world_simulation::initialize()
     });
 
     insert({
-        curvy::curvy_vector{ 0, 0, 5.6, 0 },
+        curvy::curvy_vector{ 0, 0, 5.75, 2.56 },
         pi(),
-        colors::Yellow
+        colors::Green
     });
+
+    insert({
+        curvy::curvy_vector{ 0, 3, 3, -1.26 },
+        pi(),
+        colors::Blue
+    });
+
+
+    /*
+    insert({
+        curvy::curvy_vector{ 2, 2, 3, -1.5 },
+        pi()/3,
+        colors::Yellow
+        });
+    */
 }
 
 void curvy::curvy_world_simulation::set_logical_dimensions(double log_sz, bool refresh)
@@ -51,6 +67,10 @@ bool curvy::curvy_world_simulation::handle_mouse_move(const std::tuple<int, int>
 
 bool curvy::curvy_world_simulation::handle_key_press(unsigned int key, bool is_key_down)
 {
+    if (is_key_down && key == VK_SPACE) {
+        running_ = !running_;
+        return true;
+    }
     return false;
 }
 
@@ -85,6 +105,10 @@ void curvy::curvy_world_simulation::update()
 
 void curvy::curvy_world_simulation::update(double dt)
 {
+    if (!running_) {
+        return;
+    }
+
     for (auto& p : pucks_) {
         p.update_contact_list();
     }

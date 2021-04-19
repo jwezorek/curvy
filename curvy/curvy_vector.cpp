@@ -208,20 +208,18 @@ std::tuple<curvy::circle, bool> curvy::circular_direction_through_two_points(con
 
 double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r, double d) {
 
-    auto min_radius = d / 2.0;
-    if (r < min_radius) {
-        auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
-        auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
-        return r / ir;
-    }
-
     if (!curvy::is_in_front_of(pt1, pt1_direction, pt2))
         return 0.0;
 
+    auto min_radius = d / 2.0;
     auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
     auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
-    auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
 
+    if (r < min_radius) {
+        return r / ir;
+    }
+
+    auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
     if (theta < peak) {
         auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
         auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);

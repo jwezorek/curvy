@@ -45,6 +45,7 @@ namespace curvy {
         std::vector<puck> pucks_;
         double logical_sz_;
         int pixel_sz_;
+        bool running_;
     };
 
 }
