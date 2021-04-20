@@ -155,10 +155,10 @@ std::optional<std::tuple<curvy::point, curvy::point>> curvy::intersections(const
 
 curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle& c)
 {
-    return curvy::circle(
-        curvy::apply_matrix(mat, c.center()),
-        c.radius()
-    );
+    auto east = apply_matrix(mat, c.get_point(0));
+    auto north = apply_matrix(mat, c.get_point(pi_over_two()));
+    auto west = apply_matrix(mat, c.get_point(pi()));
+    return *circle_through_three_points(east, north, west);
 }
 
 
