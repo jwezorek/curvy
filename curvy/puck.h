@@ -29,6 +29,7 @@ namespace curvy {
         void set_position(const point& pt);
         void set_vector(const curvy_vector& v);
         void update_contact_list();
+        void add_to_contact_list(const puck& p);
 
         point position() const;
         double theta() const;
@@ -38,11 +39,12 @@ namespace curvy {
         curvy_vector& state();
         curvy_vector momentum_vector() const;
         std::optional<double> get_collision_time(const puck& p, double dt, double eps) const;
+        std::optional<double> get_boundary_collision_time(const circle& border, double dt, double eps) const;
         gdi::Color color() const;
         circle puck_circle() const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
-        void add_to_contact_list(const puck& p);
         bool is_in_contact_list(const puck& p) const;
+
     private:
 
         

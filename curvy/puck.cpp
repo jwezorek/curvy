@@ -48,6 +48,40 @@ namespace {
             return get_collision_time(p1, p2, half_time, t2, eps);
     }
 
+    double distance_from_intersection_with_boundary(const curvy::puck& p1, const curvy::circle& border)
+    {
+        auto pt_on_boundary = curvy::closest_pt_on_circle(border, p1.position());
+        auto dist = curvy::euclidean_distance(p1.position(), pt_on_boundary);
+        auto distance_when_touching = p1.puck_circle().radius();
+        return dist - distance_when_touching;
+    }
+
+    bool is_intersecting_with_border(const curvy::puck& p1, const curvy::circle& border)
+    {
+        return distance_from_intersection_with_boundary(p1, border) <= 0;
+    }
+
+    bool is_in_contact_with_border(const curvy::puck& p1, const curvy::circle& border, double eps) {
+        return std::abs(distance_from_intersection_with_boundary(p1, border)) <= eps;
+    }
+
+    std::optional<double> get_boundary_collision_time(const curvy::puck& p1, const curvy::circle& border, double t1, double t2, double eps) {
+        auto p1_at_t2 = p1.update(t2);
+
+        if (!is_intersecting_with_border(p1_at_t2, border))
+            return std::nullopt;
+
+        if (is_in_contact_with_border(p1_at_t2, border, eps))
+            return t2;
+
+        auto half_time = (t1 + t2) / 2.0;
+        bool intersects_at_halftime = is_intersecting_with_border(p1.update(half_time), border);
+        if (intersects_at_halftime)
+            return get_boundary_collision_time(p1, border, t1, half_time, eps);
+        else
+            return get_boundary_collision_time(p1, border, half_time, t2, eps);
+    }
+
 }
 
 /*-----------------------------------------------------------------------------------------------------------------------------*/
@@ -89,6 +123,11 @@ curvy::curvy_vector curvy::puck::momentum_vector() const
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
     return ::get_collision_time(*this, p, 0, dt, eps);
+}
+
+std::optional<double> curvy::puck::get_boundary_collision_time(const curvy::circle& border, double dt, double eps) const
+{
+    return ::get_boundary_collision_time(*this, border, 0, dt, eps);
 }
 
 gdi::Color curvy::puck::color() const
