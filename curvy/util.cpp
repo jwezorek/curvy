@@ -17,7 +17,7 @@ namespace {
 
 double curvy::eps()
 {
-    return 1e-10;
+    return 1e-13;
 }
 
 double curvy::pi() {
