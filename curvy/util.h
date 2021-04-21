@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <tuple>
 #include <string>
+#include <optional>
 
 namespace curvy {
 
@@ -48,4 +49,5 @@ namespace curvy {
     void output_debug_message(const std::string& msg);
     point pt_on_unit_circle(double theta);
     bool pt_in_triangle(const point& pt, const point& v1, const point& v2, const point& v3);
+    std::optional<point> line_intersection(const std::tuple<point, point>& line1, const std::tuple<point, point>& line2);
 }

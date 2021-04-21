@@ -300,4 +300,23 @@ bool curvy::pt_in_triangle(const curvy::point& pt, const curvy::point& v1, const
     return !(has_neg && has_pos);
 }
 
+std::optional<curvy::point> curvy::line_intersection(const std::tuple<point, point>& line1, const std::tuple<point, point>& line2)
+{
+    auto [line1_1, line1_2] = line1;
+    auto [line2_1, line2_2] = line2;
+    auto [x1, y1] = line1_1;
+    auto [x2, y2] = line1_2;
+    auto [x3, y3] = line2_1;
+    auto [x4, y4] = line2_2;
+    auto D = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4);
+
+    if (!D)
+        return std::nullopt;
+
+    return {{
+        ((x1*y2 - y1*x2)*(x3-x4) - (x1 - x2)*(x3*y4 - y3*x4)) / D,
+        ((x1*y2 - y1*x2)*(y3-y4) - (y1 - y2)*(x3*y4 - y3*x4)) / D
+    }};
+}
+
 
