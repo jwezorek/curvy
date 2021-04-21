@@ -215,17 +215,20 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
     auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
 
+    double val;
     if (r < min_radius) {
-        return r / ir;
+        val = r / ir;
+    } else {
+
+        auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
+        if (theta < peak) {
+            auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
+            auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
+            ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
+        }
+
+        val = (ir - min_radius) / std::abs(r - min_radius);
     }
 
-    auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
-    if (theta < peak) {
-        auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
-        auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
-        ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
-    }
-
-    auto val = (ir - min_radius) / std::abs( r - min_radius);
     return std::sqrt(val);
 }
