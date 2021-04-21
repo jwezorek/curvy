@@ -235,20 +235,20 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
         return std::nullopt;
 
     auto [pt1, pt2] = *intersection_pts;
-    if (euclidean_distance(pt1, pt2) <= eps())
-        return { { mid_circle_of_tangent_circles(c1,c2), circle(0,0,0) } };
-
     auto [tangent_1, tangent_2] = mutual_tangents(c1, c2);
     auto center_1 = line_intersection(tangent_1, tangent_2);
 
     if (!center_1) {
         // the circles have the same radius so the
-        // mid-circle is degenerate ...
-        // TODO: handle this.
+        // mid-circle is degenerate.
+        // TODO: handle this by changing curvy::circle to be able to be degenerate...
         return std::nullopt;
     }
 
     auto mid_circle_1 = circle(*center_1, euclidean_distance(*center_1, pt1));
-    auto mid_circle_2 = orthogonal_circle(mid_circle_1, pt1, pt2);
+    auto mid_circle_2 = (euclidean_distance(pt1, pt2) > eps()) ?
+        orthogonal_circle(mid_circle_1, pt1, pt2) :
+        circle(0, 0, 0);
+
     return { { mid_circle_1 , mid_circle_2 } };
 }

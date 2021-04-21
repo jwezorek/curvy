@@ -354,20 +354,6 @@ void curvy::curvy_vector_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    /*
-    auto c1 = circle(4, 4, 4.5);
-    auto c2 = circle(-1.5, -0.5, 2.2);
-    paint_circle(*g, c1, colors::White, logical_sz_, pixel_sz_);
-    paint_circle(*g, c2, colors::White, logical_sz_, pixel_sz_);
-    auto [t1, t2] = mutual_tangents(c1, c2);
-    auto [p1, p2] = t1;
-    auto [p3, p4] = t2;
-    paint_line_segment(*g, colors::Aquamarine, p1, p2, logical_sz_, pixel_sz_);
-    paint_line_segment(*g, colors::Aquamarine, p3, p4, logical_sz_, pixel_sz_);
-    auto intersection = line_intersection(t1, t2);
-    paint_circle(*g, circle(*intersection,0.05), colors::Aquamarine, logical_sz_, pixel_sz_);
-    */
-
     auto [a, b] = get_collision_vectors(show_puck_b_vectors_, puck_a_, puck_b_);
     auto sz_const = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
 
@@ -376,7 +362,6 @@ void curvy::curvy_vector_viewer::render()
 
     puck_a_.paint(*g, logical_sz_, pixel_sz_);
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
-
 }
 
 curvy::interaction curvy::curvy_vector_viewer::get_interaction(const std::tuple<double, double>& click_location) const
