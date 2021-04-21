@@ -12,6 +12,13 @@ namespace {
         return { x,y };
     }
 
+    void paint_line_segment(gdi::Graphics& g, gdi::Color color, const curvy::point& p1, const curvy::point& p2, double log_sz, int pix_sz) {
+        auto [x1, y1] = to_scr_point(p1, log_sz, pix_sz);
+        auto [x2, y2] = to_scr_point(p2, log_sz, pix_sz);
+        gdi::Pen pen(color, 3);
+        g.DrawLine(&pen, x1, y1, x2, y2);
+    }
+
     void paint_triangle(gdi::Graphics& g, gdi::Color color, const curvy::point& p1, const curvy::point& p2, const curvy::point& p3, double log_sz, int pix_sz) {
         gdi::Point ary[3] = {
             to_scr_point(p1, log_sz, pix_sz),
@@ -346,7 +353,18 @@ void curvy::curvy_vector_viewer::render()
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
-   
+
+    /*
+    auto c1 = circle(4, 4, 4.5);
+    auto c2 = circle(-3, -1, 2.2);
+    paint_circle(*g, c1, colors::White, logical_sz_, pixel_sz_);
+    paint_circle(*g, c2, colors::White, logical_sz_, pixel_sz_);
+    auto [t1, t2] = mutual_tangents(c1, c2);
+    auto [p1, p2] = t1;
+    auto [p3, p4] = t2;
+    paint_line_segment(*g, colors::Red, p1, p2, logical_sz_, pixel_sz_);
+    paint_line_segment(*g, colors::Red, p3, p4, logical_sz_, pixel_sz_);
+    */
     auto [a, b] = get_collision_vectors(show_puck_b_vectors_, puck_a_, puck_b_);
     auto sz_const = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
 
