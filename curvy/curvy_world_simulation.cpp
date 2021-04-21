@@ -44,7 +44,7 @@ void curvy::curvy_world_simulation::initialize()
     });
 
     insert({
-        curvy::curvy_vector{ 6, 0, 8, 0.43 * 2.5 },
+        curvy::curvy_vector{ 6, 0, 8, 0.37 * 2.5 },
         -pi() / 2.0,
         colors::Purple
         });

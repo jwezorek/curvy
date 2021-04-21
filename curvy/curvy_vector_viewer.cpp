@@ -353,7 +353,6 @@ void curvy::curvy_vector_viewer::render()
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
-
     
     auto [a, b] = get_collision_vectors(show_puck_b_vectors_, puck_a_, puck_b_);
     auto sz_const = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();

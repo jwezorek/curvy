@@ -35,6 +35,7 @@ namespace curvy {
 
     std::tuple<std::tuple<point,point>, std::tuple<point, point>> mutual_tangents(const circle& c1, const circle& c2);
     std::optional<std::tuple<point, point>> intersections(const circle& c1, const circle& c2);
+    circle orthogonal_circle(const circle& c, const point& pt1, const point& pt2);
     circle apply_matrix(const matrix& mat, const circle& c);
     point closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt);
     std::optional<circle> circle_through_three_points(const point& pt1, const point& pt2, const point& pt3);

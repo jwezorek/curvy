@@ -1,4 +1,5 @@
 #include "circle.h"
+#include "curvy_vector.h"
 #include <cmath>
 #include <complex>
 #include <optional>
@@ -165,6 +166,14 @@ std::optional<std::tuple<curvy::point, curvy::point>> curvy::intersections(const
     // note if gy == 0 and gx == 0 then the circles are tangent and there is only one solution
     // but that one solution will just be duplicated as the code is currently written
     return { { {ix1, iy1},{ix2, iy2} } };
+}
+
+curvy::circle curvy::orthogonal_circle(const circle& c, const point& pt1, const point& pt2)
+{
+    auto direction_at_pt1 = direction_on_circle( angle_to_pt(c.center(), pt1), true);
+    auto otho_diection_at_pt1 = normalize_angle(direction_at_pt1 + pi_over_two());
+    auto [ortho, dummy] = circular_direction_through_two_points(pt1, otho_diection_at_pt1, pt2);
+    return ortho;
 }
 
 curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle& c)
