@@ -113,7 +113,21 @@ std::string curvy::circle::to_string() const
 
 std::tuple<std::tuple<curvy::point, curvy::point>, std::tuple<curvy::point, curvy::point>> curvy::mutual_tangents(const curvy::circle& c1, const curvy::circle& c2)
 {
-    return {};
+    // https://en.wikipedia.org/wiki/Tangent_lines_to_circles#Analytic_geometry
+
+    auto [x1, y1] = c1.center();
+    auto [x2, y2] = c2.center();
+    auto r = c1.radius();
+    auto R = c2.radius();
+    auto gamma = -std::atan2((y2 - y1) , (x2 - x1));
+    auto beta = -std::asin((R - r) / std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+    auto alpha1 = gamma + beta;
+    auto alpha2 = gamma - beta;
+
+    return {
+        {{x1 + r * std::sin(alpha1), y1 + r * std::cos(alpha1) }, {x2 + R * std::sin(alpha1), y2 + R * std::cos(alpha1)}},
+        {{x1 - r * std::sin(alpha2), y1 - r * std::cos(alpha2) }, {x2 - R * std::sin(alpha2), y2 - R * std::cos(alpha2)}}
+    };
 }
 
 std::optional<std::tuple<curvy::point, curvy::point>> curvy::intersections(const circle& c1, const circle& c2)
