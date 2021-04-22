@@ -41,15 +41,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!RegisterClass(&wc))
         return 1;
 
-    //int sz = 1400;
-    int sz = 800;
+    int sz = 1120;
+    //int sz = 800;
     RECT r = { 20, 20, sz, sz };
     AdjustWindowRect( &r, WS_BORDER | WS_SYSMENU | WS_VISIBLE, TRUE);
 
     HWND hwnd = CreateWindow(wc.lpszClassName,
         L"curvy",
         WS_BORDER | WS_SYSMENU | WS_VISIBLE,
-        r.left, r.top, r.right - r.left, r.bottom - r.top + 3, 0, 0, hInstance, NULL);
+        20, 20, 1096, 1119, 0, 0, hInstance, NULL);
+
+    GetClientRect(hwnd, &r);
+    curvy::output_debug_message(std::to_string(r.right - r.left));
+    curvy::output_debug_message(std::to_string(r.bottom - r.top));
 
     auto last_time = chrono::high_resolution_clock::now();
     while (true) {

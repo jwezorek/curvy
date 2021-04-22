@@ -251,9 +251,9 @@ void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     puck_a.set_vector(final_a);
     puck_b.set_vector(final_b);
 
-    if (is_in_contact_or_intersecting(*p1, *p2)) {
-        p1->add_to_contact_list(*p2);
-        p2->add_to_contact_list(*p1);
+    if (is_in_contact_or_intersecting(puck_a, puck_b)) {
+        puck_a.add_to_contact_list( puck_b );
+        puck_b.add_to_contact_list( puck_a );
     }
 }
 
