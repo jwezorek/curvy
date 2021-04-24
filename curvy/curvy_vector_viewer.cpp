@@ -317,17 +317,17 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
     auto coefficient_a_to_b = curvy::momentum_transfer_factor(pt_a, direction_a, orientation_a,  pt_b, radius_a,  sz_constant);
     auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
-    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_a, sz_constant });
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = curvy::momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b,  sz_constant);
     auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
-    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_b, sz_constant });
 
-    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
-    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_a, sz_constant });
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_b, sz_constant });
 
-    curvy::output_debug_message(std::to_string(final_a.linear_magnitude() + final_b.linear_magnitude()));
+    //curvy::output_debug_message(std::to_string(final_a.linear_magnitude() + final_b.linear_magnitude()));
 
     return {{
         a,
@@ -353,6 +353,20 @@ void curvy::curvy_vector_viewer::render()
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
+
+    /*
+    auto c1 = circle(0.044590, 2.301422, 3.000000);
+    auto c2 = circle(0.044590, -0.347866, 0.350712);
+
+    paint_circle(*g, c1, colors::Azure, logical_sz_, pixel_sz_);
+    paint_circle(*g, c2, colors::Azure, logical_sz_, pixel_sz_);
+
+    auto [line_1, line_2] = mutual_tangents(c1, c2);
+    auto [pt1, pt2] = line_1;
+    auto [pt3, pt4] = line_2;
+    paint_line_segment(*g, colors::Yellow, pt1, pt2, logical_sz_, pixel_sz_);
+    paint_line_segment(*g, colors::Yellow, pt3, pt4, logical_sz_, pixel_sz_);
+    */
 
     auto [a, b] = get_collision_vectors(show_puck_b_vectors_, puck_a_, puck_b_);
     auto sz_const = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();

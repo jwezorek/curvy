@@ -97,18 +97,6 @@ curvy::circle curvy::curvy_vector::circle() const
     return circle_;
 }
 
-/*
-curvy::point curvy::circular_vector::position() const {
-    return {
-        circle_.x() + circle_.radius() * std::cos(theta_),
-        circle_.y() + circle_.radius() * std::sin(theta_)
-    };
-}
-
-double curvy::circular_vector::direction_angle() const {
-    return direction_on_circle(theta_, orientation_);
-}
-*/
 
 double curvy::curvy_vector::signed_angular_magnitude() const
 {
@@ -141,16 +129,6 @@ curvy::point curvy::curvy_vector::newtonian_vector_at_point(const point& pt) con
     auto magnitude = linear_magnitude();
     auto vec = point{ std::cos(angle), std::sin(angle) };
     return magnitude * vec;
-}
-
-curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& where) const
-{
-    return circular_vector_arithmetic_aux(*this, cv, where, [](double v1, double v2) {return v1 + v2; });
-}
-
-curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& where) const
-{
-    return circular_vector_arithmetic_aux(*this, cv, where, [](double v1, double v2) {return v1 - v2; });
 }
 
 std::string curvy::curvy_vector::to_string() const
@@ -232,3 +210,99 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
 
     return std::sqrt(val);
 }
+
+struct circle_and_orientation {
+    double direction;
+    curvy::circle c;
+    bool orientation;
+
+    circle_and_orientation(double d, const curvy::circle& c, bool o) :
+        direction(d), c(c), orientation(o)
+    {}
+};
+
+void insert_circle_and_orientation(std::vector<circle_and_orientation>& vec, const curvy::circle& c, const curvy::point& where) {
+    vec.emplace_back(curvy::direction_on_circle(c, where, true), c, true );
+    vec.emplace_back(curvy::direction_on_circle(c, where, false), c, false);
+}
+
+std::vector<circle_and_orientation> get_circles_and_orientations(const curvy::circle& c1, const curvy::circle& c2, const curvy::point& where) {
+    
+    auto midcircles = curvy::mid_circles(c1 , c2);
+    if (!midcircles)
+        return {};
+    auto [mid_circle_1, mid_circle_2] = midcircles.value();
+
+    std::vector<circle_and_orientation> output;
+    insert_circle_and_orientation(output, c1, where);
+    if (c2.radius() > 0)
+        insert_circle_and_orientation(output, c2, where);
+
+    return output;
+}
+
+circle_and_orientation find_best_mid_circle(double direction, const curvy::circle& c1, const curvy::circle& c2, const curvy::vector_arithmetic_context& ctxt) {
+    auto candidates = get_circles_and_orientations(c1, c2, ctxt.pt);
+    auto max_cosine_measure = -1.0;
+    const circle_and_orientation* best_choice = nullptr;
+
+    auto target_vector = curvy::pt_on_unit_circle(direction);
+    for (const auto& candidate : candidates) {
+        if (candidate.c.radius() < ctxt.sz_constant/2.0)
+            continue;
+        auto candidate_vector = curvy::pt_on_unit_circle(candidate.direction);
+        auto cosine_measure = curvy::dot_product(target_vector, candidate_vector);
+        if (cosine_measure > max_cosine_measure) {
+            max_cosine_measure = cosine_measure;
+            best_choice = &candidate;
+        }
+    }
+
+    return *best_choice;
+}
+
+//#define INVERSION
+
+#ifdef INVERSION
+curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
+{
+    if (angular_magnitude() == 0)
+        return cv;
+
+    if (cv.angular_magnitude() == 0)
+        return *this;
+
+    auto linear_magnitude_of_sum = this->linear_magnitude() + cv.linear_magnitude();
+    auto direction_of_sum = atan_of_pt(this->newtonian_vector_at_point(ctxt.pt) + cv.newtonian_vector_at_point(ctxt.pt));
+    auto mid_circle = find_best_mid_circle(direction_of_sum, this->circle(), cv.circle(), ctxt);
+    auto sign = mid_circle.orientation ? 1.0 : -1.0;
+
+    return curvy::circular_vector_from_linear_magnitude(mid_circle.c, sign * linear_magnitude_of_sum);
+}
+
+
+curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
+{
+    auto linear_magnitude_of_sum = this->linear_magnitude() - cv.linear_magnitude();
+    auto mid_circle = this->circle().invert(cv.circle());
+    auto sign = -1.0 * cv.sign();
+
+    return curvy::circular_vector_from_linear_magnitude(mid_circle, sign * linear_magnitude_of_sum);
+}
+#else
+
+/* conservation of a second quantity + newtonian vector direction */
+
+curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
+{
+    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt, [](double v1, double v2) {return v1 + v2; });
+}
+
+curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
+{
+    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt, [](double v1, double v2) {return v1 - v2; });
+}
+
+#endif
+
+

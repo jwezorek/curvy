@@ -151,9 +151,16 @@ std::optional<std::tuple<curvy::point, curvy::point>> curvy::intersections(const
     auto centerdy = y1 - y2;
     auto R = std::sqrt(centerdx * centerdx + centerdy * centerdy);
 
-    if (!(std::abs(r1 - r2) <= R && R <= r1 + r2)) { // no intersection
+    
+    if (!(std::abs(r1 - r2) <= R  && R <= r1 + r2 )) { // no intersection
+
+        //output_debug_message("---");
+        //output_debug_message(c1.to_string());
+        //output_debug_message(c2.to_string());
+
         return std::nullopt;
     }
+
     // intersection(s) should exist
 
     auto R2 = R * R;
@@ -230,6 +237,10 @@ std::optional<curvy::circle> curvy::circle_through_three_points(const point& pt1
 
 std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const circle& c1, const circle& c2)
 {
+    if (c1 == c2) {
+        return { { c1, circle(0,0,0) } };
+    }
+
     auto intersection_pts = intersections(c1, c2);
     if (!intersection_pts)
         return std::nullopt;
@@ -239,9 +250,10 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
     auto center_1 = line_intersection(tangent_1, tangent_2);
 
     if (!center_1) {
-        // the circles have the same radius so the
-        // mid-circle is degenerate.
-        // TODO: handle this by changing curvy::circle to be able to be degenerate...
+        //curvy::output_debug_message(c1.to_string());
+        //curvy::output_debug_message(c2.to_string());
+        // the circles must have no outer tangent.
+        // TODO: handle this 
         return std::nullopt;
     }
 
@@ -251,4 +263,17 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
         circle(0, 0, 0);
 
     return { { mid_circle_1 , mid_circle_2 } };
+}
+
+bool curvy::operator==(const circle& c1, const circle& c2)
+{
+    return euclidean_distance(c1.center(), c2.center()) <= eps() &&
+        std::abs(c1.radius() - c2.radius()) <= eps();
+}
+
+double curvy::direction_on_circle(const curvy::circle& c, const curvy::point& pt, bool orientation) {
+
+    auto theta = angle_to_pt(c.center(), pt);
+    return direction_on_circle(theta, orientation);
+
 }

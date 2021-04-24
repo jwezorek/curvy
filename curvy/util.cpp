@@ -99,6 +99,13 @@ curvy::point curvy::operator*(const point& a, double scale)
     return scale * a;
 }
 
+double curvy::dot_product(const point& a, const point& b)
+{
+    auto [x1, y1] = a;
+    auto [x2, y2] = b;
+    return x1 * x2 + y1 * y2;
+}
+
 std::string curvy::to_string(const point& pt)
 {
     auto [x, y] = pt;

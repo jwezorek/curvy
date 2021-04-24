@@ -6,6 +6,11 @@
 
 namespace curvy {
 
+    struct vector_arithmetic_context {
+        point pt;
+        double sz_constant;
+    };
+
     class curvy_vector {
     public:
 
@@ -26,8 +31,8 @@ namespace curvy {
         double circumference() const;
         double sign() const;
         point newtonian_vector_at_point(const point& pt) const;
-        curvy_vector add(const curvy_vector& cv, const point& where) const;
-        curvy_vector subtract(const curvy_vector& cv, const point& where) const;
+        curvy_vector add(const curvy_vector& cv, const vector_arithmetic_context& where) const;
+        curvy_vector subtract(const curvy_vector& cv, const vector_arithmetic_context& where) const;
         std::string to_string() const;
         double direction_at(const point& pt) const;
 

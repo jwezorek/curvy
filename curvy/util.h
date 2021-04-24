@@ -25,6 +25,7 @@ namespace curvy {
     point operator-(const point& a, const point& b);
     point operator*(double scale, const point& a);
     point operator*(const point& a, double scale);
+    double dot_product(const point& a, const point& b);
     std::string to_string(const point& pt);
     point apply_matrix(const matrix& mat, const point& pt);
     matrix rotation_matrix(double cos_theta, double sin_theta);
