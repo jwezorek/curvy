@@ -20,13 +20,13 @@ void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
     insert({
-        curvy::curvy_vector{  0, 0, 5, 2 * 2.5 },
+        curvy::curvy_vector{  0, 0, 5, 2 * 2.2 },
         0,
         colors::Red
     });
 
     insert({
-        curvy::curvy_vector{ 0, 0, 5, 2 * 2.5 },
+        curvy::curvy_vector{ 0, 0, 5, 2 * 2.2 },
         pi()/2.0,
         colors::Green
     });
@@ -44,7 +44,7 @@ void curvy::curvy_world_simulation::initialize()
     });
 
     insert({
-        curvy::curvy_vector{ 6, 0, 8, 0.52 * 2.5 },
+        curvy::curvy_vector{ 6, 0, 8, 1 * 2.5 },
         -pi() / 2.0,
         colors::Purple
         });
@@ -238,15 +238,15 @@ void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
     auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a, pt_b, radius_a, sz_constant);
     auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
-    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_a , sz_constant });
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_a , pt_b });
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, sz_constant);
     auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
-    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_b, sz_constant });
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_b, pt_a });
 
-    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_a, sz_constant });
-    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_b, sz_constant });
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_a, pt_b });
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_b, pt_a });
 
     puck_a.set_vector(final_a);
     puck_b.set_vector(final_b);

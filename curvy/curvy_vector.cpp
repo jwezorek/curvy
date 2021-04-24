@@ -242,13 +242,14 @@ std::vector<circle_and_orientation> get_circles_and_orientations(const curvy::ci
 }
 
 circle_and_orientation find_best_mid_circle(double direction, const curvy::circle& c1, const curvy::circle& c2, const curvy::vector_arithmetic_context& ctxt) {
-    auto candidates = get_circles_and_orientations(c1, c2, ctxt.pt);
+    using namespace curvy;
+    auto candidates = get_circles_and_orientations(c1, c2, ctxt.pt1);
     auto max_cosine_measure = -1.0;
     const circle_and_orientation* best_choice = nullptr;
 
-    auto target_vector = curvy::pt_on_unit_circle(direction);
+    auto target_vector = curvy::normalize_pt(ctxt.pt1 - ctxt.pt2);
     for (const auto& candidate : candidates) {
-        if (candidate.c.radius() < ctxt.sz_constant/2.0)
+        if (candidate.c.radius() < euclidean_distance(ctxt.pt1, ctxt.pt2) / 2.0)
             continue;
         auto candidate_vector = curvy::pt_on_unit_circle(candidate.direction);
         auto cosine_measure = curvy::dot_product(target_vector, candidate_vector);
@@ -261,7 +262,7 @@ circle_and_orientation find_best_mid_circle(double direction, const curvy::circl
     return *best_choice;
 }
 
-//#define INVERSION
+#define INVERSION
 
 #ifdef INVERSION
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
@@ -273,7 +274,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const vecto
         return *this;
 
     auto linear_magnitude_of_sum = this->linear_magnitude() + cv.linear_magnitude();
-    auto direction_of_sum = atan_of_pt(this->newtonian_vector_at_point(ctxt.pt) + cv.newtonian_vector_at_point(ctxt.pt));
+    auto direction_of_sum = atan_of_pt(this->newtonian_vector_at_point(ctxt.pt1) + cv.newtonian_vector_at_point(ctxt.pt1));
     auto mid_circle = find_best_mid_circle(direction_of_sum, this->circle(), cv.circle(), ctxt);
     auto sign = mid_circle.orientation ? 1.0 : -1.0;
 
@@ -295,12 +296,12 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
 {
-    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt, [](double v1, double v2) {return v1 + v2; });
+    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt1, [](double v1, double v2) {return v1 + v2; });
 }
 
 curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
 {
-    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt, [](double v1, double v2) {return v1 - v2; });
+    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt1, [](double v1, double v2) {return v1 - v2; });
 }
 
 #endif

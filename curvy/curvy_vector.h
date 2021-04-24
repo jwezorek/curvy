@@ -7,8 +7,8 @@
 namespace curvy {
 
     struct vector_arithmetic_context {
-        point pt;
-        double sz_constant;
+        point pt1;
+        point pt2;
     };
 
     class curvy_vector {
