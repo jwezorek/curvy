@@ -244,6 +244,9 @@ std::vector<circle_and_orientation> get_circles_and_orientations(const curvy::ci
 circle_and_orientation find_best_mid_circle(double direction, const curvy::circle& c1, const curvy::circle& c2, const curvy::vector_arithmetic_context& ctxt) {
     using namespace curvy;
     auto candidates = get_circles_and_orientations(c1, c2, ctxt.pt1);
+    if (candidates.empty()) {
+        return { 0, {0,0,0}, 0 }; // TODO: handle degenerate circles.
+    }
     auto max_cosine_measure = -1.0;
     const circle_and_orientation* best_choice = nullptr;
 
