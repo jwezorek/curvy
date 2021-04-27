@@ -265,6 +265,16 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
     return { { mid_circle_1 , mid_circle_2 } };
 }
 
+double curvy::to_angle_of_curvature(const circular_direction& cd, double unit)
+{
+    return 0.0;
+}
+
+curvy::circular_direction curvy::from_angle_of_curvature(double theta, double unit)
+{
+    return circular_direction();
+}
+
 bool curvy::operator==(const circle& c1, const circle& c2)
 {
     return euclidean_distance(c1.center(), c2.center()) <= eps() &&

@@ -141,6 +141,11 @@ double curvy::curvy_vector::direction_at(const point& pt) const
     return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
+curvy::circular_direction curvy::curvy_vector::circular_direction() const
+{
+    return { circle_.radius(), orientation_ };
+}
+
 curvy::curvy_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double linear_magnitude)
 {
     auto angular_magnitude = linear_magnitude / circ.radius();
@@ -209,60 +214,6 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     }
 
     return std::sqrt(val);
-}
-
-struct circle_and_orientation {
-    double direction;
-    curvy::circle c;
-    bool orientation;
-
-    circle_and_orientation(double d, const curvy::circle& c, bool o) :
-        direction(d), c(c), orientation(o)
-    {}
-};
-
-void insert_circle_and_orientation(std::vector<circle_and_orientation>& vec, const curvy::circle& c, const curvy::point& where) {
-    vec.emplace_back(curvy::direction_on_circle(c, where, true), c, true );
-    vec.emplace_back(curvy::direction_on_circle(c, where, false), c, false);
-}
-
-std::vector<circle_and_orientation> get_circles_and_orientations(const curvy::circle& c1, const curvy::circle& c2, const curvy::point& where) {
-    
-    auto midcircles = curvy::mid_circles(c1 , c2);
-    if (!midcircles)
-        return {};
-    auto [mid_circle_1, mid_circle_2] = midcircles.value();
-
-    std::vector<circle_and_orientation> output;
-    insert_circle_and_orientation(output, c1, where);
-    if (c2.radius() > 0)
-        insert_circle_and_orientation(output, c2, where);
-
-    return output;
-}
-
-circle_and_orientation find_best_mid_circle(double direction, const curvy::circle& c1, const curvy::circle& c2, const curvy::vector_arithmetic_context& ctxt) {
-    using namespace curvy;
-    auto candidates = get_circles_and_orientations(c1, c2, ctxt.pt1);
-    if (candidates.empty()) {
-        return { 0, {0,0,0}, 0 }; // TODO: handle degenerate circles.
-    }
-    auto max_cosine_measure = -1.0;
-    const circle_and_orientation* best_choice = nullptr;
-
-    auto target_vector = curvy::normalize_pt(ctxt.pt1 - ctxt.pt2);
-    for (const auto& candidate : candidates) {
-        if (candidate.c.radius() < euclidean_distance(ctxt.pt1, ctxt.pt2) / 2.0)
-            continue;
-        auto candidate_vector = curvy::pt_on_unit_circle(candidate.direction);
-        auto cosine_measure = curvy::dot_product(target_vector, candidate_vector);
-        if (cosine_measure > max_cosine_measure) {
-            max_cosine_measure = cosine_measure;
-            best_choice = &candidate;
-        }
-    }
-
-    return *best_choice;
 }
 
 /* conservation of a second quantity + newtonian vector direction */

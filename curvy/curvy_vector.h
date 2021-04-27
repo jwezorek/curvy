@@ -35,7 +35,7 @@ namespace curvy {
         curvy_vector subtract(const curvy_vector& cv, const vector_arithmetic_context& where) const;
         std::string to_string() const;
         double direction_at(const point& pt) const;
-
+        circular_direction circular_direction() const;
     private:
 
         bool orientation_;
