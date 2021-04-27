@@ -99,17 +99,19 @@ curvy::curvy_vector_viewer::curvy_vector_viewer(int px_sz, double log_sz) :
 
 void curvy::curvy_vector_viewer::initialize()
 {
-    auto r = 0.35;
-    const auto south = 3.0 * pi() / 2.0;
+    auto r = 1;
+    auto R = 8;
+    const auto north = pi_over_two();
+    const auto south = three_pi_over_two();
 
-    puck_a_.set_circle_rotation_position( south, 0, 3, 3 );
+    puck_a_.set_circle_rotation_position( south, 0, R, R );
     puck_a_.set_speed(1.0);
     puck_a_.set_color(colors::Red);
     puck_a_.set_puck_radius(r);
 
     puck_b_.set_color(colors::DodgerBlue);
     puck_b_.set_puck_radius(r);
-    puck_b_.set_circle_rotation_position(south, 0, 3, 3);
+    puck_b_.set_circle_rotation_position(north, 0, -R, R);
     puck_b_.set_speed(1.0);
 
     sync_b_with_a();
