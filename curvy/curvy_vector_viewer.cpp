@@ -54,7 +54,7 @@ namespace {
         g.DrawEllipse(&pen, to_scr_rect( c.bounding_box(), log_sz, pix_sz));
     }
 
-    gdi::REAL to_degrees(double radians) {
+    gdi::REAL to_degrees_gdi(double radians) {
         return static_cast<gdi::REAL>( radians * 180.0 / curvy::pi() );
     }
 
@@ -73,7 +73,7 @@ namespace {
     void paint_arc_arrow(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
         auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees(theta), -to_degrees(crc.signed_angular_magnitude()));
+        g.DrawArc(&pen, to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -to_degrees_gdi(theta), -to_degrees_gdi(crc.signed_angular_magnitude()));
         auto pts = arrow_poly_from_circle_vec(crc, pt, puck_sz);
         paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
     }
@@ -320,6 +320,14 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto coefficient_a_to_b = curvy::momentum_transfer_factor(pt_a, direction_a, orientation_a,  pt_b, radius_a,  sz_constant);
     auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_a, pt_b });
+
+    auto curvature = to_angle_of_curvature(impulse_a_to_b.circular_direction());
+    output_debug_message("-----------");
+    output_debug_message("original radius", impulse_a_to_b.circle().radius());
+    output_debug_message("curvature ", to_degrees(curvature));
+    auto cd = from_angle_of_curvature(curvature);
+    output_debug_message("cd radius ", cd.radius);
+    output_debug_message("cd orientation => " + (cd.orientation ? std::string("CCW") : std::string("CW")));
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = curvy::momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b,  sz_constant);

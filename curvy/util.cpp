@@ -287,6 +287,12 @@ void curvy::output_debug_message(const std::string& msg)
     OutputDebugStringA(str.c_str());
 }
 
+void curvy::output_debug_message(const std::string& label, double value)
+{
+    std::string msg = label + " => " + std::to_string(value);
+    output_debug_message(msg);
+}
+
 curvy::point curvy::pt_on_unit_circle(double theta)
 {
     return {
@@ -324,6 +330,11 @@ std::optional<curvy::point> curvy::line_intersection(const std::tuple<point, poi
         ((x1*y2 - y1*x2)*(x3-x4) - (x1 - x2)*(x3*y4 - y3*x4)) / D,
         ((x1*y2 - y1*x2)*(y3-y4) - (y1 - y2)*(x3*y4 - y3*x4)) / D
     }};
+}
+
+double curvy::to_degrees(double radians)
+{
+    return radians * 180.0 / curvy::pi();
 }
 
 

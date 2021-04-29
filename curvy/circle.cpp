@@ -265,14 +265,30 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
     return { { mid_circle_1 , mid_circle_2 } };
 }
 
+
 double curvy::to_angle_of_curvature(const circular_direction& cd, double unit)
 {
-    return 0.0;
+    if (std::isnan(cd.radius))
+        return pi()/2;
+
+    auto r = cd.radius;
+    auto arc_length = unit * pi();
+    auto a =  arc_length / r;
+    auto theta = (pi() - a) / 2.0;
+
+    return (cd.orientation) ? pi() - theta : theta;
 }
 
-curvy::circular_direction curvy::from_angle_of_curvature(double theta, double unit)
+curvy::circular_direction curvy::from_angle_of_curvature(double curvature_angle, double unit)
 {
-    return circular_direction();
+    auto theta = std::abs(normalize_angle(curvature_angle));
+    auto orientation = theta > pi_over_two();
+    theta = (orientation) ? pi() - theta : theta;
+    auto a = pi() - 2.0 * theta;
+    auto arc_length = unit * pi();
+    auto radius = arc_length / a;
+
+    return { radius, orientation };
 }
 
 bool curvy::operator==(const circle& c1, const circle& c2)

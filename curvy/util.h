@@ -48,7 +48,9 @@ namespace curvy {
     double atan_of_pt(const point& pt);
     double hypot_of_point(const point& pt);
     void output_debug_message(const std::string& msg);
+    void output_debug_message(const std::string& label, double value);
     point pt_on_unit_circle(double theta);
     bool pt_in_triangle(const point& pt, const point& v1, const point& v2, const point& v3);
     std::optional<point> line_intersection(const std::tuple<point, point>& line1, const std::tuple<point, point>& line2);
+    double to_degrees(double radians);
 }

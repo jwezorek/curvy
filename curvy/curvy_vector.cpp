@@ -10,7 +10,20 @@ namespace {
         auto angle = std::atan2(dy, dx);
         return (angle > -pi / 2.0 && angle < pi / 2.0);
     }
+    
+    double get_curvy_energy(const curvy::curvy_vector& cv) {
+        return curvy::pi() - curvy::to_angle_of_curvature(cv.circular_direction());
+    }
 
+    curvy::curvy_vector unpack_curvy_energy(double curvy_energy, double linear_magnitude) {
+        auto cd = curvy::from_angle_of_curvature(curvy::pi() - curvy_energy);
+        auto angular_magnitude = linear_magnitude / cd.radius;
+        auto orientation = (cd.orientation) ? 1.0 : -1.0;
+        auto center_y = orientation * cd.radius;
+        return curvy::curvy_vector(curvy::circle(0, center_y, cd.radius), orientation * angular_magnitude);
+    }
+    
+    /*
     double get_curvy_energy(const curvy::curvy_vector& cv) {
         return cv.signed_angular_magnitude() / cv.circle().radius();
     }
@@ -25,6 +38,7 @@ namespace {
         auto center_y = orientation * radius;
         return curvy::curvy_vector(curvy::circle(0, center_y, radius), orientation * angular_magnitude);
     }
+    */
 
     curvy::curvy_vector circular_vector_arithmetic_aux(const curvy::curvy_vector& v1, const curvy::curvy_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
     {
