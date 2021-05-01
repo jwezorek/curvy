@@ -303,3 +303,29 @@ double curvy::direction_on_circle(const curvy::circle& c, const curvy::point& pt
     return direction_on_circle(theta, orientation);
 
 }
+
+/*
+
+double curvy::to_degree_of_curvature(double r, double unit)
+{
+    if (std::isnan(r))
+        return pi() / 2;
+
+    auto arc_length = unit * pi();
+    auto a = arc_length / r;
+    auto theta = (pi() - a) / 2.0;
+
+    return theta;
+}
+
+double curvy::from_degree_of_curvature(double theta, double unit)
+{
+    theta = std::abs(normalize_angle(theta));
+    auto a = pi() - 2.0 * theta;
+    auto arc_length = unit * pi();
+    auto radius = arc_length / a;
+
+    return  radius;
+}
+
+*/

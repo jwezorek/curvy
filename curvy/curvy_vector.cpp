@@ -40,6 +40,14 @@ namespace {
     }
     */
 
+    curvy::point apply_op_on_newtonian_vectors(std::function<double(double, double)> op, const curvy::point& v1, const curvy::point& v2) {
+        auto [x1, y1] = v1;
+        auto [x2, y2] = v2;
+        return {
+            op(x1,x2), op(y1,y2)
+        };
+    }
+
     curvy::curvy_vector circular_vector_arithmetic_aux(const curvy::curvy_vector& v1, const curvy::curvy_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
     {
         if (v1.angular_magnitude() == 0)
@@ -50,7 +58,9 @@ namespace {
 
         using namespace curvy;
         auto linear_magnitude_of_sum = op(v1.linear_magnitude() , v2.linear_magnitude());
-        auto direction_of_sum = atan_of_pt(v1.newtonian_vector_at_point(where) + v2.newtonian_vector_at_point(where));
+        auto direction_of_sum = atan_of_pt(
+            apply_op_on_newtonian_vectors(op, v1.newtonian_vector_at_point(where) , v2.newtonian_vector_at_point(where))
+        );
 
         matrix from_canonical_coords = translation_matrix(where) * rotation_matrix(direction_of_sum);
         auto curvy_energy = op( get_curvy_energy(v1) , get_curvy_energy(v2));
