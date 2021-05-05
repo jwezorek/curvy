@@ -36,6 +36,9 @@
     <ClCompile Include="curvy_vector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="curvy_arithmetic_viewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="colors.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="curvy_vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="curvy_arithmetic_viewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

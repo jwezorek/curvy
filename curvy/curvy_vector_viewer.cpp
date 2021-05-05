@@ -114,7 +114,7 @@ void curvy::curvy_vector_viewer::initialize()
     puck_b_.set_circle_rotation_position(north, 0, -R, R);
     puck_b_.set_speed(1.0);
 
-    sync_b_with_a();
+    sync_b_with_a(puck_a_.theta());
 }
 
 void curvy::curvy_vector_viewer::update()
@@ -388,7 +388,7 @@ void curvy::curvy_vector_viewer::render()
     puck_b_.paint(*g, logical_sz_, pixel_sz_);
 }
 
-curvy::interaction curvy::curvy_vector_viewer::get_interaction(const std::tuple<double, double>& click_location) const
+curvy::curvy_vector_viewer::interaction curvy::curvy_vector_viewer::get_interaction(const std::tuple<double, double>& click_location) const
 {
     const auto& circle_of_rev = puck_a_.state().circle();
     if (curvy::circle(circle_of_rev.center(), 1.0).contains(click_location))

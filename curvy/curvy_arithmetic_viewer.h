@@ -7,27 +7,24 @@
 #include <optional>
 #include "state.h"
 #include "colors.h"
-#include "puck.h"
+#include "curvy_vector.h"
 
 namespace gdi = Gdiplus;
 
 namespace curvy {
 
-    class curvy_vector_viewer : public state {
+    class curvy_arithmetic_viewer : public state {
 
         enum class interaction {
-            dragging_circle_of_rev,
-            dragging_a,
-            dragging_b,
-            resizing_circle_of_rev,
-            dragging_circle_b,
-            resizing_circle_b,
-            dragging_arrow_b,
+            moving_circle_a_,
+            resizing_circle_a_,
+            moving_circle_b_,
+            resizing_circle_b_,
             none
         };
 
     public:
-        curvy_vector_viewer(int px_sz, double log_sz);
+        curvy_arithmetic_viewer(int px_sz, double log_sz);
 
         void initialize() override;
         void update() override;
@@ -43,21 +40,13 @@ namespace curvy {
 
         void render();
         interaction get_interaction(const std::tuple<double, double>& click_location) const;
-        void sync_b_with_a(double old_a_theta = 0);
-        void rotate_circle_b(const point& pt);
-        void resize_circle_b(const point& pt);
-        void drag_arrow_b(const point& pt);
-        bool is_in_arrow_b(const point& pt) const;
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         double logical_sz_;
         int pixel_sz_;
-        puck puck_a_;
-        puck puck_b_;
-        double puck_b_theta_;
+        bool addition_;
+        curvy_vector vector_a_;
+        curvy_vector vector_b_;
         interaction interaction_;
-        double b_speed_;
-        bool show_puck_b_vectors_;
     };
-
 }

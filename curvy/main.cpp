@@ -5,6 +5,7 @@
 #include "state.h"
 #include "curvy_world_simulation.h"
 #include "curvy_vector_viewer.h"
+#include "curvy_arithmetic_viewer.h"
 #include "util.h"
 #include "circle.h"
 #include "colors.h"
@@ -19,10 +20,8 @@ LRESULT HandleWmPaint(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lPar
 LRESULT HandleWmLButtonMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool button_down);
 LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam);
 
-std::unique_ptr<curvy::state> g_simulation = std::make_unique<curvy::curvy_world_simulation>(0, 40);
-std::unique_ptr<curvy::state> g_viewer = std::make_unique<curvy::curvy_vector_viewer>(0, 60);
-
-curvy::state* g_state = g_viewer.get();
+std::vector<std::unique_ptr<curvy::state>> g_viewers;
+int g_current_viewer = 0;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -31,6 +30,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Initialize GDI+.
     gdi::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    g_viewers.emplace_back(std::make_unique<curvy::curvy_world_simulation>(0, 40));
+    g_viewers.emplace_back(std::make_unique<curvy::curvy_vector_viewer>(0, 60));
+    g_viewers.emplace_back(std::make_unique<curvy::curvy_arithmetic_viewer>(0, 40));
 
     MSG msg = { 0 };
     WNDCLASS wc = { 0 };
@@ -67,7 +70,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         } else {
             auto current_time = chrono::high_resolution_clock::now();
             auto elapsed = chrono::duration_cast<chrono::duration<double>>(current_time - last_time);
-            g_state->update( elapsed.count() );
+            g_viewers[g_current_viewer]->update( elapsed.count() );
             InvalidateRect(hwnd, NULL, FALSE);
             last_time = current_time;
         }
@@ -109,9 +112,10 @@ int get_client_width(HWND hwnd) {
 
 LRESULT HandleKeyboardMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam, bool keydown) {
     if (wParam == VK_RETURN && keydown) {
-        g_state = (g_state == g_simulation.get()) ? g_viewer.get() : g_simulation.get();
-        g_state->set_pixel_dimensions( get_client_width(hwnd) );
-        g_state->initialize();
+        g_current_viewer = (g_current_viewer + 1) % g_viewers.size();
+
+        g_viewers[g_current_viewer]->set_pixel_dimensions( get_client_width(hwnd) );
+        g_viewers[g_current_viewer]->initialize();
         state.update();
         InvalidateRect(hwnd, NULL, FALSE);
         return 0;
@@ -122,7 +126,6 @@ LRESULT HandleKeyboardMsg(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM 
     }
     return 0;
 }
-
 
 LRESULT HandleWmMouseMove(HWND hwnd, curvy::state& state, WPARAM wParam, LPARAM lParam) {
     auto x = GET_X_LPARAM(lParam);
@@ -137,25 +140,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
         case WM_CREATE:
-            g_state->initialize();
+            for ( auto& v : g_viewers)
+                v->initialize();
             break;
         case WM_CLOSE:
             PostQuitMessage(0);
             break;
         case WM_KEYDOWN:
-            return HandleKeyboardMsg(hwnd, *g_state, wParam, lParam, true);
+            return HandleKeyboardMsg(hwnd, *g_viewers[g_current_viewer], wParam, lParam, true);
         case WM_KEYUP:
-            return HandleKeyboardMsg(hwnd, *g_state, wParam, lParam, false);
+            return HandleKeyboardMsg(hwnd, *g_viewers[g_current_viewer], wParam, lParam, false);
         case WM_LBUTTONDOWN:
-            return HandleWmLButtonMsg(hwnd, *g_state, wParam, lParam, true);
+            return HandleWmLButtonMsg(hwnd, *g_viewers[g_current_viewer], wParam, lParam, true);
         case WM_LBUTTONUP:
-            return HandleWmLButtonMsg(hwnd, *g_state, wParam, lParam, false);
+            return HandleWmLButtonMsg(hwnd, *g_viewers[g_current_viewer], wParam, lParam, false);
         case WM_MOUSEMOVE:
-            return HandleWmMouseMove(hwnd, *g_state, wParam, lParam);
+            return HandleWmMouseMove(hwnd, *g_viewers[g_current_viewer], wParam, lParam);
         case WM_SIZE:
-            return HandleWmSize(*g_state, wParam, lParam);
+            return HandleWmSize(*g_viewers[g_current_viewer], wParam, lParam);
         case WM_PAINT:
-            return HandleWmPaint(hwnd, *g_state, wParam, lParam);
+            return HandleWmPaint(hwnd, *g_viewers[g_current_viewer], wParam, lParam);
         default:
             return DefWindowProc(hwnd, message, wParam, lParam);
     }
