@@ -24,6 +24,13 @@ namespace curvy {
         };
 
     public:
+
+        struct move_circle_state {
+            point anchor;
+            point start;
+            circle c;
+        };
+
         curvy_arithmetic_viewer(int px_sz, double log_sz);
 
         void initialize() override;
@@ -40,6 +47,7 @@ namespace curvy {
 
         void render();
         interaction get_interaction(const std::tuple<double, double>& click_location) const;
+        point anchor_pt() const;
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         double logical_sz_;
@@ -48,5 +56,6 @@ namespace curvy {
         curvy_vector vector_a_;
         curvy_vector vector_b_;
         interaction interaction_;
+        std::optional<move_circle_state> move_circle_;
     };
 }

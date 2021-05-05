@@ -242,14 +242,14 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
 
 /* conservation of a second quantity + newtonian vector direction */
 
-curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
+curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
 {
-    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt1, [](double v1, double v2) {return v1 + v2; });
+    return circular_vector_arithmetic_aux(*this, cv, pt, [](double v1, double v2) {return v1 + v2; });
 }
 
-curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const vector_arithmetic_context& ctxt) const
+curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& pt) const
 {
-    return circular_vector_arithmetic_aux(*this, cv, ctxt.pt1, [](double v1, double v2) {return v1 - v2; });
+    return circular_vector_arithmetic_aux(*this, cv, pt, [](double v1, double v2) {return v1 - v2; });
 }
 
 

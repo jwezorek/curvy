@@ -4,8 +4,37 @@
 #include "curvy_arithmetic_viewer.h"
 #include "util.h"
 #include "curvy_vector.h"
+#include "gdi_util.h"
 
 namespace {
+    curvy::point pt_with_lowest_y(const curvy::point& pt1, const curvy::point& pt2) {
+        auto y1 = std::get<1>(pt1);
+        auto y2 = std::get<1>(pt2);
+        return (y1 < y2) ? pt1 : pt2;
+   }
+
+    void draw_operation(gdi::Graphics& g, bool add) {
+        gdi::FontFamily  fontFamily(L"Times New Roman");
+        gdi::Font        font(&fontFamily, 96, gdi::FontStyleRegular, gdi::UnitPixel);
+        gdi::PointF      pointF(30.0f, 30.0f);
+        gdi::SolidBrush  solidBrush(colors::Yellow);
+
+        auto* txt = (add) ? L"+" : L"-";
+        g.DrawString(txt, -1, &font, pointF, &solidBrush);
+    }
+
+    curvy::circle handle_move_circle(const curvy::curvy_arithmetic_viewer::move_circle_state& mc, const curvy::point& pt) {
+        using namespace curvy;
+        auto theta = angle_to_pt(mc.anchor, pt) - angle_to_pt(mc.anchor, mc.start);
+        curvy::matrix to_canonical_coords = curvy::translation_matrix(-mc.anchor);
+        curvy::matrix from_canonical_coords = curvy::translation_matrix(mc.anchor);
+
+        auto c = apply_matrix(to_canonical_coords, mc.c);
+        c = apply_matrix( rotation_matrix(theta), c);
+        c = apply_matrix(from_canonical_coords, c);
+        return c;
+
+    }
 }
 
 curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz) :
@@ -49,6 +78,7 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_click(const std::tuple<int, in
     }
 
     if (!mouse_down && interaction_ != interaction::none) {
+        move_circle_ = std::nullopt;
         interaction_ = interaction::none;
         render();
         return true;
@@ -62,9 +92,24 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
     if (interaction_ != interaction::none) {
         auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
         auto [x, y] = pt;
+        auto anchor = anchor_pt();
+
         switch (interaction_) {
-        
+            case interaction::moving_circle_a_:
+                if (!move_circle_) {
+                    move_circle_ = { anchor_pt(), pt, vector_a_.circle() };
+                }
+                vector_a_.set_circle(handle_move_circle(move_circle_.value(), pt));
+                break;
+
+            case interaction::moving_circle_b_:
+                if (!move_circle_) {
+                    move_circle_ = { anchor_pt(), pt, vector_b_.circle() };
+                }
+                vector_b_.set_circle(handle_move_circle(move_circle_.value(), pt));
+                break;
         }
+
         render();
         return true;
     }
@@ -73,7 +118,12 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
 
 bool curvy::curvy_arithmetic_viewer::handle_key_press(unsigned int key, bool is_key_down)
 {
-
+    if (key == VK_SPACE) {
+        if (is_key_down) {
+            addition_ = !addition_;
+            return true;
+        }
+    }
 
     return false;
 }
@@ -111,9 +161,33 @@ void curvy::curvy_arithmetic_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
+    auto anchor = anchor_pt();
+
+    paint_circle_vector(*g, vector_a_, colors::DodgerBlue, 2.0, anchor, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, vector_b_, colors::Red, 2.0, anchor, logical_sz_, pixel_sz_);
+
+    auto result = (addition_) ?
+        vector_a_.add(vector_b_, anchor) :
+        vector_a_.subtract(vector_b_, anchor);
+    paint_circle_vector(*g, result, colors::Purple, 2.0, anchor, logical_sz_, pixel_sz_);
+
+    draw_operation(*g, addition_);
+
 }
 
 curvy::curvy_arithmetic_viewer::interaction curvy::curvy_arithmetic_viewer::get_interaction(const std::tuple<double, double>& click_location) const
 {
+    if (vector_a_.circle().perimeter_contains(click_location, 0.1))
+        return interaction::moving_circle_a_;
+
+    if (vector_b_.circle().perimeter_contains(click_location, 0.1))
+        return interaction::moving_circle_b_;
+
     return interaction::none;
+}
+
+curvy::point curvy::curvy_arithmetic_viewer::anchor_pt() const
+{
+    auto [pt1, pt2] = curvy::intersections(vector_a_.circle(), vector_b_.circle()).value();
+    return  pt_with_lowest_y(pt1, pt2);
 }

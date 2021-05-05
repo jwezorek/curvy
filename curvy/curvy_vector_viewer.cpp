@@ -240,8 +240,9 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
     auto coefficient_a_to_b = curvy::momentum_transfer_factor(pt_a, direction_a, orientation_a,  pt_b, radius_a,  sz_constant);
     auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
-    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_a, pt_b });
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b,  pt_a);
 
+    /*
     auto curvature = to_angle_of_curvature(impulse_a_to_b.circular_direction());
     output_debug_message("-----------");
     output_debug_message("original radius", impulse_a_to_b.circle().radius());
@@ -249,14 +250,15 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto cd = from_angle_of_curvature(curvature);
     output_debug_message("cd radius ", cd.radius);
     output_debug_message("cd orientation => " + (cd.orientation ? std::string("CCW") : std::string("CW")));
+    */
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = curvy::momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b,  sz_constant);
     auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
-    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_b, pt_a });
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
-    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, curvy::vector_arithmetic_context{ pt_a, pt_b });
-    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, curvy::vector_arithmetic_context{ pt_b, pt_a });
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a );
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b );
 
     //curvy::output_debug_message(std::to_string(final_a.linear_magnitude() + final_b.linear_magnitude()));
 
