@@ -3,8 +3,6 @@
 #include <gdiplus.h>
 #include <tuple>
 
-namespace gdi = Gdiplus;
-
 namespace curvy {
 
     class state {
@@ -17,7 +15,7 @@ namespace curvy {
         virtual bool handle_key_press(unsigned int key, bool is_key_down) = 0;
         virtual void set_pixel_dimensions(int px_sz, bool refresh = true) = 0;
         virtual void set_logical_dimensions(double log_sz, bool refresh = false) = 0;
-        virtual gdi::Bitmap* get_bitmap() const = 0;
+        virtual Gdiplus::Bitmap* get_bitmap() const = 0;
     };
 
  }
