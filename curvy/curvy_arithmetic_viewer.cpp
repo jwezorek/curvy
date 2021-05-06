@@ -14,7 +14,7 @@ namespace {
    }
 
     void draw_operation(gdi::Graphics& g, bool add) {
-        gdi::FontFamily  fontFamily(L"Times New Roman");
+        gdi::FontFamily  fontFamily(L"Arial");
         gdi::Font        font(&fontFamily, 96, gdi::FontStyleRegular, gdi::UnitPixel);
         gdi::PointF      pointF(30.0f, 30.0f);
         gdi::SolidBrush  solidBrush(colors::Yellow);
@@ -51,7 +51,12 @@ curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz
 
 void curvy::curvy_arithmetic_viewer::initialize()
 {
-
+    // translate the curvy vectors so that one of their intersections is at the origin.
+    auto [pt1, pt2] = curvy::intersections(vector_a_.circle(), vector_b_.circle()).value();
+    auto pt = pt_with_lowest_y(pt1, pt2);
+    matrix mat = translation_matrix(-pt);
+    vector_a_ = apply_matrix(mat, vector_a_);
+    vector_b_ = apply_matrix(mat, vector_b_);
 }
 
 void curvy::curvy_arithmetic_viewer::update()
@@ -188,6 +193,5 @@ curvy::curvy_arithmetic_viewer::interaction curvy::curvy_arithmetic_viewer::get_
 
 curvy::point curvy::curvy_arithmetic_viewer::anchor_pt() const
 {
-    auto [pt1, pt2] = curvy::intersections(vector_a_.circle(), vector_b_.circle()).value();
-    return  pt_with_lowest_y(pt1, pt2);
+    return { 0, 0 };
 }
