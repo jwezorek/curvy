@@ -25,13 +25,8 @@ namespace {
 
     curvy::circle handle_move_circle(const curvy::curvy_arithmetic_viewer::move_circle_state& mc, const curvy::point& pt) {
         using namespace curvy;
-        auto theta = angle_to_pt(mc.anchor, pt) - angle_to_pt(mc.anchor, mc.start);
-        curvy::matrix to_canonical_coords = curvy::translation_matrix(-mc.anchor);
-        curvy::matrix from_canonical_coords = curvy::translation_matrix(mc.anchor);
-
-        auto c = apply_matrix(to_canonical_coords, mc.c);
-        c = apply_matrix( rotation_matrix(theta), c);
-        c = apply_matrix(from_canonical_coords, c);
+        auto theta = atan_of_pt( pt) - atan_of_pt(mc.start);
+        auto c = apply_matrix( rotation_matrix(theta), mc.c);
         return c;
 
     }
@@ -97,19 +92,18 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
     if (interaction_ != interaction::none) {
         auto pt = from_scr_coords(pix_pt, logical_sz_, pixel_sz_);
         auto [x, y] = pt;
-        auto anchor = anchor_pt();
 
         switch (interaction_) {
             case interaction::moving_circle_a_:
                 if (!move_circle_) {
-                    move_circle_ = { anchor_pt(), pt, vector_a_.circle() };
+                    move_circle_ = {  pt, vector_a_.circle() };
                 }
                 vector_a_.set_circle(handle_move_circle(move_circle_.value(), pt));
                 break;
 
             case interaction::moving_circle_b_:
                 if (!move_circle_) {
-                    move_circle_ = { anchor_pt(), pt, vector_b_.circle() };
+                    move_circle_ = { pt, vector_b_.circle() };
                 }
                 vector_b_.set_circle(handle_move_circle(move_circle_.value(), pt));
                 break;
@@ -166,15 +160,13 @@ void curvy::curvy_arithmetic_viewer::render()
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);
     g->FillRectangle(&black_brush, 0, 0, pixel_sz_, pixel_sz_);
 
-    auto anchor = anchor_pt();
-
-    paint_circle_vector(*g, vector_a_, colors::DodgerBlue, 2.0, anchor, logical_sz_, pixel_sz_);
-    paint_circle_vector(*g, vector_b_, colors::Red, 2.0, anchor, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, vector_a_, colors::DodgerBlue, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
+    paint_circle_vector(*g, vector_b_, colors::Red, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
 
     auto result = (addition_) ?
-        vector_a_.add(vector_b_, anchor) :
-        vector_a_.subtract(vector_b_, anchor);
-    paint_circle_vector(*g, result, colors::Purple, 2.0, anchor, logical_sz_, pixel_sz_);
+        vector_a_.add(vector_b_, { 0,0 }) :
+        vector_a_.subtract(vector_b_, { 0,0 });
+    paint_circle_vector(*g, result, colors::Purple, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
 
     draw_operation(*g, addition_);
 
@@ -191,7 +183,3 @@ curvy::curvy_arithmetic_viewer::interaction curvy::curvy_arithmetic_viewer::get_
     return interaction::none;
 }
 
-curvy::point curvy::curvy_arithmetic_viewer::anchor_pt() const
-{
-    return { 0, 0 };
-}

@@ -26,7 +26,6 @@ namespace curvy {
     public:
 
         struct move_circle_state {
-            point anchor;
             point start;
             circle c;
         };
@@ -47,7 +46,6 @@ namespace curvy {
 
         void render();
         interaction get_interaction(const std::tuple<double, double>& click_location) const;
-        point anchor_pt() const;
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         double logical_sz_;
