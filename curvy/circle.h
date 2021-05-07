@@ -48,7 +48,5 @@ namespace curvy {
         bool orientation;
     };
 
-    double to_angle_of_curvature(const circular_direction& cd, double unit = 1.0);
-    circular_direction  from_angle_of_curvature(double theta, double unit = 1.0);
 }
 

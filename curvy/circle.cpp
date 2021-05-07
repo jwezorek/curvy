@@ -265,32 +265,6 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
     return { { mid_circle_1 , mid_circle_2 } };
 }
 
-
-double curvy::to_angle_of_curvature(const circular_direction& cd, double unit)
-{
-    if (std::isnan(cd.radius))
-        return pi()/2;
-
-    auto r = cd.radius;
-    auto arc_length = unit * pi();
-    auto a =  arc_length / r;
-    auto theta = (pi() - a) / 2.0;
-
-    return (cd.orientation) ? pi() - theta : theta;
-}
-
-curvy::circular_direction curvy::from_angle_of_curvature(double curvature_angle, double unit)
-{
-    auto theta = std::abs(normalize_angle(curvature_angle));
-    auto orientation = theta > pi_over_two();
-    theta = (orientation) ? pi() - theta : theta;
-    auto a = pi() - 2.0 * theta;
-    auto arc_length = unit * pi();
-    auto radius = arc_length / a;
-
-    return { radius, orientation };
-}
-
 bool curvy::operator==(const circle& c1, const circle& c2)
 {
     return euclidean_distance(c1.center(), c2.center()) <= eps() &&
@@ -303,29 +277,3 @@ double curvy::direction_on_circle(const curvy::circle& c, const curvy::point& pt
     return direction_on_circle(theta, orientation);
 
 }
-
-/*
-
-double curvy::to_degree_of_curvature(double r, double unit)
-{
-    if (std::isnan(r))
-        return pi() / 2;
-
-    auto arc_length = unit * pi();
-    auto a = arc_length / r;
-    auto theta = (pi() - a) / 2.0;
-
-    return theta;
-}
-
-double curvy::from_degree_of_curvature(double theta, double unit)
-{
-    theta = std::abs(normalize_angle(theta));
-    auto a = pi() - 2.0 * theta;
-    auto arc_length = unit * pi();
-    auto radius = arc_length / a;
-
-    return  radius;
-}
-
-*/
