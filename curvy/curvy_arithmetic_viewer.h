@@ -16,10 +16,12 @@ namespace curvy {
     class curvy_arithmetic_viewer : public state {
 
         enum class interaction {
-            moving_circle_a_,
-            resizing_circle_a_,
-            moving_circle_b_,
-            resizing_circle_b_,
+            moving_circle_a,
+            resizing_circle_a,
+            moving_circle_b,
+            resizing_circle_b,
+            moving_arrow_a,
+            moving_arrow_b,
             none
         };
 
@@ -55,5 +57,7 @@ namespace curvy {
         curvy_vector vector_b_;
         interaction interaction_;
         std::optional<move_circle_state> move_circle_;
+        std::optional<point> resize_circle_center_;
+        std::optional<bool> move_arrow_orientation_;
     };
 }

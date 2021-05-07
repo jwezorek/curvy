@@ -30,6 +30,38 @@ namespace {
         return c;
 
     }
+
+    curvy::circle handle_resize_circle(const curvy::point& center, const curvy::point& pt) {
+        auto theta = curvy::atan_of_pt(center);
+        curvy::matrix to_mat = curvy::rotation_matrix(-theta);
+        curvy::matrix from_mat = curvy::rotation_matrix(theta);
+
+        auto [x,y] = curvy::apply_matrix(to_mat, pt);
+        auto radius = (x * x + y * y) / (2.0 * x);
+
+        if (radius < 1)
+            radius = 1;
+
+        auto c = curvy::circle(radius, 0, radius);
+
+        return curvy::apply_matrix(from_mat, c);
+    }
+
+    bool is_in_arrow(const curvy::curvy_vector& cv, const curvy::point& pt) {
+        auto pts = curvy::arrow_poly_from_circle_vec(cv, { 0,0 }, 1);
+        return curvy::pt_in_triangle(pt, pts[0], pts[1], pts[2]);
+    }
+
+    double handle_move_arrow(const curvy::curvy_vector& cv, bool orientation, const curvy::point& pt) {
+        auto theta = curvy::angle_to_pt(cv.circle().center(), pt) - curvy::angle_to_pt(cv.circle().center(), { 0,0 });
+        if (orientation) {
+            theta = (theta < 0) ? theta + curvy::two_pi() : theta;
+        } else {
+            theta = (theta < 0) ? theta : theta - curvy::two_pi();
+        }
+        return theta;
+    }
+
 }
 
 curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz) :
@@ -79,6 +111,8 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_click(const std::tuple<int, in
 
     if (!mouse_down && interaction_ != interaction::none) {
         move_circle_ = std::nullopt;
+        resize_circle_center_ = std::nullopt;
+        move_arrow_orientation_ = std::nullopt;
         interaction_ = interaction::none;
         render();
         return true;
@@ -94,18 +128,48 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
         auto [x, y] = pt;
 
         switch (interaction_) {
-            case interaction::moving_circle_a_:
+            case interaction::moving_circle_a:
                 if (!move_circle_) {
                     move_circle_ = {  pt, vector_a_.circle() };
                 }
                 vector_a_.set_circle(handle_move_circle(move_circle_.value(), pt));
                 break;
 
-            case interaction::moving_circle_b_:
+            case interaction::moving_circle_b:
                 if (!move_circle_) {
                     move_circle_ = { pt, vector_b_.circle() };
                 }
                 vector_b_.set_circle(handle_move_circle(move_circle_.value(), pt));
+                break;
+
+            case interaction::resizing_circle_a:
+                if (!resize_circle_center_) {
+                    resize_circle_center_ = vector_a_.circle().center();
+                }
+                vector_a_.set_circle(handle_resize_circle(resize_circle_center_.value(), pt));
+                break;
+
+            case interaction::resizing_circle_b:
+                if (!resize_circle_center_) {
+                    resize_circle_center_ = vector_b_.circle().center();
+                }
+                vector_b_.set_circle(handle_resize_circle(resize_circle_center_.value(), pt));
+                break;
+
+            case interaction::moving_arrow_a:
+                if (!move_arrow_orientation_) {
+                    bool shift_down = (GetAsyncKeyState(VK_SHIFT) & (1 << 15));
+                    move_arrow_orientation_ = (shift_down) ? !vector_a_.orientation() : vector_a_.orientation();
+                }
+                vector_a_.set_magnitude(handle_move_arrow(vector_a_, move_arrow_orientation_.value(), pt));
+                break;
+
+            case interaction::moving_arrow_b:
+                if (!move_arrow_orientation_) {
+                    bool shift_down = (GetAsyncKeyState(VK_SHIFT) & (1 << 15));
+                    move_arrow_orientation_ = (shift_down) ? !vector_b_.orientation() : vector_b_.orientation();
+                }
+                vector_b_.set_magnitude(handle_move_arrow(vector_b_, move_arrow_orientation_.value(), pt));
                 break;
         }
 
@@ -174,11 +238,32 @@ void curvy::curvy_arithmetic_viewer::render()
 
 curvy::curvy_arithmetic_viewer::interaction curvy::curvy_arithmetic_viewer::get_interaction(const std::tuple<double, double>& click_location) const
 {
-    if (vector_a_.circle().perimeter_contains(click_location, 0.1))
-        return interaction::moving_circle_a_;
+    if (is_in_arrow(vector_a_, click_location)) {
+        return interaction::moving_arrow_a;
+    }
 
-    if (vector_b_.circle().perimeter_contains(click_location, 0.1))
-        return interaction::moving_circle_b_;
+    if (is_in_arrow(vector_b_, click_location)) {
+        return interaction::moving_arrow_b;
+    }
+
+    if (vector_a_.circle().perimeter_contains(click_location, 0.1)) {
+        if (GetAsyncKeyState(VK_SHIFT) & (1 << 15))
+            return interaction::resizing_circle_a;
+        else
+            return interaction::moving_circle_a;
+    }
+
+    if (vector_b_.circle().perimeter_contains(click_location, 0.1)) {
+        if (GetAsyncKeyState(VK_SHIFT) & (1 << 15))
+            return interaction::resizing_circle_b;
+        else
+            return interaction::moving_circle_b;
+    }
+
+    if (is_in_arrow(vector_a_, click_location)) {
+        return interaction::moving_arrow_a;
+    }
+
 
     return interaction::none;
 }
