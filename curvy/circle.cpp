@@ -265,6 +265,23 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::mid_circles(const
     return { { mid_circle_1 , mid_circle_2 } };
 }
 
+std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::circles_of_given_radius_through_two_points(double radius, const point& pt1, const point& pt2)
+{
+    auto half_d = euclidean_distance(pt1, pt2) / 2.0;
+    if (radius < half_d)
+        return std::nullopt;
+
+    auto center_pt = 0.5 * (pt1 + pt2);
+    auto theta = angle_to_pt(pt1, pt2);
+    matrix from_canonical_coords = translation_matrix(center_pt) * rotation_matrix(theta);
+    auto y = std::sqrt(radius * radius - half_d * half_d);
+
+    return { {
+        apply_matrix(from_canonical_coords, circle(0, y, radius)),
+        apply_matrix(from_canonical_coords, circle(0, -y, radius))
+    } };
+}
+
 bool curvy::operator==(const circle& c1, const circle& c2)
 {
     return euclidean_distance(c1.center(), c2.center()) <= eps() &&

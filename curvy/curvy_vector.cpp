@@ -10,52 +10,6 @@ namespace {
         auto angle = std::atan2(dy, dx);
         return (angle > -pi / 2.0 && angle < pi / 2.0);
     }
-    
-    double get_curvy_energy(const curvy::curvy_vector& cv) {
-        return cv.signed_angular_magnitude() / cv.circle().radius();
-    }
-
-    curvy::curvy_vector unpack_curvy_energy(double curvy_energy, double linear_magnitude) {
-
-        auto orientation = (curvy_energy > 0) ? 1.0 : -1.0;
-        curvy_energy = std::abs(curvy_energy);
-
-        auto angular_magnitude = std::sqrt( linear_magnitude * curvy_energy);
-        auto radius = std::sqrt(linear_magnitude) / std::sqrt(curvy_energy);
-        auto center_y = orientation * radius;
-        return curvy::curvy_vector(curvy::circle(0, center_y, radius), orientation * angular_magnitude);
-    }
-    
-
-    curvy::point apply_op_on_newtonian_vectors(std::function<double(double, double)> op, const curvy::point& v1, const curvy::point& v2) {
-        auto [x1, y1] = v1;
-        auto [x2, y2] = v2;
-        return {
-            op(x1,x2), op(y1,y2)
-        };
-    }
-
-    curvy::curvy_vector circular_vector_arithmetic_aux(const curvy::curvy_vector& v1, const curvy::curvy_vector& v2, const curvy::point& where, std::function<double(double,double)> op)
-    {
-        if (v1.angular_magnitude() == 0)
-            return v2;
-
-        if (v2.angular_magnitude() == 0)
-            return v1;
-
-        using namespace curvy;
-        auto linear_magnitude_of_sum = op(v1.linear_magnitude() , v2.linear_magnitude());
-        auto direction_of_sum = atan_of_pt(
-            apply_op_on_newtonian_vectors(op, v1.newtonian_vector_at_point(where) , v2.newtonian_vector_at_point(where))
-        );
-
-        matrix from_canonical_coords = translation_matrix(where) * rotation_matrix(direction_of_sum);
-        auto curvy_energy = op( get_curvy_energy(v1) , get_curvy_energy(v2));
-        auto cv_sum = unpack_curvy_energy(curvy_energy, linear_magnitude_of_sum);
-
-        return apply_matrix(from_canonical_coords, cv_sum);
-    }
-
 }
 
 curvy::curvy_vector::curvy_vector(double cx, double cy, double r, double m) : 
@@ -152,9 +106,10 @@ double curvy::curvy_vector::direction_at(const point& pt) const
     return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
-curvy::circular_direction curvy::curvy_vector::circular_direction() const
+curvy::curvy_vector curvy::circular_vector_from_linear_magnitude(const circle& circ, bool orientation, double linear_magnitude)
 {
-    return { circle_.radius(), orientation_ };
+    auto angular_magnitude = linear_magnitude / circ.radius();
+    return curvy::curvy_vector(circ, orientation, angular_magnitude);
 }
 
 curvy::curvy_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double linear_magnitude)
@@ -227,16 +182,50 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     return std::sqrt(val);
 }
 
+double curvy::to_angle_of_curvature(const curvy_vector& cv)
+{
+    return cv.sign() * pi() / cv.circle().radius();
+
+}
+
+curvy::curvy_vector curvy::from_angle_of_curvature(double curvature, const curvy::point& center, double magnitude) {
+    auto orientation = curvature > 0;
+    curvature = std::abs(curvature);
+    auto radius = pi() / curvature;
+    return curvy::curvy_vector(curvy::circle(center, radius), orientation, magnitude);
+}
+
 /* conservation of a second quantity + newtonian vector direction */
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
 {
-    return circular_vector_arithmetic_aux(*this, cv, pt, [](double v1, double v2) {return v1 + v2; });
+    auto m1 = angular_magnitude();
+    auto m2 = cv.angular_magnitude();
+    auto curvature1 = curvy::to_angle_of_curvature(*this);
+    auto curvature2 = curvy::to_angle_of_curvature(cv);
+    auto curvature_of_sum = (m1 * curvature1 + m2 * curvature2) / (m1 + m2);
+
+    auto intersects = intersections(circle(), cv.circle());
+    if (!intersects)
+        return {};
+    auto [i1, i2] = *intersects;
+
+    auto orientation_of_sum = curvature_of_sum > 0;
+    curvature_of_sum = std::abs(curvature_of_sum);
+    auto radius = pi() / curvature_of_sum;
+
+    auto circles = circles_of_given_radius_through_two_points(radius, i1, i2);
+    if (!circles)
+        return {};
+    auto [c1, c2] = circles.value();
+    auto linear_magnitude_of_sum = linear_magnitude() + cv.linear_magnitude();
+
+    return curvy::circular_vector_from_linear_magnitude(c1, orientation_of_sum, linear_magnitude_of_sum);
 }
 
 curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& pt) const
 {
-    return circular_vector_arithmetic_aux(*this, cv, pt, [](double v1, double v2) {return v1 - v2; });
+    return {};
 }
 
 

@@ -74,6 +74,11 @@ void curvy::paint_circle(gdi::Graphics& g, const curvy::circle& c, gdi::Color co
     g.DrawEllipse(&pen, to_scr_rect(c.bounding_box(), log_sz, pix_sz));
 }
 
+void curvy::paint_point(gdi::Graphics& g, const curvy::point& pt, gdi::Color color, double log_sz, int pix_sz)
+{
+    paint_circle(g, circle(pt, 0.05), color, log_sz, pix_sz);
+}
+
 gdi::REAL curvy::to_degrees_gdi(double radians)
 {
     return static_cast<gdi::REAL>(radians * 180.0 / curvy::pi());

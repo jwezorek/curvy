@@ -42,11 +42,6 @@ namespace curvy {
     point closest_pt_on_circle(const curvy::circle& c, const curvy::point& pt);
     std::optional<circle> circle_through_three_points(const point& pt1, const point& pt2, const point& pt3);
     std::optional<std::tuple<circle, circle>> mid_circles(const circle& c1, const circle& c2);
-
-    struct circular_direction {
-        double radius;
-        bool orientation;
-    };
-
+    std::optional<std::tuple<circle, circle>> circles_of_given_radius_through_two_points(double radius, const point& pt1, const point& pt2);
 }
 

@@ -233,7 +233,6 @@ void curvy::curvy_arithmetic_viewer::render()
     paint_circle_vector(*g, result, colors::Purple, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
 
     draw_operation(*g, addition_);
-
 }
 
 curvy::curvy_arithmetic_viewer::interaction curvy::curvy_arithmetic_viewer::get_interaction(const std::tuple<double, double>& click_location) const
