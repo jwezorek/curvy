@@ -20,13 +20,13 @@ void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
     insert({
-        curvy::curvy_vector{  0, 0, 5, 2 * 2.2 },
+        curvy::curvy_vector{  0, 0, 5, 5 * 2 * 2.2 },
         0,
         colors::Red
     });
 
     insert({
-        curvy::curvy_vector{ 0, 0, 5, 2 * 2.2 },
+        curvy::curvy_vector{ 0, 0, 5,  5 * 2 * 2.2 },
         pi()/2.0,
         colors::Green
     });
@@ -44,7 +44,7 @@ void curvy::curvy_world_simulation::initialize()
     });
 
     insert({
-        curvy::curvy_vector{ 6, 0, 8, 0.65 * 2.5 },
+        curvy::curvy_vector{ 6, 0, 8,  8 * 0.65 * 2.5 },
         -pi() / 2.0,
         colors::Purple
         });
@@ -237,12 +237,12 @@ void curvy::curvy_world_simulation::handle_collision( collision& collision) {
 
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
     auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a, pt_b, radius_a, sz_constant);
-    auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
+    auto impulse_a_to_b = curvy::curvy_vector(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a );
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, sz_constant);
-    auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
+    auto impulse_b_to_a = curvy::curvy_vector(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
     auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
     auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
@@ -261,7 +261,7 @@ void curvy::curvy_world_simulation::handle_boundary_collision(puck* p)
 {
     auto position = p->position();
     auto circle_of_rev = p->state().circle();
-    auto ang_mag = p->state().angular_magnitude();
+    auto lin_mag = p->state().linear_magnitude();
     auto theta = atan_of_pt(position);
 
     matrix reflect = rotation_matrix(theta) * scale_matrix(1, -1) * rotation_matrix(-theta);
@@ -270,7 +270,7 @@ void curvy::curvy_world_simulation::handle_boundary_collision(puck* p)
     p->set_vector(
         curvy_vector(
             circle_of_rev,
-            ang_mag
+            lin_mag
         )
     );
     p->set_theta(angle_to_pt(circle_of_rev.center(), position));

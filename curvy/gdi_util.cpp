@@ -34,6 +34,20 @@ namespace {
         paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
     }
 
+    void paint_arrow(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
+        auto theta = crc.circle().degenerate_angle();
+        gdi::Pen pen(color, 3);
+
+        auto [x, y] = crc.circle().center();
+        curvy::point end_pt = {
+            x + crc.linear_magnitude() * std::cos(theta),
+            y + crc.linear_magnitude() * std::sin(theta)
+        };
+        curvy::paint_line_segment(g, color, crc.circle().center(), end_pt, log_sz, pix_sz);
+        auto pts = curvy::arrow_poly_at_pt(theta, end_pt, puck_sz);
+        paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
+    }
+
 }
 
 std::array<curvy::point, 3> curvy::arrow_poly_from_circle_vec(const curvy::curvy_vector& crc, const curvy::point& pt, double puck_sz) {
@@ -45,6 +59,11 @@ std::array<curvy::point, 3> curvy::arrow_poly_from_circle_vec(const curvy::curvy
         crc.circle().y() + crc.circle().radius() * std::sin(arrow_theta)
     };
     auto pts = get_arrow_poly(arrow_pt, puck_sz * 0.25, puck_sz * 0.125, arror_direction);
+    return pts;
+}
+
+std::array<curvy::point, 3> curvy::arrow_poly_at_pt(double theta, const curvy::point& pt, double puck_sz)  {
+    auto pts = get_arrow_poly(pt, puck_sz * 0.25, puck_sz * 0.125, theta);
     return pts;
 }
 
@@ -71,7 +90,15 @@ gdi::Rect curvy::to_scr_rect(const std::tuple<double, double, double, double>& r
 void curvy::paint_circle(gdi::Graphics& g, const curvy::circle& c, gdi::Color color, double log_sz, int pix_sz)
 {
     gdi::Pen pen(color, 3);
-    g.DrawEllipse(&pen, to_scr_rect(c.bounding_box(), log_sz, pix_sz));
+    if (!c.is_degenerate()) {
+        g.DrawEllipse(&pen, to_scr_rect(c.bounding_box(), log_sz, pix_sz));
+    } else {
+        auto [x, y] = c.center();
+        auto theta = c.degenerate_angle();
+        auto pt1 = point{ x - 20.0 * std::cos(theta), y - 20.0 * std::sin(theta) };
+        auto pt2 = point{ x + 20.0 * std::cos(theta), y + 20.0 * std::sin(theta) };
+        paint_line_segment(g, color, pt1, pt2, log_sz, pix_sz);
+    }
 }
 
 void curvy::paint_point(gdi::Graphics& g, const curvy::point& pt, gdi::Color color, double log_sz, int pix_sz)
@@ -87,6 +114,11 @@ gdi::REAL curvy::to_degrees_gdi(double radians)
 void curvy::paint_circle_vector(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz)
 {
     paint_circle(g, crc.circle(), gdi::Color(100, color.GetR(), color.GetG(), color.GetB()), log_sz, pix_sz);
-    if (crc.angular_magnitude() != 0)
-        paint_arc_arrow(g, crc, color, puck_sz, pt, log_sz, pix_sz);
+    if (crc.linear_magnitude() != 0) {
+        if (! crc.circle().is_degenerate())
+            paint_arc_arrow(g, crc, color, puck_sz, pt, log_sz, pix_sz);
+        else
+            paint_arrow(g, crc, color, puck_sz, pt, log_sz, pix_sz);
+
+    }
 }

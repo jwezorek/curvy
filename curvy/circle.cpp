@@ -25,6 +25,26 @@ curvy::circle::circle(const curvy::point& pt, double r) :
 {
 }
 
+curvy::circle::circle(bool is_degenerate, const point& pt, double v) : center_(pt)
+{
+    if (is_degenerate) {
+        radius_ = std::numeric_limits<double>::infinity();
+        degenerate_angle_ = v;
+    } else {
+        radius_ = v;
+    }
+}
+
+bool curvy::circle::is_degenerate() const
+{
+    return degenerate_angle_.has_value();
+}
+
+double curvy::circle::degenerate_angle() const
+{
+    return degenerate_angle_.value();
+}
+
 void curvy::circle::set_center(const point& pt)
 {
     center_ = pt;
@@ -194,10 +214,19 @@ curvy::circle curvy::orthogonal_circle(const circle& c, const point& pt1, const 
 
 curvy::circle curvy::apply_matrix(const curvy::matrix& mat, const curvy::circle& c)
 {
-    auto east = apply_matrix(mat, c.get_point(0));
-    auto north = apply_matrix(mat, c.get_point(pi_over_two()));
-    auto west = apply_matrix(mat, c.get_point(pi()));
-    return *circle_through_three_points(east, north, west);
+    if (!c.is_degenerate()) {
+        auto east = apply_matrix(mat, c.get_point(0));
+        auto north = apply_matrix(mat, c.get_point(pi_over_two()));
+        auto west = apply_matrix(mat, c.get_point(pi()));
+        return *circle_through_three_points(east, north, west);
+    } else {
+        auto theta = c.degenerate_angle();
+        auto pt1 = c.center();
+        auto pt2 = pt1 + point{ std::cos(theta), std::sin(theta) };
+        pt1 = apply_matrix(mat, pt1);
+        pt2 = apply_matrix(mat, pt2);
+        return degenerate_circle(pt1, pt2);
+    }
 }
 
 
@@ -280,6 +309,12 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::circles_of_given_
         apply_matrix(from_canonical_coords, circle(0, y, radius)),
         apply_matrix(from_canonical_coords, circle(0, -y, radius))
     } };
+}
+
+curvy::circle curvy::degenerate_circle(const point& pt1, const point& pt2)
+{
+    auto direction = angle_to_pt(pt1, pt2);
+    return circle(true, pt1, direction);
 }
 
 bool curvy::operator==(const circle& c1, const circle& c2)

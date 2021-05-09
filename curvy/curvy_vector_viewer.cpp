@@ -26,14 +26,14 @@ void curvy::curvy_vector_viewer::initialize()
     const auto south = three_pi_over_two();
 
     puck_a_.set_circle_rotation_position( south, 0, R, R );
-    puck_a_.set_speed(1.0);
+    puck_a_.set_speed(R);
     puck_a_.set_color(colors::Red);
     puck_a_.set_puck_radius(r);
 
     puck_b_.set_color(colors::DodgerBlue);
     puck_b_.set_puck_radius(r);
     puck_b_.set_circle_rotation_position(north, 0, -R, R);
-    puck_b_.set_speed(1.0);
+    puck_b_.set_speed(R);
 
     sync_b_with_a(puck_a_.theta());
 }
@@ -239,7 +239,7 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
 
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
     auto coefficient_a_to_b = curvy::momentum_transfer_factor(pt_a, direction_a, orientation_a,  pt_b, radius_a,  sz_constant);
-    auto impulse_a_to_b = curvy::circular_vector_from_linear_magnitude(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
+    auto impulse_a_to_b = curvy::curvy_vector(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b,  pt_a);
 
     /*
@@ -254,7 +254,7 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = curvy::momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b,  sz_constant);
-    auto impulse_b_to_a = curvy::circular_vector_from_linear_magnitude(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
+    auto impulse_b_to_a = curvy::curvy_vector(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());
     auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
     auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a );

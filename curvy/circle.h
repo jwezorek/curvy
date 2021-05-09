@@ -11,6 +11,11 @@ namespace curvy {
     public:
         circle(double cx, double cy, double r);
         circle(const point& pt, double r);
+        circle(bool is_degenerate, const point& pt, double v);
+
+        bool is_degenerate() const;
+        double degenerate_angle() const;
+
         void set_center(const point& pt);
         void set_radius(double r);
 
@@ -31,8 +36,10 @@ namespace curvy {
     private:
         point center_;
         double radius_;
+        std::optional<double> degenerate_angle_;
     };
 
+    circle degenerate_circle(const point& pt1, const point& pt2);
     bool operator==(const circle& c1, const circle& c2);
     double direction_on_circle(const circle& c, const point& pt, bool orientation);
     std::tuple<std::tuple<point,point>, std::tuple<point, point>> mutual_tangents(const circle& c1, const circle& c2);

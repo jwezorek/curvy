@@ -12,24 +12,27 @@ namespace {
     }
 }
 
+
 curvy::curvy_vector::curvy_vector(double cx, double cy, double r, double m) : 
-    orientation_(m >= 0), circle_(cx, cy, r), angular_magnitude_(std::abs(m))
+    orientation_(m >= 0), circle_(cx, cy, r), linear_magnitude_(std::abs(m))
 {}
 
 curvy::curvy_vector::curvy_vector(const curvy::circle & c, double m) :
-    orientation_(m >= 0), circle_(c), angular_magnitude_(std::abs(m))
+    orientation_(m >= 0), circle_(c), linear_magnitude_(std::abs(m))
 {}
 
+
 curvy::curvy_vector::curvy_vector(const curvy::circle & c, bool o, double m) :
-    orientation_(o), circle_(c), angular_magnitude_(std::abs(m))
+    orientation_(o), circle_(c), linear_magnitude_(m)
 {
 }
 
 void curvy::curvy_vector::set_magnitude(double m)
 {
     orientation_ = m > 0;
-    angular_magnitude_ = std::abs(m);
+    linear_magnitude_ = std::abs(m);
 }
+
 
 void curvy::curvy_vector::set_radius(double r)
 {
@@ -54,7 +57,7 @@ bool curvy::curvy_vector::orientation() const
 
 double curvy::curvy_vector::angular_magnitude() const
 {
-    return angular_magnitude_;
+    return linear_magnitude_ / circle_.radius();
 }
 
 curvy::circle curvy::curvy_vector::circle() const
@@ -65,12 +68,12 @@ curvy::circle curvy::curvy_vector::circle() const
 
 double curvy::curvy_vector::signed_angular_magnitude() const
 {
-    return sign() * angular_magnitude_;
+    return sign() * angular_magnitude();
 }
 
 double curvy::curvy_vector::linear_magnitude() const
 {
-    return angular_magnitude_ * circle_.radius();
+    return linear_magnitude_;
 }
 
 double curvy::curvy_vector::signed_linear_magnitude() const
@@ -98,7 +101,7 @@ curvy::point curvy::curvy_vector::newtonian_vector_at_point(const point& pt) con
 
 std::string curvy::curvy_vector::to_string() const
 {
-    return "[ " + circle_.to_string() + " , " + std::to_string(angular_magnitude_) + " ]";
+    return "[ " + circle_.to_string() + " , " + std::to_string(linear_magnitude_) + " ]";
 }
 
 double curvy::curvy_vector::direction_at(const point& pt) const
@@ -106,21 +109,21 @@ double curvy::curvy_vector::direction_at(const point& pt) const
     return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
-curvy::curvy_vector curvy::circular_vector_from_linear_magnitude(const circle& circ, bool orientation, double linear_magnitude)
+curvy::curvy_vector curvy::circular_vector_from_angular_magnitude(const circle& circ, bool orientation, double angular_magnitude)
 {
-    auto angular_magnitude = linear_magnitude / circ.radius();
-    return curvy::curvy_vector(circ, orientation, angular_magnitude);
+    auto linear_magnitude = angular_magnitude * circ.radius();
+    return curvy::curvy_vector(circ, orientation, linear_magnitude);
 }
 
-curvy::curvy_vector curvy::circular_vector_from_linear_magnitude(const curvy::circle& circ, double linear_magnitude)
+curvy::curvy_vector curvy::circular_vector_from_angular_magnitude(const curvy::circle& circ, double angular_magnitude)
 {
-    auto angular_magnitude = linear_magnitude / circ.radius();
-    return curvy::curvy_vector(circ, angular_magnitude);
+    auto linear_magnitude = angular_magnitude * circ.radius();
+    return curvy::curvy_vector(circ, linear_magnitude);
 }
 
 curvy::curvy_vector curvy::operator*(double scale, const curvy_vector& cv)
 {
-    return curvy_vector(cv.circle(), scale * cv.signed_angular_magnitude());
+    return curvy_vector(cv.circle(), scale * cv.signed_linear_magnitude());
 }
 
 curvy::curvy_vector curvy::operator*(const curvy_vector& cv, double scale)
@@ -133,7 +136,7 @@ curvy::curvy_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy::c
     auto circle = curvy::apply_matrix(mat, cv.circle());
     return curvy::curvy_vector(
         circle,
-        cv.sign() * cv.angular_magnitude()
+        cv.sign() * cv.linear_magnitude()
     );
 }
 
@@ -185,47 +188,82 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
 double curvy::to_angle_of_curvature(const curvy_vector& cv)
 {
     return cv.sign() * pi() / cv.circle().radius();
-
 }
-
-curvy::curvy_vector curvy::from_angle_of_curvature(double curvature, const curvy::point& center, double magnitude) {
-    auto orientation = curvature > 0;
-    curvature = std::abs(curvature);
-    auto radius = pi() / curvature;
-    return curvy::curvy_vector(curvy::circle(center, radius), orientation, magnitude);
-}
-
-/* conservation of a second quantity + newtonian vector direction */
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
 {
-    auto m1 = angular_magnitude();
-    auto m2 = cv.angular_magnitude();
+    if (angular_magnitude() == 0)
+        return cv;
+
+    if (cv.angular_magnitude() == 0)
+        return *this;
+
+    auto m1 = linear_magnitude();
+    auto m2 = cv.linear_magnitude();
+    auto linear_magnitude_of_sum = m1 + m2;
     auto curvature1 = curvy::to_angle_of_curvature(*this);
     auto curvature2 = curvy::to_angle_of_curvature(cv);
-    auto curvature_of_sum = (m1 * curvature1 + m2 * curvature2) / (m1 + m2);
-
-    auto intersects = intersections(circle(), cv.circle());
-    if (!intersects)
-        return {};
-    auto [i1, i2] = *intersects;
-
-    auto orientation_of_sum = curvature_of_sum > 0;
+    auto curvature_of_sum = (m1 * curvature1 + m2 * curvature2) / linear_magnitude_of_sum;
+    auto direction_of_sum = atan_of_pt(
+        newtonian_vector_at_point(pt) + cv.newtonian_vector_at_point(pt)
+    );
+    auto orientation_of_sum = curvature_of_sum >= 0;
     curvature_of_sum = std::abs(curvature_of_sum);
-    auto radius = pi() / curvature_of_sum;
+    matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_sum);
+    curvy::circle vector_circle(0, 0, 0);
 
-    auto circles = circles_of_given_radius_through_two_points(radius, i1, i2);
-    if (!circles)
-        return {};
-    auto [c1, c2] = circles.value();
-    auto linear_magnitude_of_sum = linear_magnitude() + cv.linear_magnitude();
+    if (linear_magnitude_of_sum > eps()) {
+        auto radius = pi() / curvature_of_sum;
+        auto center_y = (orientation_of_sum ? 1.0 : -1.0) * radius;
+        vector_circle = curvy::circle(0, center_y, radius);
+        
+    } else {
+        vector_circle = curvy::circle(true, { 0,0 }, 0);
+    }
 
-    return curvy::circular_vector_from_linear_magnitude(c1, orientation_of_sum, linear_magnitude_of_sum);
+    return apply_matrix(
+        from_canonical_coords,
+        curvy_vector(vector_circle, orientation_of_sum, linear_magnitude_of_sum)
+    );
+}
+
+curvy::curvy_vector negate(const curvy::curvy_vector& cv) {
+    auto orientation = !cv.orientation();
+    auto center = cv.circle().center();
+    auto radius = cv.circle().radius();
+    auto linear_magnitude = -cv.linear_magnitude();
+    return curvy::curvy_vector(curvy::circle(center, radius), orientation, linear_magnitude);
 }
 
 curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& pt) const
 {
-    return {};
+    auto mm = linear_magnitude();
+    auto ms = cv.linear_magnitude();
+    auto linear_magnitude_of_diff = mm - ms;
+    auto cm = curvy::to_angle_of_curvature(*this);
+    auto cs = curvy::to_angle_of_curvature(cv);
+    auto curvature_of_diff = (mm * cm - ms * cs) / linear_magnitude_of_diff;
+    auto direction_of_diff = atan_of_pt(
+        newtonian_vector_at_point(pt) - cv.newtonian_vector_at_point(pt)
+    );
+    auto orientation_of_diff = curvature_of_diff >= 0;
+    curvature_of_diff = std::abs(curvature_of_diff);
+    matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_diff);
+    curvy::circle vector_circle(0, 0, 0);
+
+    if (linear_magnitude_of_diff > eps()) {
+        auto radius = pi() / curvature_of_diff;
+        auto center_y = (orientation_of_diff ? 1.0 : -1.0) * radius;
+        vector_circle = curvy::circle(0, center_y, radius);
+
+    } else {
+        vector_circle = curvy::circle(true, { 0,0 }, 0);
+    }
+
+    return apply_matrix(
+        from_canonical_coords,
+        curvy_vector(vector_circle, orientation_of_diff, linear_magnitude_of_diff)
+    );
 }
 
 

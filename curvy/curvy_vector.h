@@ -34,15 +34,15 @@ namespace curvy {
     private:
 
         bool orientation_;
-        double angular_magnitude_;
+        double linear_magnitude_;
         curvy::circle circle_;
     };
 
     curvy_vector operator*(const curvy_vector& cv, double scale);
     curvy_vector operator*(double scale, const curvy_vector& cv);
 
-    curvy_vector circular_vector_from_linear_magnitude(const circle& circ, bool orientation, double linear_magnitude);
-    curvy_vector circular_vector_from_linear_magnitude(const circle& circ, double linear_magnitude);
+    curvy_vector circular_vector_from_angular_magnitude(const circle& circ, bool orientation, double linear_magnitude);
+    curvy_vector circular_vector_from_angular_magnitude(const circle& circ, double linear_magnitude);
     curvy_vector operator*(double scalar, const curvy_vector& cv);
     curvy::curvy_vector apply_matrix(const curvy::matrix& mat, const curvy::curvy_vector& c);
     std::tuple<circle, bool> circular_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);

@@ -48,7 +48,7 @@ namespace {
     }
 
     bool is_in_arrow(const curvy::curvy_vector& cv, const curvy::point& pt) {
-        auto pts = curvy::arrow_poly_from_circle_vec(cv, { 0,0 }, 1);
+        auto pts = curvy::arrow_poly_from_circle_vec(cv, { 0,0 }, 2);
         return curvy::pt_in_triangle(pt, pts[0], pts[1], pts[2]);
     }
 
@@ -59,7 +59,7 @@ namespace {
         } else {
             theta = (theta < 0) ? theta : theta - curvy::two_pi();
         }
-        return theta;
+        return theta * cv.circle().radius();
     }
 
 }
@@ -69,8 +69,8 @@ curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz
     logical_sz_(log_sz),
     interaction_(interaction::none),
     addition_(true),
-    vector_a_(circle(4, 0, 6), -1),
-    vector_b_(circle(-4, 0, 6), 1)
+    vector_a_(circle(4, 0, 6), -6),
+    vector_b_(circle(-4, 0, 6), 6)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -230,6 +230,17 @@ void curvy::curvy_arithmetic_viewer::render()
     auto result = (addition_) ?
         vector_a_.add(vector_b_, { 0,0 }) :
         vector_a_.subtract(vector_b_, { 0,0 });
+
+    if (!addition_) {
+        curvy::output_debug_message("a => " + vector_a_.to_string());
+        auto diff = vector_a_.subtract(vector_b_, { 0,0 });
+        curvy::output_debug_message("a-b => " + diff.to_string());
+        auto check1 = diff.add(vector_b_, { 0,0 });
+        auto check2 = vector_b_.add(diff, { 0,0 });
+        curvy::output_debug_message("check1 " + check1.to_string());
+        curvy::output_debug_message("check2 " + check2.to_string());
+    }
+
     paint_circle_vector(*g, result, colors::Purple, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
 
     draw_operation(*g, addition_);
