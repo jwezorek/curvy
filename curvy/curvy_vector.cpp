@@ -203,7 +203,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
     auto linear_magnitude_of_sum = m1 + m2;
     auto curvature1 = curvy::to_angle_of_curvature(*this);
     auto curvature2 = curvy::to_angle_of_curvature(cv);
-    auto curvature_of_sum = (m1 * curvature1 + m2 * curvature2) / linear_magnitude_of_sum;
+    auto curvature_of_sum = normalize_angle((m1 * curvature1 + m2 * curvature2) / linear_magnitude_of_sum);
     auto direction_of_sum = atan_of_pt(
         newtonian_vector_at_point(pt) + cv.newtonian_vector_at_point(pt)
     );
@@ -243,6 +243,7 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
     auto cm = curvy::to_angle_of_curvature(*this);
     auto cs = curvy::to_angle_of_curvature(cv);
     auto curvature_of_diff = (mm * cm - ms * cs) / linear_magnitude_of_diff;
+    curvature_of_diff = normalize_angle(curvature_of_diff);
     auto direction_of_diff = atan_of_pt(
         newtonian_vector_at_point(pt) - cv.newtonian_vector_at_point(pt)
     );
