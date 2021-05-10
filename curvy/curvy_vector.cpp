@@ -167,22 +167,19 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
     auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
 
-    double val;
     if (r <= min_radius) {
-        val = r / ir;
-    } else {
+        throw std::runtime_error("a circle is too small");
+    }  
 
-        auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
-        if (theta < peak) {
-            auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
-            auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
-            ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
-        }
-
-        val = (ir - min_radius) / std::abs(r - min_radius);
+    auto peak = std::atan(d / std::sqrt(-d * d + 4.0 * r * r));
+    if (theta < peak) {
+        auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
+        auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
+        ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
     }
+    double val = (ir - min_radius) / std::abs(r - min_radius);
 
-    return std::sqrt(val);
+    return std::pow(val, 0.4);
 }
 
 double curvy::to_angle_of_curvature(const curvy_vector& cv)
@@ -212,7 +209,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
     matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_sum);
     curvy::circle vector_circle(0, 0, 0);
 
-    if (linear_magnitude_of_sum > eps()) {
+    if (curvature_of_sum > eps()) {
         auto radius = pi() / curvature_of_sum;
         auto center_y = (orientation_of_sum ? 1.0 : -1.0) * radius;
         vector_circle = curvy::circle(0, center_y, radius);
@@ -252,7 +249,7 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
     matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_diff);
     curvy::circle vector_circle(0, 0, 0);
 
-    if (linear_magnitude_of_diff > eps()) {
+    if (curvature_of_diff > eps()) {
         auto radius = pi() / curvature_of_diff;
         auto center_y = (orientation_of_diff ? 1.0 : -1.0) * radius;
         vector_circle = curvy::circle(0, center_y, radius);

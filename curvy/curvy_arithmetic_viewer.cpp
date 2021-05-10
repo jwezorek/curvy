@@ -231,6 +231,7 @@ void curvy::curvy_arithmetic_viewer::render()
         vector_a_.add(vector_b_, { 0,0 }) :
         vector_a_.subtract(vector_b_, { 0,0 });
 
+    /*
     if (!addition_) {
         curvy::output_debug_message("a => " + vector_a_.to_string());
         auto diff = vector_a_.subtract(vector_b_, { 0,0 });
@@ -240,6 +241,7 @@ void curvy::curvy_arithmetic_viewer::render()
         curvy::output_debug_message("check1 " + check1.to_string());
         curvy::output_debug_message("check2 " + check2.to_string());
     }
+    */
 
     paint_circle_vector(*g, result, colors::Purple, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
 
