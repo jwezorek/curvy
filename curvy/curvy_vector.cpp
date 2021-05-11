@@ -4,8 +4,8 @@
 
 namespace {
 
-    const double k_momentmum_transfer_constant = 0.2;
-    const double k_arithmetic_weighting_constant = 2.0;
+    const double k_momentmum_transfer_constant = 1.0 / 4.0;
+    const double k_arithmetic_weighting_constant = 4.0;
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
         const auto pi = curvy::pi();
@@ -209,7 +209,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
     auto curvature2 = curvy::to_angle_of_curvature(cv);
     auto curvature_of_sum = normalize_angle((weight(m1) * curvature1 + weight(m2) * curvature2) / (weight(m1)+weight(m2)));
     auto direction_of_sum = atan_of_pt(
-        newtonian_vector_at_point(pt) + cv.newtonian_vector_at_point(pt)
+        weight(m1) * newtonian_vector_at_point(pt) + weight(m2) * cv.newtonian_vector_at_point(pt)
     );
     auto orientation_of_sum = curvature_of_sum >= 0;
     curvature_of_sum = std::abs(curvature_of_sum);
@@ -240,7 +240,7 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
     auto curvature2 = curvy::to_angle_of_curvature(cv);
     auto curvature_of_diff = normalize_angle((weight(m1) * curvature1 - weight(m2) * curvature2) / (weight(m1) - weight(m2)));
     auto direction_of_diff = atan_of_pt(
-        newtonian_vector_at_point(pt) - cv.newtonian_vector_at_point(pt)
+        weight(m1) * newtonian_vector_at_point(pt) - weight(m2) * cv.newtonian_vector_at_point(pt)
     );
     auto orientation_of_diff = curvature_of_diff >= 0;
     curvature_of_diff = std::abs(curvature_of_diff);

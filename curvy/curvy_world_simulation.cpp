@@ -20,13 +20,13 @@ void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
     insert({
-        curvy::curvy_vector{  0, 0, 5, 5 * 2 * 2.2 },
+        curvy::curvy_vector{  0, 0, 5, 20 },
         0,
         colors::Red
     });
 
     insert({
-        curvy::curvy_vector{ 0, 0, 5,  5 * 2 * 2.2 },
+        curvy::curvy_vector{ 0, 0, 5,  20 },
         pi()/2.0,
         colors::Green
     });
@@ -44,8 +44,8 @@ void curvy::curvy_world_simulation::initialize()
     });
 
     insert({
-        curvy::curvy_vector{ 6, 0, 8,  8 * 0.65 * 2.5 },
-        -pi() / 2.0,
+        curvy::curvy_vector{ 6, 0, 8,  11 },
+        -pi() / 4.0,
         colors::Purple
         });
 

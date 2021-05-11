@@ -379,7 +379,7 @@ void curvy::curvy_vector_viewer::drag_arrow_b(const point& pt)
 {
     auto angle = angle_to_pt(puck_b_.state().circle().center(), pt);
     auto omega = angle - puck_b_.theta();
-    puck_b_.set_speed(omega);
+    puck_b_.set_speed(omega * puck_b_.state().circle().radius());
 }
 
 bool curvy::curvy_vector_viewer::is_in_arrow_b(const point& pt) const
