@@ -29,7 +29,7 @@ namespace {
     void paint_arc_arrow(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz) {
         auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
         gdi::Pen pen(color, 3);
-        g.DrawArc(&pen, curvy::to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -curvy::to_degrees_gdi(theta), -curvy::to_degrees_gdi(crc.signed_angular_magnitude()));
+        g.DrawArc(&pen, curvy::to_scr_rect(crc.circle().bounding_box(), log_sz, pix_sz), -curvy::to_degrees_gdi(theta), -curvy::to_degrees_gdi(*crc.signed_angular_magnitude()));
         auto pts = arrow_poly_from_circle_vec(crc, pt, puck_sz);
         paint_triangle(g, color, pts[0], pts[1], pts[2], log_sz, pix_sz);
     }
@@ -52,7 +52,7 @@ namespace {
 
 std::array<curvy::point, 3> curvy::arrow_poly_from_circle_vec(const curvy::curvy_vector& crc, const curvy::point& pt, double puck_sz) {
     auto theta = curvy::normalize_angle(curvy::angle_to_pt(crc.circle().center(), pt));
-    auto arrow_theta = theta + crc.signed_angular_magnitude();
+    auto arrow_theta = theta + *crc.signed_angular_magnitude();
     auto arror_direction = curvy::direction_on_circle(arrow_theta, crc.orientation());
     curvy::point arrow_pt = {
         crc.circle().x() + crc.circle().radius() * std::cos(arrow_theta),

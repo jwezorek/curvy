@@ -19,8 +19,8 @@ namespace curvy {
 
         bool orientation() const;
         curvy::circle circle() const;
-        double angular_magnitude() const;
-        double signed_angular_magnitude() const;
+        std::optional<double> angular_magnitude() const;
+        std::optional<double> signed_angular_magnitude() const;
         double linear_magnitude() const;
         double signed_linear_magnitude() const;
         double circumference() const;

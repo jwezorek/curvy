@@ -94,8 +94,16 @@ curvy::puck::puck(const curvy_vector& crs, double theta, gdi::Color color, doubl
     mass_(mass)
 { }
 
+curvy::puck::puck(double x, double y, gdi::Color color, double puck_radius, double mass) :
+    state_(x, y, 0, 0), theta_(0), color_(color),  mass_(mass), puck_radius_(puck_radius)
+{
+}
+
 void curvy::puck::update(double dt) {
-    theta_ += dt * state_.signed_angular_magnitude();
+    auto omega = state_.signed_angular_magnitude();
+    if (!omega)
+        return;
+    theta_ += dt * omega.value();
     theta_ = normalize_angle(theta_);
 }
 

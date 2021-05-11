@@ -4,8 +4,8 @@
 
 namespace {
 
-    const double k_momentmum_transfer_constant = 1.0 / 4.0;
-    const double k_arithmetic_weighting_constant = 4.0;
+    const double k_momentmum_transfer_constant = 0.2;
+    const double k_arithmetic_weighting_constant = 2.0;
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
         const auto pi = curvy::pi();
@@ -62,9 +62,12 @@ bool curvy::curvy_vector::orientation() const
 }
 
 
-double curvy::curvy_vector::angular_magnitude() const
+std::optional<double> curvy::curvy_vector::angular_magnitude() const
 {
-    return linear_magnitude_ / circle_.radius();
+    if (!circle_.is_degenerate() && circle_.radius() > 0)
+        return linear_magnitude_ / circle_.radius();
+    else
+        return std::nullopt;
 }
 
 curvy::circle curvy::curvy_vector::circle() const
@@ -73,9 +76,12 @@ curvy::circle curvy::curvy_vector::circle() const
 }
 
 
-double curvy::curvy_vector::signed_angular_magnitude() const
+std::optional<double> curvy::curvy_vector::signed_angular_magnitude() const
 {
-    return sign() * angular_magnitude();
+    auto omega = angular_magnitude();
+    if (!omega)
+        return std::nullopt;
+    return sign() * omega.value();
 }
 
 double curvy::curvy_vector::linear_magnitude() const
@@ -167,7 +173,7 @@ std::tuple<curvy::circle, bool> curvy::circular_direction_through_two_points(con
 
 double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r, double d) {
 
-    if (!curvy::is_in_front_of(pt1, pt1_direction, pt2))
+    if (!curvy::is_in_front_of(pt1, pt1_direction, pt2) || !r)
         return 0.0;
 
     auto min_radius = d / 2.0;
@@ -196,10 +202,10 @@ double curvy::to_angle_of_curvature(const curvy_vector& cv)
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
 {
-    if (angular_magnitude() == 0)
+    if (linear_magnitude() == 0)
         return cv;
 
-    if (cv.angular_magnitude() == 0)
+    if (cv.linear_magnitude() == 0)
         return *this;
 
     auto m1 = linear_magnitude();
@@ -233,6 +239,9 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
 
 curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& pt) const
 {
+    if (cv.linear_magnitude() == 0)
+        return *this;
+
     auto m1 = linear_magnitude();
     auto m2 = cv.linear_magnitude();
     auto linear_magnitude_of_diff = m1 - m2;

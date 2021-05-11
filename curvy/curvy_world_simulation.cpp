@@ -16,8 +16,8 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
     set_pixel_dimensions(px_sz, true);
 }
 
-void curvy::curvy_world_simulation::initialize()
-{
+/*
+
     pucks_.clear();
     insert({
         curvy::curvy_vector{  0, 0, 5, 20 },
@@ -47,6 +47,48 @@ void curvy::curvy_world_simulation::initialize()
         curvy::curvy_vector{ 6, 0, 8,  11 },
         -pi() / 4.0,
         colors::Purple
+        });
+
+*/
+
+void curvy::curvy_world_simulation::initialize()
+{
+    double s = 2.2;
+    pucks_.clear();
+    insert({
+        0,0,
+        colors::Red
+        });
+    
+    insert({
+        s * -0.5,  s * -0.866,
+        colors::Green
+        });
+
+    insert({
+        s * 0.5, s * -0.866,
+        colors::Orange
+        });
+
+    insert({
+        s * -1, s * 2 * -0.866,
+        colors::Blue
+        });
+
+    insert({
+        0, s * 2 * -0.866,
+        colors::Purple
+        });
+
+    insert({
+        s * 1, s * 2 * -0.866,
+        colors::DeepPink
+        });
+
+    insert({
+        curvy::curvy_vector{ 7.7, 0, 8, 76 },
+        3.0 * pi() / 2.0 - pi()/6.0,
+        colors::White
         });
 
 }
