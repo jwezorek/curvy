@@ -45,14 +45,13 @@ namespace curvy {
         circle puck_circle() const;
         void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
         bool is_in_contact_list(const puck& p) const;
+        void apply_friction(double dt);
 
     private:
 
-        
-
         std::unordered_set<const puck*> contact_list_;
         double theta_;
-        curvy_vector state_;
+        curvy_vector curvy_vector_;
         double puck_radius_;
         double mass_;
         gdi::Color color_;

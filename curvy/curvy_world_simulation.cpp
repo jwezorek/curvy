@@ -86,7 +86,7 @@ void curvy::curvy_world_simulation::initialize()
         });
 
     insert({
-        curvy::curvy_vector{ 7.7, 0, 8, 76 },
+        curvy::curvy_vector{ 7.7, 0, 8, 78 },
         3.0 * pi() / 2.0 - pi()/6.0,
         colors::White
         });
@@ -158,6 +158,9 @@ void curvy::curvy_world_simulation::update(double dt)
     for (auto& p : pucks_) {
         p.update_contact_list();
     }
+
+    for (auto& p : pucks_)
+        p.apply_friction( dt );
 
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, eps() );

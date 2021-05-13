@@ -5,7 +5,7 @@
 namespace {
 
     const double k_momentmum_transfer_constant = 0.2;
-    const double k_arithmetic_weighting_constant = 2.0;
+    const double k_arithmetic_weighting_constant = 1.0;
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
         const auto pi = curvy::pi();

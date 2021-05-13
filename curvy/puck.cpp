@@ -87,7 +87,7 @@ namespace {
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 curvy::puck::puck(const curvy_vector& crs, double theta, gdi::Color color, double puck_radius, double mass) :
-    state_(crs),
+    curvy_vector_(crs),
     theta_(theta),
     color_(color),
     puck_radius_(puck_radius),
@@ -95,12 +95,12 @@ curvy::puck::puck(const curvy_vector& crs, double theta, gdi::Color color, doubl
 { }
 
 curvy::puck::puck(double x, double y, gdi::Color color, double puck_radius, double mass) :
-    state_(x, y, 0, 0), theta_(0), color_(color),  mass_(mass), puck_radius_(puck_radius)
+    curvy_vector_(x, y, 0, 0), theta_(0), color_(color),  mass_(mass), puck_radius_(puck_radius)
 {
 }
 
 void curvy::puck::update(double dt) {
-    auto omega = state_.signed_angular_magnitude();
+    auto omega = curvy_vector_.signed_angular_magnitude();
     if (!omega)
         return;
     theta_ += dt * omega.value();
@@ -115,17 +115,17 @@ curvy::puck curvy::puck::update(double dt) const {
 
 curvy::curvy_vector curvy::puck::state() const
 {
-    return state_;
+    return curvy_vector_;
 }
 
 curvy::curvy_vector& curvy::puck::state()
 {
-    return state_;
+    return curvy_vector_;
 }
 
 curvy::curvy_vector curvy::puck::momentum_vector() const
 {
-    return mass_ * state_;
+    return mass_ * curvy_vector_;
 }
 
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
@@ -155,7 +155,7 @@ void curvy::puck::set_theta(double theta)
 
 void curvy::puck::set_speed(double speed)
 {
-    state_.set_magnitude(speed);
+    curvy_vector_.set_magnitude(speed);
 }
 
 void curvy::puck::set_puck_radius(double r)
@@ -165,36 +165,36 @@ void curvy::puck::set_puck_radius(double r)
 
 void curvy::puck::set_radius_of_revolution(double r)
 {
-    state_.set_radius(r);
+    curvy_vector_.set_radius(r);
 }
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
 {
     set_theta( theta );
-    state_.set_circle(curvy::circle(cx, cy, r));
+    curvy_vector_.set_circle(curvy::circle(cx, cy, r));
 }
 
 void curvy::puck::set_center_of_revolution(const point& pt)
 {
-    state_.circle().set_center(pt);
+    curvy_vector_.circle().set_center(pt);
 }
 
 void curvy::puck::set_position(const point& pt)
 {
-    auto offset = state_.circle().center() - position();
-    state_.circle().set_center(pt + offset);
+    auto offset = curvy_vector_.circle().center() - position();
+    curvy_vector_.circle().set_center(pt + offset);
 }
 
 void curvy::puck::set_vector(const curvy_vector& v)
 {
     auto pt = position();
-    state_ = v;
+    curvy_vector_ = v;
     theta_ = angle_to_pt(v.circle().center(), pt);
 }
 
 curvy::point curvy::puck::position() const
 {
-    return state_.circle().get_point(theta_);
+    return curvy_vector_.circle().get_point(theta_);
 }
 
 double curvy::puck::theta() const
@@ -204,7 +204,7 @@ double curvy::puck::theta() const
 
 double curvy::puck::direction() const
 {
-    return normalize_angle( state_.direction_at(position()) );
+    return normalize_angle( curvy_vector_.direction_at(position()) );
 }
 
 curvy::circle curvy::puck::puck_circle() const
@@ -227,6 +227,22 @@ void curvy::puck::add_to_contact_list(const puck& p)
 bool curvy::puck::is_in_contact_list(const puck& p) const
 {
     return contact_list_.find(&p) != contact_list_.end();
+}
+
+void curvy::puck::apply_friction(double dt)
+{
+    auto mag = state().linear_magnitude();
+    if (mag == 0)
+        return;
+
+    auto friction = 0.00015 * mag * mag;
+    if (friction < 0.01)
+        friction = 0.01;
+
+    mag -= friction;
+    if (mag < 0)
+        mag = 0;
+    state().set_magnitude( state().sign() * mag);
 }
 
 void curvy::puck::update_contact_list()
