@@ -1,6 +1,7 @@
 #include "util.h"
 #include <Windows.h>
 #include <cmath>
+#include <array>
 #include <boost/math/tools/roots.hpp>
 
 namespace {
@@ -390,6 +391,58 @@ double solve_circles_traveling_in_circles(double r1, double theta1, double a1, d
 double curvy::circles_traveling_in_circles_collision_time(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2)
 {
     return solve_circles_traveling_in_circles(r1, theta1, a1, cx, cy, r2, theta2, a2, d, t2);
+}
+
+std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2)
+{
+    using namespace std;
+    auto val1 = -(acos((-(r * (4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+        4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta))) -
+        sqrt(pow(r, 2) * pow(4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+            4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta), 2) -
+            4 * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)) *
+            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) + 2 * pow(cx, 2) * pow(r, 2) + 2 * pow(cy, 2) * pow(r, 2) -
+                2 * pow(d, 2) * pow(r, 2) + pow(r, 4) + 4 * pow(cx, 2) * d * R + 4 * pow(cy, 2) * d * R - 4 * pow(d, 3) * R + 4 * d * pow(r, 2) * R - 2 * pow(cx, 2) * pow(R, 2) - 2 * pow(cy, 2) * pow(R, 2) + 6 * pow(d, 2) * pow(R, 2) -
+                2 * pow(r, 2) * pow(R, 2) - 4 * d * pow(R, 3) + pow(R, 4) - 4 * pow(cy, 2) * pow(r, 2) * pow(cos(theta), 2) + 8 * cx * cy * pow(r, 2) * cos(theta) * sin(theta) - 4 * pow(cx, 2) * pow(r, 2) * pow(sin(theta), 2)))) /
+        (2. * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)))) / a);
+
+    auto val2 = acos((-(r * (4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+        4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta))) -
+        sqrt(pow(r, 2) * pow(4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+            4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta), 2) -
+            4 * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)) *
+            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) + 2 * pow(cx, 2) * pow(r, 2) + 2 * pow(cy, 2) * pow(r, 2) -
+                2 * pow(d, 2) * pow(r, 2) + pow(r, 4) + 4 * pow(cx, 2) * d * R + 4 * pow(cy, 2) * d * R - 4 * pow(d, 3) * R + 4 * d * pow(r, 2) * R - 2 * pow(cx, 2) * pow(R, 2) - 2 * pow(cy, 2) * pow(R, 2) + 6 * pow(d, 2) * pow(R, 2) -
+                2 * pow(r, 2) * pow(R, 2) - 4 * d * pow(R, 3) + pow(R, 4) - 4 * pow(cy, 2) * pow(r, 2) * pow(cos(theta), 2) + 8 * cx * cy * pow(r, 2) * cos(theta) * sin(theta) - 4 * pow(cx, 2) * pow(r, 2) * pow(sin(theta), 2)))) /
+        (2. * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)))) / a;
+
+    auto val3 = -(acos((-(r * (4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+        4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta))) +
+        sqrt(pow(r, 2) * pow(4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+            4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta), 2) -
+            4 * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)) *
+            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) + 2 * pow(cx, 2) * pow(r, 2) + 2 * pow(cy, 2) * pow(r, 2) -
+                2 * pow(d, 2) * pow(r, 2) + pow(r, 4) + 4 * pow(cx, 2) * d * R + 4 * pow(cy, 2) * d * R - 4 * pow(d, 3) * R + 4 * d * pow(r, 2) * R - 2 * pow(cx, 2) * pow(R, 2) - 2 * pow(cy, 2) * pow(R, 2) + 6 * pow(d, 2) * pow(R, 2) -
+                2 * pow(r, 2) * pow(R, 2) - 4 * d * pow(R, 3) + pow(R, 4) - 4 * pow(cy, 2) * pow(r, 2) * pow(cos(theta), 2) + 8 * cx * cy * pow(r, 2) * cos(theta) * sin(theta) - 4 * pow(cx, 2) * pow(r, 2) * pow(sin(theta), 2)))) /
+        (2. * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)))) / a);
+
+    auto val4 = acos((-(r * (4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+        4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta))) +
+        sqrt(pow(r, 2) * pow(4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
+            4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta), 2) -
+            4 * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)) *
+            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) + 2 * pow(cx, 2) * pow(r, 2) + 2 * pow(cy, 2) * pow(r, 2) -
+                2 * pow(d, 2) * pow(r, 2) + pow(r, 4) + 4 * pow(cx, 2) * d * R + 4 * pow(cy, 2) * d * R - 4 * pow(d, 3) * R + 4 * d * pow(r, 2) * R - 2 * pow(cx, 2) * pow(R, 2) - 2 * pow(cy, 2) * pow(R, 2) + 6 * pow(d, 2) * pow(R, 2) -
+                2 * pow(r, 2) * pow(R, 2) - 4 * d * pow(R, 3) + pow(R, 4) - 4 * pow(cy, 2) * pow(r, 2) * pow(cos(theta), 2) + 8 * cx * cy * pow(r, 2) * cos(theta) * sin(theta) - 4 * pow(cx, 2) * pow(r, 2) * pow(sin(theta), 2)))) /
+        (2. * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)))) / a;
+
+    array<double,4> candidates = { val1, val2, val3, val4 };
+    for (auto candidate : candidates) {
+        if (candidate >= 0.0 && candidate <= t2)
+            return candidate;
+    }
+
+    return std::nullopt;
 }
 
 
