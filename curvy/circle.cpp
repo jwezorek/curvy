@@ -173,15 +173,8 @@ std::optional<std::tuple<curvy::point, curvy::point>> curvy::intersections(const
 
     
     if (!(std::abs(r1 - r2) <= R  && R <= r1 + r2 )) { // no intersection
-
-        //output_debug_message("---");
-        //output_debug_message(c1.to_string());
-        //output_debug_message(c2.to_string());
-
         return std::nullopt;
     }
-
-    // intersection(s) should exist
 
     auto R2 = R * R;
     auto R4 = R2 * R2;

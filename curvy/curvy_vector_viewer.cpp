@@ -242,16 +242,6 @@ std::tuple<collision_vectors, collision_vectors> get_collision_vectors(bool b_is
     auto impulse_a_to_b = curvy::curvy_vector(a_to_b_circle, (a_to_b_orientation ? 1.0 : -1.0) * coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b,  pt_a);
 
-    /*
-    auto curvature = to_angle_of_curvature(impulse_a_to_b.circular_direction());
-    output_debug_message("-----------");
-    output_debug_message("original radius", impulse_a_to_b.circle().radius());
-    output_debug_message("curvature ", to_degrees(curvature));
-    auto cd = from_angle_of_curvature(curvature);
-    output_debug_message("cd radius ", cd.radius);
-    output_debug_message("cd orientation => " + (cd.orientation ? std::string("CCW") : std::string("CW")));
-    */
-
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = curvy::momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b,  sz_constant);
     auto impulse_b_to_a = curvy::curvy_vector(b_to_a_circle, (b_to_a_orientation ? 1.0 : -1.0) * coefficient_b_to_a * b.linear_magnitude());

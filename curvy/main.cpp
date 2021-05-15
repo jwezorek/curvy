@@ -55,8 +55,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         20, 20, 1096, 1119, 0, 0, hInstance, NULL);
 
     GetClientRect(hwnd, &r);
-    curvy::output_debug_message(std::to_string(r.right - r.left));
-    curvy::output_debug_message(std::to_string(r.bottom - r.top));
 
     auto last_time = chrono::high_resolution_clock::now();
     while (true) {

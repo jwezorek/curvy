@@ -159,8 +159,8 @@ void curvy::curvy_world_simulation::update(double dt)
         p.update_contact_list();
     }
 
-    //for (auto& p : pucks_)
-    //    p.apply_friction( dt );
+    for (auto& p : pucks_)
+        p.apply_friction( dt );
 
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, eps() );
