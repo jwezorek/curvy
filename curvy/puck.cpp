@@ -40,12 +40,33 @@ namespace {
         if (is_in_contact(p1_at_t2, p2_at_t2, eps))
             return t2;
 
+        auto v1 = p1.state();
+        auto v2 = p2.state();
+
+        if (v1.angular_magnitude() && v2.angular_magnitude()) {
+            return curvy::circles_traveling_in_circles_collision_time(
+                v1.circle().radius(),
+                p1.theta(),
+                *v1.signed_angular_magnitude(),
+                v2.circle().x() - v1.circle().x(),
+                v2.circle().y() - v1.circle().y(),
+                v2.circle().radius(),
+                p2.theta(),
+                *v2.signed_angular_magnitude(),
+                p1.puck_circle().radius() + p1.puck_circle().radius(),
+                t2
+            );
+        }
+
+        throw std::runtime_error("TODO: circular motion linear motion collision");
+        /*
         auto half_time = (t1 + t2) / 2.0;
         bool intersects_at_halftime = is_intersecting(p1.update(half_time), p2.update(half_time));
         if (intersects_at_halftime)
             return get_collision_time(p1, p2, t1, half_time, eps);
         else
             return get_collision_time(p1, p2, half_time, t2, eps);
+        */
     }
 
     double distance_from_intersection_with_boundary(const curvy::puck& p1, const curvy::circle& border)
@@ -74,6 +95,7 @@ namespace {
         if (is_in_contact_with_border(p1_at_t2, border, eps))
             return t2;
 
+        
         auto half_time = (t1 + t2) / 2.0;
         bool intersects_at_halftime = is_intersecting_with_border(p1.update(half_time), border);
         if (intersects_at_halftime)

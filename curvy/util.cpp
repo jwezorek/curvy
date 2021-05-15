@@ -1,6 +1,7 @@
 #include "util.h"
 #include <Windows.h>
 #include <cmath>
+#include <boost/math/tools/roots.hpp>
 
 namespace {
     using vec = Eigen::Matrix<double, 3, 1>;
@@ -335,6 +336,60 @@ std::optional<curvy::point> curvy::line_intersection(const std::tuple<point, poi
 double curvy::to_degrees(double radians)
 {
     return radians * 180.0 / curvy::pi();
+}
+
+struct circles_traveling_in_circles {
+    circles_traveling_in_circles(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d) :
+        r1(r1), theta1(theta1), a1(a1), cx(cx), cy(cy), r2(r2), theta2(theta2), a2(a2), d(d) {}
+
+    std::tuple<double, double, double> operator()(double const& t)
+    {
+        // Return f(x) and f'(x) and f''(x).
+        // f(x)...
+        double cosine_term = r1 * std::cos(theta1 + t * a1) - (cx + r2 * std::cos(theta2 + t * a2));
+        double sine_term = r1 * std::sin(theta1 + t * a1) - (cy + r2 * std::sin(theta2 + t * a2));
+        double fx = cosine_term * cosine_term + sine_term * sine_term - d * d;
+
+        // f'(x)
+        double dx = 2.0 * (a1 * r1 * std::cos(a1 * t + theta1) - a2 * r2 * std::cos(a2 * t + theta2)) *
+            (-cy + r1 * std::sin(a1 * t + theta1) - r2 * std::sin(a2 * t + theta2)) +
+            2.0 * (-cx + r1 * std::cos(a1 * t + theta1) - r2 * std::cos(a2 * t + theta2)) *
+            (-a1 * r1 * std::sin(a1 * t + theta1) + a2 * r2 * std::sin(a2 * t + theta2));
+
+        // f''(x)
+        double cosine_term_2 = a1 * r1 * std::cos(a1 * t + theta1) - a2 * r2 * std::cos(a2 * t + theta2);
+        double sine_term_2 = -a1 * r1 * std::sin(a1 * t + theta1) + a2 * r2 * std::sin(a2 * t + theta2);
+        double d2x = 2.0 * cosine_term_2 * cosine_term_2 +
+            2.0 * (-cx + r1 * std::cos(a1 * t + theta1) - r2 * std::cos(a2 * t + theta2)) *
+            (-(a1 * a1) * r1 * std::cos(a1 * t + theta1) + a2 * a2 * r2 * std::cos(a2 * t + theta2)) +
+            2.0 * sine_term_2 * sine_term_2 +
+            2.0 * (-cy + r1 * std::sin(a1 * t + theta1) - r2 * std::sin(a2 * t + theta2)) *
+            (-(a1 * a1) * r1 * std::sin(a1 * t + theta1) + a2 * a2 * r2 * std::sin(a2 * t + theta2));
+
+        return { fx, dx, d2x };  // 'return' fx, dx and d2x.
+    }
+
+private:
+    double r1, theta1, a1, cx, cy, r2, theta2, a2, d;
+};
+
+double solve_circles_traveling_in_circles(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2)
+{
+    using namespace boost::math::tools;
+    const int digits = std::numeric_limits<double>::digits;  
+    int get_digits = static_cast<int>(digits - 4);    
+                                                       
+    boost::uintmax_t maxit = 20;
+    double result = halley_iterate(
+        circles_traveling_in_circles(r1, theta1, a1, cx, cy, r2, theta2, a2, d),
+        t2 / 2.0, 0.0, t2, get_digits, maxit);
+
+    return result;
+}
+
+double curvy::circles_traveling_in_circles_collision_time(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2)
+{
+    return solve_circles_traveling_in_circles(r1, theta1, a1, cx, cy, r2, theta2, a2, d, t2);
 }
 
 

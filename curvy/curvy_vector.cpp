@@ -64,10 +64,13 @@ bool curvy::curvy_vector::orientation() const
 
 std::optional<double> curvy::curvy_vector::angular_magnitude() const
 {
-    if (!circle_.is_degenerate() && circle_.radius() > 0)
+    if (!circle_.is_degenerate() && circle_.radius() > 0) {
         return linear_magnitude_ / circle_.radius();
-    else
-        return std::nullopt;
+    }
+    if (linear_magnitude_ == 0) {
+        return 0.0;
+    }
+    return std::nullopt;
 }
 
 curvy::circle curvy::curvy_vector::circle() const

@@ -53,4 +53,5 @@ namespace curvy {
     bool pt_in_triangle(const point& pt, const point& v1, const point& v2, const point& v3);
     std::optional<point> line_intersection(const std::tuple<point, point>& line1, const std::tuple<point, point>& line2);
     double to_degrees(double radians);
+    double circles_traveling_in_circles_collision_time(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2);
 }

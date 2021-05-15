@@ -119,7 +119,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(EIGEN3_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EIGEN3_INCLUDE_DIR);$(BOOST_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(EIGEN3_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EIGEN3_INCLUDE_DIR);$(BOOST_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
