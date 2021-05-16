@@ -9,6 +9,7 @@
 #include "util.h"
 #include "circle.h"
 #include "colors.h"
+#include "game.h"
 #include <gdiplus.h>
 #pragma comment (lib,"Gdiplus.lib")
 
@@ -34,6 +35,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     g_viewers.emplace_back(std::make_unique<curvy::curvy_world_simulation>(0, 40));
     g_viewers.emplace_back(std::make_unique<curvy::curvy_vector_viewer>(0, 60));
     g_viewers.emplace_back(std::make_unique<curvy::curvy_arithmetic_viewer>(0, 40));
+    g_viewers.emplace_back(std::make_unique<curvy::game>(0, 40));
 
     MSG msg = { 0 };
     WNDCLASS wc = { 0 };
