@@ -311,6 +311,7 @@ void curvy::curvy_world_simulation::handle_boundary_collision(puck* p)
     p->set_vector(
         curvy_vector(
             circle_of_rev,
+            p->state().orientation(),
             lin_mag
         )
     );
