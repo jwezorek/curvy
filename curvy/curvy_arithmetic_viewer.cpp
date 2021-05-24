@@ -69,8 +69,8 @@ curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz
     logical_sz_(log_sz),
     interaction_(interaction::none),
     addition_(true),
-    vector_a_(circle(4, 0, 6), -6),
-    vector_b_(circle(-4, 0, 6), 6)
+    vector_a_(circle(4, 0, 4), -6),
+    vector_b_(circle(-4, 0, 4), 2)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -79,11 +79,13 @@ curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz
 void curvy::curvy_arithmetic_viewer::initialize()
 {
     // translate the curvy vectors so that one of their intersections is at the origin.
+    /*
     auto [pt1, pt2] = curvy::intersections(vector_a_.circle(), vector_b_.circle()).value();
     auto pt = pt_with_lowest_y(pt1, pt2);
     matrix mat = translation_matrix(-pt);
     vector_a_ = apply_matrix(mat, vector_a_);
     vector_b_ = apply_matrix(mat, vector_b_);
+    */
 }
 
 void curvy::curvy_arithmetic_viewer::update()
@@ -232,6 +234,11 @@ void curvy::curvy_arithmetic_viewer::render()
         vector_a_.subtract(vector_b_, { 0,0 });
 
     paint_circle_vector(*g, result, colors::Purple, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
+
+    if (!addition_) {
+        auto sum_check = vector_b_.add(result, { 0,0 });
+        paint_circle_vector(*g, sum_check, colors::Green, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
+    }
 
     draw_operation(*g, addition_);
 }

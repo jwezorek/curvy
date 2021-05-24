@@ -17,19 +17,20 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
 }
 
 /*
-
+void curvy::curvy_world_simulation::initialize()
+{
     pucks_.clear();
     insert({
         curvy::curvy_vector{  0, 0, 5, 20 },
         0,
         colors::Red
-    });
+        });
 
     insert({
         curvy::curvy_vector{ 0, 0, 5,  20 },
-        pi()/2.0,
+        pi() / 2.0,
         colors::Green
-    });
+        });
 
     insert({
         curvy::curvy_vector{  0, 0, 5, 0 },
@@ -39,16 +40,16 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
 
     insert({
         curvy::curvy_vector{ 0, 0, 5, 0 },
-        -pi()/2.0,
+        -pi() / 2.0,
         colors::Blue
-    });
+        });
 
     insert({
         curvy::curvy_vector{ 6, 0, 8,  11 },
         -pi() / 4.0,
         colors::Purple
         });
-
+}
 */
 
 void curvy::curvy_world_simulation::initialize()
@@ -159,8 +160,8 @@ void curvy::curvy_world_simulation::update(double dt)
         p.update_contact_list();
     }
 
-    for (auto& p : pucks_)
-        p.apply_friction( dt );
+    //for (auto& p : pucks_)
+    //    p.apply_friction( dt );
 
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, eps() );

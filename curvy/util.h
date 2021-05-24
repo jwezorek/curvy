@@ -9,6 +9,7 @@ namespace curvy {
 
     using matrix = Eigen::Matrix<double, 3, 3>;
     using point = std::tuple<double, double>;
+    using vec3 = std::tuple<double, double, double>;
 
     double eps();
     double pi();
@@ -53,6 +54,18 @@ namespace curvy {
     bool pt_in_triangle(const point& pt, const point& v1, const point& v2, const point& v3);
     std::optional<point> line_intersection(const std::tuple<point, point>& line1, const std::tuple<point, point>& line2);
     double to_degrees(double radians);
+    double from_degrees(double degrees);
     double circles_traveling_in_circles_collision_time(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2);
     std::optional<double> circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2);
+
+    double lerp_angles(double theta1, double theta2, double t);
+    double lerp_angles_inverse(double interpolated_angle, double theta1, double t);
+    double lerp_angles_inverse_2(double interpolated_angle, double theta2, double t);
+
+    double magnitude(const vec3& v);
+    vec3 operator*(const vec3& a, double scale);
+    vec3 operator*(double scale, const vec3& a);
+    vec3 operator+(const vec3& a, const vec3& b);
+    vec3 operator-(const vec3& a, const vec3& b);
+    vec3 normalize(const vec3& v);
 }

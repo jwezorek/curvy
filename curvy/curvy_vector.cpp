@@ -4,7 +4,7 @@
 
 namespace {
 
-    const double k_momentmum_transfer_constant = 0.2;
+    const double k_momentmum_transfer_constant = 0.5;
     const double k_arithmetic_weighting_constant = 1.0;
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
@@ -203,6 +203,29 @@ double curvy::to_angle_of_curvature(const curvy_vector& cv)
     return cv.sign() * pi() / cv.circle().radius();
 }
 
+curvy::vec3 to_vector(double magnitude, double direction, double curvature) {
+    auto yaw = direction;
+    auto pitch = curvature/2.0;
+    return {
+        magnitude * std::cos(yaw) * std::cos(pitch),
+        magnitude * std::sin(yaw) * std::cos(pitch),
+        magnitude * std::sin(pitch)
+    };
+}
+
+std::tuple<double, double, double> from_vector(const curvy::vec3& v) {
+    using namespace curvy;
+
+    auto m = magnitude(v);
+    auto [x, y, z] = (1.0 / m) * v;
+    auto pitch = std::asin(z);
+    auto sin_of_yaw = y / std::cos(pitch);
+    auto cos_of_yaw = x / std::cos(pitch);
+    auto yaw = std::atan2(sin_of_yaw, cos_of_yaw);
+
+    return { m, yaw, 2.0 * pitch };
+}
+
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
 {
     if (linear_magnitude() == 0)
@@ -213,13 +236,112 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
 
     auto m1 = linear_magnitude();
     auto m2 = cv.linear_magnitude();
-    auto linear_magnitude_of_sum = m1 + m2;
+
     auto curvature1 = curvy::to_angle_of_curvature(*this);
     auto curvature2 = curvy::to_angle_of_curvature(cv);
-    auto curvature_of_sum = normalize_angle((weight(m1) * curvature1 + weight(m2) * curvature2) / (weight(m1)+weight(m2)));
-    auto direction_of_sum = atan_of_pt(
-        weight(m1) * newtonian_vector_at_point(pt) + weight(m2) * cv.newtonian_vector_at_point(pt)
+
+    auto direction1 = direction_at(pt);
+    auto direction2 = cv.direction_at(pt);
+
+    auto v1 = to_vector(1.0, direction1, curvature1);
+    auto v2 = to_vector(1.0, direction2, curvature2);
+    auto vector_sum = v1 + v2;
+
+    auto [dummy, direction_of_sum, curvature_of_sum] = from_vector(vector_sum);
+    auto magnitude_of_sum = m1 + m2;
+
+    auto orientation_of_sum = curvature_of_sum >= 0;
+    curvature_of_sum = std::abs(curvature_of_sum);
+    matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_sum);
+    curvy::circle vector_circle(0, 0, 0);
+
+    if (curvature_of_sum > eps()) {
+        auto radius = pi() / curvature_of_sum;
+        auto center_y = (orientation_of_sum ? 1.0 : -1.0) * radius;
+        vector_circle = curvy::circle(0, center_y, radius);
+
+    }
+    else {
+        vector_circle = curvy::circle(true, { 0,0 }, 0);
+    }
+
+    return apply_matrix(
+        from_canonical_coords,
+        curvy_vector(vector_circle, orientation_of_sum, magnitude_of_sum)
     );
+}
+
+curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& pt) const
+{
+    if (cv.linear_magnitude() == 0)
+        return *this;
+
+    auto m1 = linear_magnitude();
+    auto m2 = cv.linear_magnitude();
+
+    auto curvature1 = curvy::to_angle_of_curvature(*this);
+    auto curvature2 = curvy::to_angle_of_curvature(cv);
+
+    auto direction1 = direction_at(pt);
+    auto direction2 = cv.direction_at(pt);
+
+    auto v1 = to_vector(1.0, direction1, curvature1);
+    auto v2 = to_vector(1.0, direction2, curvature2);
+    auto vector_diff = v1 - v2;
+
+    auto [dummy, direction_of_diff, curvature_of_diff] = from_vector(vector_diff);
+    auto magnitude_of_diff = m1 - m2;
+
+    auto orientation_of_diff = curvature_of_diff >= 0;
+    curvature_of_diff = std::abs(curvature_of_diff);
+    matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_diff);
+    curvy::circle vector_circle(0, 0, 0);
+
+    if (curvature_of_diff > eps()) {
+        auto radius = pi() / curvature_of_diff;
+        auto center_y = (orientation_of_diff ? 1.0 : -1.0) * radius;
+        vector_circle = curvy::circle(0, center_y, radius);
+
+    }
+    else {
+        vector_circle = curvy::circle(true, { 0,0 }, 0);
+    }
+
+    return apply_matrix(
+        from_canonical_coords,
+        curvy_vector(vector_circle, orientation_of_diff, magnitude_of_diff)
+    );
+}
+
+/*
+
+double lerp_angles_raw(double theta1, double theta2, double t)
+{
+    auto delta = theta2 - theta1;
+    return curvy::normalize_angle(delta * t + theta1);
+}
+
+curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
+{
+    if (linear_magnitude() == 0)
+        return cv;
+
+    if (cv.linear_magnitude() == 0)
+        return *this;
+
+    auto m1 = linear_magnitude();
+    auto m2 = cv.linear_magnitude();
+
+    auto t = weight(m2) / (weight(m1) + weight(m2));
+
+    auto curvature1 = curvy::to_angle_of_curvature(*this);
+    auto curvature2 = curvy::to_angle_of_curvature(cv);
+    auto curvature_of_sum = lerp_angles_raw(curvature1, curvature2, t);
+
+    auto direction1 = direction_at(pt);
+    auto direction2 = cv.direction_at(pt);
+    auto direction_of_sum = lerp_angles_raw(direction1, direction2, t);
+
     auto orientation_of_sum = curvature_of_sum >= 0;
     curvature_of_sum = std::abs(curvature_of_sum);
     matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_sum);
@@ -236,7 +358,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
 
     return apply_matrix(
         from_canonical_coords,
-        curvy_vector(vector_circle, orientation_of_sum, linear_magnitude_of_sum)
+        curvy_vector(vector_circle, orientation_of_sum, m1+m2)
     );
 }
 
@@ -245,22 +367,44 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
     if (cv.linear_magnitude() == 0)
         return *this;
 
-    auto m1 = linear_magnitude();
-    auto m2 = cv.linear_magnitude();
-    auto linear_magnitude_of_diff = m1 - m2;
-    auto curvature1 = curvy::to_angle_of_curvature(*this);
-    auto curvature2 = curvy::to_angle_of_curvature(cv);
-    auto curvature_of_diff = normalize_angle((weight(m1) * curvature1 - weight(m2) * curvature2) / (weight(m1) - weight(m2)));
-    auto direction_of_diff = atan_of_pt(
-        weight(m1) * newtonian_vector_at_point(pt) - weight(m2) * cv.newtonian_vector_at_point(pt)
-    );
-    auto orientation_of_diff = curvature_of_diff >= 0;
-    curvature_of_diff = std::abs(curvature_of_diff);
-    matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction_of_diff);
+    auto m_of_sum = linear_magnitude();
+    auto m1 = cv.linear_magnitude();
+    auto m2 = m_of_sum - m1;
+
+    if (m2 < 0)
+        return curvy_vector({ 0,0,0 }, true, 0);
+
+    auto t = weight(m2) / (weight(m1) + weight(m2));
+
+    auto curvature1 = curvy::to_angle_of_curvature(cv);
+    auto curvature_of_sum = curvy::to_angle_of_curvature(*this);
+    auto curvature2 = normalize_angle(lerp_angles_inverse(curvature_of_sum, curvature1, t));
+
+    if (std::abs(curvature_of_sum - normalize_angle(lerp_angles(curvature1, curvature2, t))) >= 0.0001) {
+        auto raw = lerp_angles_inverse(curvature_of_sum, curvature1, t);
+        
+    }
+
+    auto direction1 = cv.direction_at(pt);
+    auto direction_of_sum = direction_at(pt);
+    auto direction2 = normalize_angle(lerp_angles_inverse(direction_of_sum, direction1, t));
+
+    if (std::abs(direction_of_sum - normalize_angle(lerp_angles(direction1, direction2, t))) >= 0.0001) {
+        direction2 = lerp_angles_inverse(direction_of_sum, direction1, t);
+    }
+
+    auto orientation_of_diff = curvature2 >= 0;
+    curvature2 = std::abs(curvature2);
+    matrix from_canonical_coords = translation_matrix(pt) * rotation_matrix(direction2);
     curvy::circle vector_circle(0, 0, 0);
 
-    if (curvature_of_diff > eps()) {
-        auto radius = pi() / curvature_of_diff;
+    if (curvature2 > eps()) {
+        auto radius = pi() / curvature2;
+
+        if (radius < 1.0) {
+            return curvy_vector({ 0,0,0 }, true, 0);;
+        }
+
         auto center_y = (orientation_of_diff ? 1.0 : -1.0) * radius;
         vector_circle = curvy::circle(0, center_y, radius);
     } else {
@@ -269,9 +413,9 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
 
     return apply_matrix(
         from_canonical_coords,
-        curvy_vector(vector_circle, orientation_of_diff, linear_magnitude_of_diff)
+        curvy_vector(vector_circle, orientation_of_diff, m2)
     );
 }
 
-
+*/
 

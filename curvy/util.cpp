@@ -15,6 +15,21 @@ namespace {
         return (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
     }
 
+    // std::fmod just returns the mod of the absolute value with the sign of the divisor, I think.
+    // we want the Donald Knuth et. al. preferred float mod.
+
+    double floored_division_modulo(double a, double n) {
+        return a - std::floor(a / n) * n;
+    }
+
+    // return the difference of theta1 and theta2 with the sign such that the returned difference 
+    // plus theta2 equals theta1...
+
+    double angle_delta(double theta1, double theta2) {
+        auto delta = theta1 - theta2;
+        return floored_division_modulo(delta + curvy::pi(), curvy::two_pi()) - curvy::pi();
+    }
+
 }
 
 double curvy::eps()
@@ -339,6 +354,11 @@ double curvy::to_degrees(double radians)
     return radians * 180.0 / curvy::pi();
 }
 
+double curvy::from_degrees(double degrees)
+{
+    return degrees * curvy::pi() / 180.0;
+}
+
 struct circles_traveling_in_circles {
     circles_traveling_in_circles(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d) :
         r1(r1), theta1(theta1), a1(a1), cx(cx), cy(cy), r2(r2), theta2(theta2), a2(a2), d(d) {}
@@ -420,4 +440,98 @@ std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circ
     return std::nullopt;
 }
 
+/*
+
+    auto test1 = to_degrees(angle_delta(from_degrees(15), from_degrees(345)));
+    auto test2 = to_degrees(angle_delta(from_degrees(345), from_degrees(15)));
+    auto check1 = to_degrees(normalize_angle(from_degrees(test1 + 345)));
+    auto check2 = to_degrees(normalize_angle(from_degrees(test2 + 15)));
+
+    auto test3 = to_degrees(angle_delta(from_degrees(165), from_degrees(-165)));
+    auto test4 = to_degrees(angle_delta(from_degrees(-165), from_degrees(165)));
+    auto check3 = to_degrees(normalize_angle(from_degrees(test3 + (-165))));
+    auto check4 = to_degrees(normalize_angle(from_degrees(test4 + 165)));
+
+    auto test5 = to_degrees(angle_delta(from_degrees(65), from_degrees(35)));
+    auto test6 = to_degrees(angle_delta(from_degrees(35), from_degrees(65)));
+    auto check5 = to_degrees(normalize_angle(from_degrees(test5 + 35)));
+    auto check6 = to_degrees(normalize_angle(from_degrees(test6 + 65)));
+
+*/
+
+// lerp_angles(a, b, 0) => a
+// lerp_angles(a, b, 0.5) => half way along the smaller angle between a and b
+// lerp_angles(a, b, 1) => b
+
+double curvy::lerp_angles(double theta1, double theta2, double t)
+{
+    auto delta = angle_delta(theta2, theta1);
+    return delta * t + theta1;
+}
+
+// return theta2 such that lerp_angles(theta1, theta2, t) equals interpolated_angle...
+double curvy::lerp_angles_inverse(double interpolated_angle, double theta1, double t)
+{
+    auto inverse = (interpolated_angle - theta1) / t + theta1;
+
+    if (inverse > pi())
+        inverse -= two_pi();
+    else if (inverse < -pi())
+        inverse += two_pi();
+
+    return inverse;
+}
+
+double curvy::lerp_angles_inverse_2(double interpolated_angle, double theta2, double t)
+{
+    auto inverse = (-interpolated_angle + t * theta2) / (-1.0 + t);
+
+    if (inverse > pi())
+        inverse -= two_pi();
+    else if (inverse < -pi())
+        inverse += two_pi();
+
+    return inverse;
+}
+
+double curvy::magnitude(const vec3& v)
+{
+    auto [x, y, z] = v;
+    return std::sqrt(x * x + y * y + z * z);
+}
+
+curvy::vec3 curvy::operator*(const vec3& v, double k)
+{
+    return k * v;
+}
+
+curvy::vec3 curvy::operator*(double k, const vec3& v)
+{
+    auto [x, y, z] = v;
+    return { k * x, k * y, k * z };
+}
+
+curvy::vec3 curvy::operator+(const vec3& v1, const vec3& v2)
+{
+    const auto& [x1, y1, z1] = v1;
+    const auto& [x2, y2, z2] = v2;
+    return {
+        x1 + x2,
+        y1 + y2,
+        z1 + z2
+    };
+}
+
+curvy::vec3 curvy::operator-(const curvy::vec3& a, const curvy::vec3& b)
+{
+    return a + (-1.0 * b);
+}
+
+curvy::vec3 curvy::normalize(const curvy::vec3& v)
+{
+    auto m = magnitude(v);
+    if (m == 0)
+        return { 0,0,0 };
+    return (1.0 / m) * v;
+}
 
