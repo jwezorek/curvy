@@ -69,8 +69,8 @@ curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz
     logical_sz_(log_sz),
     interaction_(interaction::none),
     addition_(true),
-    vector_a_(circle(4, 0, 4), -6),
-    vector_b_(circle(-4, 0, 4), 2)
+    vector_a_(circle(4, 0, 4), false, 6),
+    vector_b_(circle(-4, 0, 4), true, 2)
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);

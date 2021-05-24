@@ -8,9 +8,6 @@ namespace curvy {
 
     class curvy_vector {
     public:
-
-        curvy_vector( double cx = 0, double cy = 0, double r = 0, double m = 0 );
-        curvy_vector(const curvy::circle& c, double m);
         curvy_vector(const curvy::circle& c, bool o, double m);
         void set_magnitude(double m);
         void set_radius(double r);

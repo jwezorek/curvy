@@ -17,7 +17,7 @@ namespace curvy {
 
     public:
 
-        puck(const curvy_vector& crs = {}, double theta = 0, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
+        puck(const curvy_vector& crs = { circle(0,0,0), true, 0 }, double theta = 0, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
         puck(double x, double, gdi::Color color = colors::White, double puck_radius = 1, double mass = 1);
         void update(double dt);
         void set_color(gdi::Color color);

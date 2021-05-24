@@ -118,7 +118,7 @@ curvy::puck::puck(const curvy_vector& crs, double theta, gdi::Color color, doubl
 { }
 
 curvy::puck::puck(double x, double y, gdi::Color color, double puck_radius, double mass) :
-    curvy_vector_(x, y, 0, 0), theta_(0), color_(color),  mass_(mass), puck_radius_(puck_radius)
+    curvy_vector_(circle(x, y, 0), true, 0), theta_(0), color_(color),  mass_(mass), puck_radius_(puck_radius)
 {
 }
 

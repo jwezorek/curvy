@@ -20,15 +20,6 @@ namespace {
 }
 
 
-curvy::curvy_vector::curvy_vector(double cx, double cy, double r, double m) : 
-    orientation_(m >= 0), circle_(cx, cy, r), linear_magnitude_(std::abs(m))
-{}
-
-curvy::curvy_vector::curvy_vector(const curvy::circle & c, double m) :
-    orientation_(m >= 0), circle_(c), linear_magnitude_(std::abs(m))
-{}
-
-
 curvy::curvy_vector::curvy_vector(const curvy::circle & c, bool o, double m) :
     orientation_(o), circle_(c), linear_magnitude_(m)
 {
@@ -134,12 +125,12 @@ curvy::curvy_vector curvy::circular_vector_from_angular_magnitude(const circle& 
 curvy::curvy_vector curvy::circular_vector_from_angular_magnitude(const curvy::circle& circ, double angular_magnitude)
 {
     auto linear_magnitude = angular_magnitude * circ.radius();
-    return curvy::curvy_vector(circ, linear_magnitude);
+    return curvy::curvy_vector(circ, angular_magnitude > 0, linear_magnitude);
 }
 
 curvy::curvy_vector curvy::operator*(double scale, const curvy_vector& cv)
 {
-    return curvy_vector(cv.circle(), scale * cv.signed_linear_magnitude());
+    return curvy_vector(cv.circle(), cv.orientation(), scale * cv.signed_linear_magnitude());
 }
 
 curvy::curvy_vector curvy::operator*(const curvy_vector& cv, double scale)
@@ -152,7 +143,8 @@ curvy::curvy_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy::c
     auto circle = curvy::apply_matrix(mat, cv.circle());
     return curvy::curvy_vector(
         circle,
-        cv.sign() * cv.linear_magnitude()
+        cv.orientation(),
+        cv.linear_magnitude()
     );
 }
 
