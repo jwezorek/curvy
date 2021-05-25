@@ -237,10 +237,13 @@ void curvy::curvy_arithmetic_viewer::render()
 
     paint_circle_vector(*g, result, colors::Purple, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
 
+    /*
+    // check that subtraction is really the inverse of addition...
     if (!addition_) {
         auto sum_check = vector_b_.add(result, { 0,0 });
         paint_circle_vector(*g, sum_check, colors::Green, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
     }
+    */
 
     draw_operation(*g, addition_);
 }
