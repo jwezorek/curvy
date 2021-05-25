@@ -4,8 +4,9 @@
 
 namespace {
 
-    const double k_momentmum_transfer_constant = 0.35;
+    const double k_momentmum_transfer_constant = 0.5;
     const double k_arithmetic_weighting_constant = 0.5;
+    const double k_curvature_weighting_constant = 1.0;
 
     bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
         const auto pi = curvy::pi();
@@ -18,6 +19,20 @@ namespace {
         return std::pow(v, k_arithmetic_weighting_constant);
     }
 
+    double curvature_to_pitch(double curve) {
+        auto sgn = curve >= 0 ? 1.0 : -1.0;
+        auto v = std::abs(curve) / curvy::pi();
+        v = std::pow(v, k_curvature_weighting_constant);
+
+        return sgn * v * curvy::pi_over_two();
+    }
+
+    double pitch_to_curvature(double pitch) {
+        auto sgn = pitch >= 0 ? 1.0 : -1.0;
+        auto v = std::abs(pitch) / curvy::pi_over_two();
+        v = std::pow(v, 1.0 / k_curvature_weighting_constant);
+        return sgn * v * curvy::pi();
+    }
 }
 
 
@@ -197,14 +212,14 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     return std::pow(val, k_momentmum_transfer_constant);
 }
 
-double curvy::to_angle_of_curvature(const curvy_vector& cv)
+double to_angle_of_curvature(const curvy::curvy_vector& cv)
 {
-    return cv.sign() * pi() / cv.circle().radius();
+    return cv.sign() * curvy::pi() / cv.circle().radius();
 }
 
 curvy::vec3 to_vector(double weight, double direction, double curvature) {
     auto yaw = direction;
-    auto pitch = curvature/2.0;
+    auto pitch = curvature_to_pitch( curvature );
     return {
         weight * std::cos(yaw) * std::cos(pitch),
         weight * std::sin(yaw) * std::cos(pitch),
@@ -222,7 +237,7 @@ std::tuple<double, double, double> from_vector(const curvy::vec3& v) {
     auto cos_of_yaw = x / std::cos(pitch);
     auto yaw = std::atan2(sin_of_yaw, cos_of_yaw);
 
-    return { weight, yaw, 2.0 * pitch };
+    return { weight, yaw, pitch_to_curvature(pitch) };
 }
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
@@ -236,8 +251,8 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
     auto m1 = linear_magnitude();
     auto m2 = cv.linear_magnitude();
 
-    auto curvature1 = curvy::to_angle_of_curvature(*this);
-    auto curvature2 = curvy::to_angle_of_curvature(cv);
+    auto curvature1 = to_angle_of_curvature(*this);
+    auto curvature2 = to_angle_of_curvature(cv);
 
     auto direction1 = direction_at(pt);
     auto direction2 = cv.direction_at(pt);
@@ -281,8 +296,8 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
     auto m1 = linear_magnitude();
     auto m2 = cv.linear_magnitude();
 
-    auto curvature1 = curvy::to_angle_of_curvature(*this);
-    auto curvature2 = curvy::to_angle_of_curvature(cv);
+    auto curvature1 = to_angle_of_curvature(*this);
+    auto curvature2 = to_angle_of_curvature(cv);
 
     auto direction1 = direction_at(pt);
     auto direction2 = cv.direction_at(pt);

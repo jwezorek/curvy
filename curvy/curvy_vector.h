@@ -42,13 +42,9 @@ namespace curvy {
 
     curvy_vector operator*(const curvy_vector& cv, double scale);
     curvy_vector operator*(double scale, const curvy_vector& cv);
-
-    curvy_vector circular_vector_from_angular_magnitude(const circle& circ, bool orientation, double linear_magnitude);
-    curvy_vector circular_vector_from_angular_magnitude(const circle& circ, double linear_magnitude);
     curvy::curvy_vector apply_matrix(const curvy::matrix& mat, const curvy::curvy_vector& c);
     std::tuple<circle, bool> circular_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);
     bool is_in_front_of(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2);
     double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r, double d);
 
-    double to_angle_of_curvature(const curvy_vector& cv);
 }
