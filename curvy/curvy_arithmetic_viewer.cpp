@@ -69,8 +69,8 @@ curvy::curvy_arithmetic_viewer::curvy_arithmetic_viewer(int px_sz, double log_sz
     logical_sz_(log_sz),
     interaction_(interaction::none),
     addition_(true),
-    vector_a_(circle(4, 0, 4), false, 6),
-    vector_b_(circle(-4, 0, 4), true, 2)
+    vector_a_( make_curvy_vector(circle(4, 0, 4), false, 6) ),
+    vector_b_(make_curvy_vector(circle(-4, 0, 4), true, 2) )
 {
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
@@ -164,6 +164,7 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
                     move_arrow_orientation_ = (shift_down) ? !vector_a_.orientation() : vector_a_.orientation();
                 }
                 vector_a_.set_magnitude(handle_move_arrow(vector_a_, move_arrow_orientation_.value(), pt));
+                vector_a_.refresh_weight();
                 break;
 
             case interaction::moving_arrow_b:
@@ -172,6 +173,7 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
                     move_arrow_orientation_ = (shift_down) ? !vector_b_.orientation() : vector_b_.orientation();
                 }
                 vector_b_.set_magnitude(handle_move_arrow(vector_b_, move_arrow_orientation_.value(), pt));
+                vector_b_.refresh_weight();
                 break;
         }
 

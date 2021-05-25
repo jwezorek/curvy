@@ -27,7 +27,7 @@ void curvy::game::initialize()
         });
 
     insert({
-        curvy::curvy_vector{ circle(7.7, 0, 8), true, 78 },
+        curvy::make_curvy_vector( circle(7.7, 0, 8), true, 78 ),
         3.0 * pi() / 2.0 - pi() / 6.0,
         colors::White
         });
@@ -218,12 +218,12 @@ void curvy::game::handle_collision(collision& collision) {
 
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
     auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a, pt_b, radius_a, sz_constant);
-    auto impulse_a_to_b = curvy::curvy_vector(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b * a.linear_magnitude());
+    auto impulse_a_to_b = curvy::make_curvy_vector(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b * a.linear_magnitude());
     auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
 
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
     auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, sz_constant);
-    auto impulse_b_to_a = curvy::curvy_vector(b_to_a_circle, b_to_a_orientation, coefficient_b_to_a * b.linear_magnitude());
+    auto impulse_b_to_a = curvy::make_curvy_vector(b_to_a_circle, b_to_a_orientation, coefficient_b_to_a * b.linear_magnitude());
     auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
     auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
@@ -252,7 +252,8 @@ void curvy::game::handle_boundary_collision(puck* p)
         curvy_vector(
             circle_of_rev,
             p->state().orientation(),
-            lin_mag
+            lin_mag,
+            p->state().weight()
         )
     );
     p->set_theta(angle_to_pt(circle_of_rev.center(), position));
