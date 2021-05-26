@@ -7,6 +7,13 @@
 #include <map>
 #include <limits>
 
+namespace {
+
+    const double k_cheater_time_delta = 0.02;
+    const double k_cheater_eps = 0.00005;
+    const bool k_do_cheating = true;
+}
+
 curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) :
     pixel_sz_(px_sz),
     logical_sz_(log_sz),
@@ -16,6 +23,7 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
     set_pixel_dimensions(px_sz, true);
 }
 
+/*
 void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
@@ -49,8 +57,8 @@ void curvy::curvy_world_simulation::initialize()
         colors::Purple
         });
 }
+*/
 
-/*
 void curvy::curvy_world_simulation::initialize()
 {
     double s = 2.2;
@@ -86,13 +94,12 @@ void curvy::curvy_world_simulation::initialize()
         });
 
     insert({
-        curvy::make_curvy_vector( circle(7.7, 0, 8), true, 78 ),
+        curvy::make_curvy_vector( circle(7.8, 0, 8), true, 75 ),
         3.0 * pi() / 2.0 - pi()/6.0,
         colors::White
         });
 
 }
-*/
 
 void curvy::curvy_world_simulation::set_logical_dimensions(double log_sz, bool refresh)
 {
@@ -251,6 +258,102 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
     return { curvy::curvy_world_simulation::collisions(), dt };
 }
 
+bool intersects_at_time(double t, const curvy::curvy_vector& a, const curvy::point& pt_a, const curvy::curvy_vector& b, const curvy::point& pt_b, double sz_constant) {
+    using namespace curvy;
+
+    auto initial_theta_a = angle_to_pt(a.circle().center(), pt_a);
+    auto theta_a = initial_theta_a + *a.signed_angular_magnitude() * t;
+    auto new_pt_a = a.circle().center() + a.circle().radius() * pt_on_unit_circle(theta_a);
+
+    auto initial_theta_b = curvy::angle_to_pt(b.circle().center(), pt_b);
+    auto theta_b = initial_theta_b + *b.signed_angular_magnitude() * t;
+    auto new_pt_b = b.circle().center() + b.circle().radius() * pt_on_unit_circle(theta_b);
+
+    bool intersects = euclidean_distance(new_pt_a, new_pt_b) < sz_constant;
+
+    if (intersects) {
+        output_debug_message("intersects", std::abs(euclidean_distance(new_pt_a, new_pt_b) - sz_constant));
+    }
+
+    return intersects;
+}
+
+double distance_at_time(double t, const curvy::curvy_vector& a, const curvy::point& pt_a, const curvy::curvy_vector& b, const curvy::point& pt_b) {
+    using namespace curvy;
+
+    auto initial_theta_a = angle_to_pt(a.circle().center(), pt_a);
+    auto theta_a = initial_theta_a + *a.signed_angular_magnitude() * t;
+    auto new_pt_a = a.circle().center() + a.circle().radius() * pt_on_unit_circle(theta_a);
+
+    auto initial_theta_b = curvy::angle_to_pt(b.circle().center(), pt_b);
+    auto theta_b = initial_theta_b + *b.signed_angular_magnitude() * t;
+    auto new_pt_b = b.circle().center() + b.circle().radius() * pt_on_unit_circle(theta_b);
+
+    return euclidean_distance(new_pt_a, new_pt_b);
+}
+
+std::tuple<double, double> find_nonintersecting_collision_resolution_aux(const curvy::circle& a_to_b_circle, bool a_to_b_orientation, double initial_a_to_b, const curvy::curvy_vector& a, const curvy::point& pt_a,
+    const curvy::circle& b_to_a_circle, bool b_to_a_orientation, double initial_b_to_a, const curvy::curvy_vector& b, const curvy::point& pt_b, double sz_constant, double eps, double t1, double t2, int stack_depth, double time_delta) {
+
+    auto t = (t1 + t2) / 2.0;
+
+    auto coefficient_a_to_b = initial_a_to_b + t * (1.0 - initial_a_to_b);
+    auto coefficient_b_to_a = initial_b_to_a + t * (1.0 - initial_b_to_a);
+
+    if (stack_depth > 20)
+        return { coefficient_a_to_b, coefficient_b_to_a };
+
+    auto impulse_a_to_b = curvy::make_curvy_vector(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b * a.linear_magnitude());
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
+
+    auto impulse_b_to_a = curvy::make_curvy_vector(b_to_a_circle, b_to_a_orientation, coefficient_b_to_a * b.linear_magnitude());
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
+
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+
+    auto dist_at_t = distance_at_time(time_delta, final_a, pt_a, final_b, pt_b);
+    auto delta = sz_constant - dist_at_t;
+
+    if (std::abs(delta) <= eps)
+        return { coefficient_a_to_b, coefficient_b_to_a };
+
+    if (delta > 0)
+        return find_nonintersecting_collision_resolution_aux(a_to_b_circle, a_to_b_orientation, initial_a_to_b, a, pt_a,
+            b_to_a_circle, b_to_a_orientation, initial_b_to_a, b, pt_b, sz_constant, eps, t, t2, stack_depth+1, time_delta);
+  
+    return find_nonintersecting_collision_resolution_aux(a_to_b_circle, a_to_b_orientation, initial_a_to_b, a, pt_a,
+        b_to_a_circle, b_to_a_orientation, initial_b_to_a, b, pt_b, sz_constant, eps, t1, t, stack_depth + 1, time_delta);
+}
+
+std::tuple<curvy::curvy_vector, curvy::curvy_vector> find_nonintersecting_collision_resolution(const curvy::circle& a_to_b_circle, bool a_to_b_orientation, double coefficient_a_to_b, const curvy::curvy_vector& a, const curvy::point& pt_a,
+        const curvy::circle& b_to_a_circle, bool b_to_a_orientation, double coefficient_b_to_a, const curvy::curvy_vector& b, const curvy::point& pt_b, double sz_constant, double eps, double time_delta) {
+
+    auto impulse_a_to_b = curvy::make_curvy_vector(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b * a.linear_magnitude());
+    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
+
+    auto impulse_b_to_a = curvy::make_curvy_vector(b_to_a_circle, b_to_a_orientation, coefficient_b_to_a * b.linear_magnitude());
+    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
+
+    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
+    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+
+    if (intersects_at_time(k_cheater_time_delta, final_a, pt_a, final_b, pt_b, sz_constant)) {
+        auto [revised_coefficient_a_to_b, revised_coefficient_b_to_a] = find_nonintersecting_collision_resolution_aux(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b, a, pt_a,
+            b_to_a_circle, b_to_a_orientation, coefficient_b_to_a, b, pt_b, sz_constant, eps, 0.0, 1.0, 1, time_delta);
+        impulse_a_to_b = curvy::make_curvy_vector(a_to_b_circle, a_to_b_orientation, revised_coefficient_a_to_b * a.linear_magnitude());
+        residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a);
+
+        impulse_b_to_a = curvy::make_curvy_vector(b_to_a_circle, b_to_a_orientation, revised_coefficient_b_to_a * b.linear_magnitude());
+        residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
+
+        final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
+        final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+    }
+
+    return { final_a, final_b };
+}
+
 void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto [p1, p2] = collision;
     if (!p2) {
@@ -277,17 +380,12 @@ void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto direction_b = puck_b.direction();
 
     auto [a_to_b_circle, a_to_b_orientation] = curvy::circular_direction_through_two_points(pt_a, direction_a, pt_b);
-    auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a, pt_b, radius_a, sz_constant);
-    auto impulse_a_to_b = curvy::make_curvy_vector(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b * a.linear_magnitude());
-    auto residual_vector_a_to_b = a.subtract(impulse_a_to_b, pt_a );
-
     auto [b_to_a_circle, b_to_a_orientation] = curvy::circular_direction_through_two_points(pt_b, direction_b, pt_a);
+    auto coefficient_a_to_b = momentum_transfer_factor(pt_a, direction_a, orientation_a, pt_b, radius_a, sz_constant);
     auto coefficient_b_to_a = momentum_transfer_factor(pt_b, direction_b, orientation_b, pt_a, radius_b, sz_constant);
-    auto impulse_b_to_a = curvy::make_curvy_vector(b_to_a_circle, b_to_a_orientation, coefficient_b_to_a * b.linear_magnitude());
-    auto residual_vector_b_to_a = b.subtract(impulse_b_to_a, pt_b);
 
-    auto final_a = residual_vector_a_to_b.add(impulse_b_to_a, pt_a);
-    auto final_b = residual_vector_b_to_a.add(impulse_a_to_b, pt_b);
+    auto [final_a, final_b] = find_nonintersecting_collision_resolution(a_to_b_circle, a_to_b_orientation, coefficient_a_to_b, a, pt_a,
+        b_to_a_circle, b_to_a_orientation, coefficient_b_to_a, b, pt_b, sz_constant, k_cheater_eps, k_cheater_time_delta);
 
     puck_a.set_vector(final_a);
     puck_b.set_vector(final_b);

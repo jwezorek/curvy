@@ -24,7 +24,6 @@ namespace {
         return cv.sign() * curvy::pi() / cv.circle().radius();
     }
 
-
     double curvature_to_pitch(double curve) {
         auto sgn = curve >= 0 ? 1.0 : -1.0;
         auto v = std::abs(curve) / curvy::pi();
@@ -99,8 +98,6 @@ namespace {
 curvy::curvy_vector::curvy_vector(const curvy::circle& c, bool o, double m, double w) :
     orientation_(o), circle_(c), linear_magnitude_(m), weight_((w >= 0) ? w : weight_from_magnitude(m))
 {
-    int aaa;
-    aaa = 5;
 }
 
 void curvy::curvy_vector::set_magnitude(double m)
@@ -280,11 +277,13 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
     if (cv.linear_magnitude() == 0)
         return *this;
 
-    return from_vector(
+    auto sum = from_vector(
         to_vector(*this, pt) + to_vector(cv, pt), 
         linear_magnitude() + cv.linear_magnitude(), 
         pt
     );
+    sum.refresh_weight();
+    return sum;
 }
 
 curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const point& pt) const
@@ -292,9 +291,11 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
     if (cv.linear_magnitude() == 0)
         return *this;
 
-    return from_vector(
+    auto diff = from_vector(
         to_vector(*this, pt) - to_vector(cv, pt), 
         linear_magnitude() - cv.linear_magnitude(), 
         pt
     );
+    diff.refresh_weight();
+    return diff;
 }
