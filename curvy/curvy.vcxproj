@@ -150,6 +150,7 @@
     <ClCompile Include="curvy_vector.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gdi_util.cpp" />
+    <ClCompile Include="post.cpp" />
     <ClCompile Include="puck.cpp" />
     <ClCompile Include="curvy_world_simulation.cpp" />
     <ClCompile Include="curvy_vector_viewer.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="colors.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="gdi_util.h" />
+    <ClInclude Include="post.h" />
     <ClInclude Include="puck.h" />
     <ClInclude Include="curvy_world_simulation.h" />
     <ClInclude Include="curvy_vector_viewer.h" />

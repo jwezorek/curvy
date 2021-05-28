@@ -412,7 +412,7 @@ double curvy::circles_traveling_in_circles_collision_time(double r1, double thet
 {
     return solve_circles_traveling_in_circles(r1, theta1, a1, cx, cy, r2, theta2, a2, d, t2);
 }
-
+/*
 std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2)
 {
     using namespace std;
@@ -439,29 +439,115 @@ std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circ
 
     return std::nullopt;
 }
-
-/*
-
-    auto test1 = to_degrees(angle_delta(from_degrees(15), from_degrees(345)));
-    auto test2 = to_degrees(angle_delta(from_degrees(345), from_degrees(15)));
-    auto check1 = to_degrees(normalize_angle(from_degrees(test1 + 345)));
-    auto check2 = to_degrees(normalize_angle(from_degrees(test2 + 15)));
-
-    auto test3 = to_degrees(angle_delta(from_degrees(165), from_degrees(-165)));
-    auto test4 = to_degrees(angle_delta(from_degrees(-165), from_degrees(165)));
-    auto check3 = to_degrees(normalize_angle(from_degrees(test3 + (-165))));
-    auto check4 = to_degrees(normalize_angle(from_degrees(test4 + 165)));
-
-    auto test5 = to_degrees(angle_delta(from_degrees(65), from_degrees(35)));
-    auto test6 = to_degrees(angle_delta(from_degrees(35), from_degrees(65)));
-    auto check5 = to_degrees(normalize_angle(from_degrees(test5 + 35)));
-    auto check6 = to_degrees(normalize_angle(from_degrees(test6 + 65)));
-
 */
 
-// lerp_angles(a, b, 0) => a
-// lerp_angles(a, b, 0.5) => half way along the smaller angle between a and b
-// lerp_angles(a, b, 1) => b
+
+std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2)
+{
+    return circle_traveling_in_circle_collision_time_with_stationary_circle(r, cx, cy, a, theta, 0, 0, R - d, t2);
+}
+
+std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_stationary_circle(double r, double cx, double cy, double a, double theta, double px, double py, double d, double t2)
+{
+    using namespace std;
+
+    if (a == 0)
+        return nullopt;
+
+    //mathematica reverses the params of two param arctangent...
+    auto arctan = [](double x, double y) {return std::atan2(y, x); };
+
+    auto candidate_1 = (-theta + arctan((-4 * pow(cx, 3) * r - 4 * cx * pow(cy, 2) * r + 4 * cx * pow(d, 2) * r + 12 * pow(cx, 2) * px * r + 4 * pow(cy, 2) * px * r - 4 * pow(d, 2) * px * r - 12 * cx * pow(px, 2) * r + 4 * pow(px, 3) * r + 8 * cx * cy * py * r - 8 * cy * px * py * r - 4 * cx * pow(py, 2) * r + 4 * px * pow(py, 2) * r -
+        4 * cx * pow(r, 3) + 4 * px * pow(r, 3) - sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r -
+            4 * px * pow(py, 2) * r + 4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
+            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
+                2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
+                4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
+                2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (2. * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))),
+        (-pow(cx, 2) - pow(cy, 2) + pow(d, 2) + 2 * cx * px - pow(px, 2) + 2 * cy * py - pow(py, 2) - pow(r, 2) +
+            (4 * pow(cx, 4) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cx, 2) * pow(cy, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (4 * pow(cx, 2) * pow(d, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (16 * pow(cx, 3) * px * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cx * pow(cy, 2) * px * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (8 * cx * pow(d, 2) * px * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (24 * pow(cx, 2) * pow(px, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cy, 2) * pow(px, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (4 * pow(d, 2) * pow(px, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (16 * cx * pow(px, 3) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(px, 4) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * pow(cx, 2) * cy * py * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (16 * cx * cy * px * py * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cy * pow(px, 2) * py * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cx, 2) * pow(py, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cx * px * pow(py, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(px, 2) * pow(py, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cx, 2) * pow(r, 4)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cx * px * pow(r, 4)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(px, 2) * pow(r, 4)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (cx * r * sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r - 4 * px * pow(py, 2) * r +
+                4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
+                (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
+                    2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
+                    4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
+                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (px * r * sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r - 4 * px * pow(py, 2) * r +
+                4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
+                (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
+                    2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
+                    4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
+                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))) / (2 * cy * r - 2 * py * r))) / a;
+
+    auto candidate_2 = (-theta + arctan((-4 * pow(cx, 3) * r - 4 * cx * pow(cy, 2) * r + 4 * cx * pow(d, 2) * r + 12 * pow(cx, 2) * px * r + 4 * pow(cy, 2) * px * r - 4 * pow(d, 2) * px * r - 12 * cx * pow(px, 2) * r + 4 * pow(px, 3) * r + 8 * cx * cy * py * r - 8 * cy * px * py * r - 4 * cx * pow(py, 2) * r + 4 * px * pow(py, 2) * r -
+        4 * cx * pow(r, 3) + 4 * px * pow(r, 3) + sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r -
+            4 * px * pow(py, 2) * r + 4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
+            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
+                2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
+                4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
+                2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (2. * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))),
+        (-pow(cx, 2) - pow(cy, 2) + pow(d, 2) + 2 * cx * px - pow(px, 2) + 2 * cy * py - pow(py, 2) - pow(r, 2) +
+            (4 * pow(cx, 4) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cx, 2) * pow(cy, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (4 * pow(cx, 2) * pow(d, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (16 * pow(cx, 3) * px * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cx * pow(cy, 2) * px * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (8 * cx * pow(d, 2) * px * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (24 * pow(cx, 2) * pow(px, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cy, 2) * pow(px, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (4 * pow(d, 2) * pow(px, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (16 * cx * pow(px, 3) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(px, 4) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * pow(cx, 2) * cy * py * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (16 * cx * cy * px * py * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cy * pow(px, 2) * py * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cx, 2) * pow(py, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cx * px * pow(py, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(px, 2) * pow(py, 2) * pow(r, 2)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(cx, 2) * pow(r, 4)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (8 * cx * px * pow(r, 4)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (4 * pow(px, 2) * pow(r, 4)) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) -
+            (cx * r * sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r - 4 * px * pow(py, 2) * r +
+                4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
+                (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
+                    2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
+                    4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
+                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) +
+            (px * r * sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r - 4 * px * pow(py, 2) * r +
+                4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
+                (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
+                    2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
+                    4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
+                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))) / (2 * cy * r - 2 * py * r))) / a;
+
+    std::array<double, 2> candidates = { candidate_1, candidate_2 };
+    for (auto candidate : candidates) {
+        if (!std::isnan(candidate) && !std::isinf(candidate) && candidate >= 0 && candidate <= t2)
+            return candidate;
+    }
+
+    return nullopt;
+}
+
 
 double curvy::lerp_angles(double theta1, double theta2, double t)
 {

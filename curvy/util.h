@@ -57,6 +57,7 @@ namespace curvy {
     double from_degrees(double degrees);
     double circles_traveling_in_circles_collision_time(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2);
     std::optional<double> circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2);
+    std::optional<double> circle_traveling_in_circle_collision_time_with_stationary_circle(double r, double cx, double cy, double a, double theta, double px, double py, double d, double t2);
 
     double lerp_angles(double theta1, double theta2, double t);
     double lerp_angles_inverse(double interpolated_angle, double theta1, double t);
