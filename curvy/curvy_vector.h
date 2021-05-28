@@ -11,20 +11,16 @@ namespace curvy {
     public:
         curvy_vector(const curvy::circle& c, bool o, double m, double weight);
         void set_magnitude(double m);
-        void set_radius(double r);
         void set_circle(const circle& c);
-        curvy::circle& circle();
         void refresh_weight();
 
         bool orientation() const;
-        curvy::circle circle() const;
+        const curvy::circle& circle() const;
         std::optional<double> angular_magnitude() const;
         std::optional<double> signed_angular_magnitude() const;
         double linear_magnitude() const;
         double signed_linear_magnitude() const;
-        double circumference() const;
         double sign() const;
-        point newtonian_vector_at_point(const point& pt) const;
         curvy_vector add(const curvy_vector& cv, const point& where) const;
         curvy_vector subtract(const curvy_vector& cv, const point& where) const;
         std::string to_string() const;

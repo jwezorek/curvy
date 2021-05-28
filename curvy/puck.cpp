@@ -188,7 +188,8 @@ void curvy::puck::set_puck_radius(double r)
 
 void curvy::puck::set_radius_of_revolution(double r)
 {
-    curvy_vector_.set_radius(r);
+    auto circle_center = curvy_vector_.circle().center();
+    curvy_vector_.set_circle({ circle_center, r });
 }
 
 void curvy::puck::set_circle_rotation_position(double theta, double cx, double cy, double r)
@@ -199,13 +200,15 @@ void curvy::puck::set_circle_rotation_position(double theta, double cx, double c
 
 void curvy::puck::set_center_of_revolution(const point& pt)
 {
-    curvy_vector_.circle().set_center(pt);
+    auto r = curvy_vector_.circle().radius();
+    curvy_vector_.set_circle(circle(pt,r));
 }
 
 void curvy::puck::set_position(const point& pt)
 {
+    auto r = curvy_vector_.circle().radius();
     auto offset = curvy_vector_.circle().center() - position();
-    curvy_vector_.circle().set_center(pt + offset);
+    curvy_vector_.set_circle(circle(pt + offset, r));
 }
 
 void curvy::puck::set_vector(const curvy_vector& v)

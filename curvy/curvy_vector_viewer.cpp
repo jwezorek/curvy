@@ -339,9 +339,9 @@ void curvy::curvy_vector_viewer::sync_b_with_a(double old_a_theta)
     auto theta_offset = puck_a_.theta() - old_a_theta;
     puck_b_theta_ += theta_offset;
     auto r = puck_a_.puck_circle().radius() + puck_b_.puck_circle().radius();
+    auto a_position = puck_a_.position();
     auto synced_b_position = puck_a_.position() + r * pt_on_unit_circle(puck_b_theta_);
     puck_b_.set_position(synced_b_position);
-
 }
 
 void curvy::curvy_vector_viewer::rotate_circle_b(const point& pt)

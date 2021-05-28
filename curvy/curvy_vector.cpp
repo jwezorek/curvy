@@ -106,20 +106,9 @@ void curvy::curvy_vector::set_magnitude(double m)
     linear_magnitude_ = std::abs(m);
 }
 
-
-void curvy::curvy_vector::set_radius(double r)
-{
-    circle_.set_radius(r);
-}
-
 void curvy::curvy_vector::set_circle(const curvy::circle& c)
 {
     circle_ = c;
-}
-
-curvy::circle& curvy::curvy_vector::circle()
-{
-    return circle_;
 }
 
 void curvy::curvy_vector::refresh_weight()
@@ -144,7 +133,7 @@ std::optional<double> curvy::curvy_vector::angular_magnitude() const
     return std::nullopt;
 }
 
-curvy::circle curvy::curvy_vector::circle() const
+const curvy::circle& curvy::curvy_vector::circle() const
 {
     return circle_;
 }
@@ -168,22 +157,10 @@ double curvy::curvy_vector::signed_linear_magnitude() const
     return sign() * linear_magnitude();
 }
 
-double curvy::curvy_vector::circumference() const
-{
-    return circle_.circumference();
-}
 
 double curvy::curvy_vector::sign() const
 {
     return orientation_ ? 1.0 : -1.0;
-}
-
-curvy::point curvy::curvy_vector::newtonian_vector_at_point(const point& pt) const
-{
-    auto angle = direction_at(pt);
-    auto magnitude = linear_magnitude();
-    auto vec = point{ std::cos(angle), std::sin(angle) };
-    return magnitude * vec;
 }
 
 std::string curvy::curvy_vector::to_string() const
