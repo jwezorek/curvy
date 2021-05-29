@@ -15,6 +15,7 @@ namespace curvy {
         post(const circle& c, gdi::Color color);
         const circle& post_circle() const;
 
+        void paint(gdi::Graphics& g, double log_sz, int pix_sz) const;
 
     private:
 

@@ -7,13 +7,6 @@
 
 namespace {
 
-    std::tuple<int, int, int, int> bounding_box_in_pixels(const curvy::puck& p, double log_sz, int pix_sz)  {
-        return curvy::to_scr_coords(
-            p.puck_circle().bounding_box(),
-            log_sz, pix_sz
-        );
-    }
-
     double distance_from_intersection(const curvy::puck& p1, const curvy::puck& p2)
     {
         auto dist = curvy::euclidean_distance(p1.position(), p2.position());
@@ -241,7 +234,7 @@ curvy::circle curvy::puck::puck_circle() const
 void curvy::puck::paint(gdi::Graphics& g, double log_sz, int pix_sz) const
 {
     gdi::SolidBrush brush( color_ );
-    auto [x1, y1, x2, y2] = bounding_box_in_pixels(*this, log_sz, pix_sz);
+    auto [x1, y1, x2, y2] = bounding_box_in_pixels(puck_circle(), log_sz, pix_sz);
     g.FillEllipse(&brush, x1, y1, x2 - x1, y2 - y1);
 }
 

@@ -457,7 +457,8 @@ std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_stat
     //mathematica reverses the params of two param arctangent...
     auto arctan = [](double x, double y) {return std::atan2(y, x); };
 
-    auto candidate_1 = (-theta + arctan((-4 * pow(cx, 3) * r - 4 * cx * pow(cy, 2) * r + 4 * cx * pow(d, 2) * r + 12 * pow(cx, 2) * px * r + 4 * pow(cy, 2) * px * r - 4 * pow(d, 2) * px * r - 12 * cx * pow(px, 2) * r + 4 * pow(px, 3) * r + 8 * cx * cy * py * r - 8 * cy * px * py * r - 4 * cx * pow(py, 2) * r + 4 * px * pow(py, 2) * r -
+    std::array<double, 2> candidates = {
+        (-theta + arctan((-4 * pow(cx, 3) * r - 4 * cx * pow(cy, 2) * r + 4 * cx * pow(d, 2) * r + 12 * pow(cx, 2) * px * r + 4 * pow(cy, 2) * px * r - 4 * pow(d, 2) * px * r - 12 * cx * pow(px, 2) * r + 4 * pow(px, 3) * r + 8 * cx * cy * py * r - 8 * cy * px * py * r - 4 * cx * pow(py, 2) * r + 4 * px * pow(py, 2) * r -
         4 * cx * pow(r, 3) + 4 * px * pow(r, 3) - sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r -
             4 * px * pow(py, 2) * r + 4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
             (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
@@ -496,9 +497,9 @@ std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_stat
                 (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
                     2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
                     4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
-                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))) / (2 * cy * r - 2 * py * r))) / a;
+                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))) / (2 * cy * r - 2 * py * r))) / a,
 
-    auto candidate_2 = (-theta + arctan((-4 * pow(cx, 3) * r - 4 * cx * pow(cy, 2) * r + 4 * cx * pow(d, 2) * r + 12 * pow(cx, 2) * px * r + 4 * pow(cy, 2) * px * r - 4 * pow(d, 2) * px * r - 12 * cx * pow(px, 2) * r + 4 * pow(px, 3) * r + 8 * cx * cy * py * r - 8 * cy * px * py * r - 4 * cx * pow(py, 2) * r + 4 * px * pow(py, 2) * r -
+        (-theta + arctan((-4 * pow(cx, 3) * r - 4 * cx * pow(cy, 2) * r + 4 * cx * pow(d, 2) * r + 12 * pow(cx, 2) * px * r + 4 * pow(cy, 2) * px * r - 4 * pow(d, 2) * px * r - 12 * cx * pow(px, 2) * r + 4 * pow(px, 3) * r + 8 * cx * cy * py * r - 8 * cy * px * py * r - 4 * cx * pow(py, 2) * r + 4 * px * pow(py, 2) * r -
         4 * cx * pow(r, 3) + 4 * px * pow(r, 3) + sqrt(pow(4 * pow(cx, 3) * r + 4 * cx * pow(cy, 2) * r - 4 * cx * pow(d, 2) * r - 12 * pow(cx, 2) * px * r - 4 * pow(cy, 2) * px * r + 4 * pow(d, 2) * px * r + 12 * cx * pow(px, 2) * r - 4 * pow(px, 3) * r - 8 * cx * cy * py * r + 8 * cy * px * py * r + 4 * cx * pow(py, 2) * r -
             4 * px * pow(py, 2) * r + 4 * cx * pow(r, 3) - 4 * px * pow(r, 3), 2) - 4 * (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2)) *
             (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
@@ -537,9 +538,9 @@ std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_stat
                 (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) - 4 * pow(cx, 3) * px - 4 * cx * pow(cy, 2) * px + 4 * cx * pow(d, 2) * px + 6 * pow(cx, 2) * pow(px, 2) + 2 * pow(cy, 2) * pow(px, 2) -
                     2 * pow(d, 2) * pow(px, 2) - 4 * cx * pow(px, 3) + pow(px, 4) - 4 * pow(cx, 2) * cy * py - 4 * pow(cy, 3) * py + 4 * cy * pow(d, 2) * py + 8 * cx * cy * px * py - 4 * cy * pow(px, 2) * py + 2 * pow(cx, 2) * pow(py, 2) + 6 * pow(cy, 2) * pow(py, 2) - 2 * pow(d, 2) * pow(py, 2) -
                     4 * cx * px * pow(py, 2) + 2 * pow(px, 2) * pow(py, 2) - 4 * cy * pow(py, 3) + pow(py, 4) + 2 * pow(cx, 2) * pow(r, 2) - 2 * pow(cy, 2) * pow(r, 2) - 2 * pow(d, 2) * pow(r, 2) - 4 * cx * px * pow(r, 2) + 2 * pow(px, 2) * pow(r, 2) + 4 * cy * py * pow(r, 2) -
-                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))) / (2 * cy * r - 2 * py * r))) / a;
+                    2 * pow(py, 2) * pow(r, 2) + pow(r, 4)))) / (4 * pow(cx, 2) * pow(r, 2) + 4 * pow(cy, 2) * pow(r, 2) - 8 * cx * px * pow(r, 2) + 4 * pow(px, 2) * pow(r, 2) - 8 * cy * py * pow(r, 2) + 4 * pow(py, 2) * pow(r, 2))) / (2 * cy * r - 2 * py * r))) / a
+    };
 
-    std::array<double, 2> candidates = { candidate_1, candidate_2 };
     for (auto candidate : candidates) {
         if (!std::isnan(candidate) && !std::isinf(candidate) && candidate >= 0 && candidate <= t2)
             return candidate;

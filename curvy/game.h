@@ -8,6 +8,7 @@
 #include "colors.h"
 #include "state.h"
 #include "puck.h"
+#include "post.h"
 #include <Windows.h>
 
 namespace gdi = Gdiplus;
@@ -26,6 +27,7 @@ namespace curvy {
         bool handle_key_press(unsigned int key, bool is_key_down) override;
         int get_size() const;
         void insert(const puck& p);
+        void insert(const post& p);
         gdi::Bitmap* get_bitmap() const override;
         void update() override;
         void update(double dt) override;
@@ -34,7 +36,6 @@ namespace curvy {
     private:
 
         void render();
-        void paint_puck(gdi::Graphics& g, const puck& p);
 
         using collision = std::tuple<puck*, puck*>;
         using collisions = std::vector<collision>;
@@ -46,6 +47,7 @@ namespace curvy {
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
         std::vector<puck> pucks_;
+        std::vector<post> posts_;
         double logical_sz_;
         int pixel_sz_;
         bool running_;

@@ -304,6 +304,13 @@ std::optional<std::tuple<curvy::circle, curvy::circle>> curvy::circles_of_given_
     } };
 }
 
+std::tuple<int, int, int, int> curvy::bounding_box_in_pixels(const curvy::circle& c, double log_sz, int pix_sz) {
+    return curvy::to_scr_coords(
+        c.bounding_box(),
+        log_sz, pix_sz
+    );
+}
+
 curvy::circle curvy::degenerate_circle(const point& pt1, const point& pt2)
 {
     auto direction = angle_to_pt(pt1, pt2);
