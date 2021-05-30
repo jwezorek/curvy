@@ -123,15 +123,18 @@ void curvy::game::initialize()
     insert(puck{
         0,0,
         colors::Red
-        });
+        }
+    );
 
     insert(puck{
-        curvy::make_curvy_vector( circle(7.7, 0, 8), true, 78 ),
+        curvy::make_curvy_vector( circle(7.7, 0, 8), true, 50 ),
         3.0 * pi() / 2.0 - pi() / 6.0,
         colors::White
         });
 
     insert(post{ circle(0,3.0, 0.5) , colors::Yellow });
+    insert(post{ circle(4 * 0.5, 3 - 4 * 0.866, 0.5) , colors::Yellow });
+    insert(post{ circle(4 * -0.5, 3 - 4 * 0.866, 0.5) , colors::Yellow });
 
     render();
 }
@@ -206,8 +209,8 @@ void curvy::game::update(double dt)
         p.update_contact_list();
     }
 
-    for (auto& p : pucks_)
-        p.apply_friction(dt);
+    //for (auto& p : pucks_)
+    //    p.apply_friction(dt);
 
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, eps());
@@ -263,7 +266,13 @@ std::tuple<curvy::game::collisions, double> curvy::game::get_next_collisions(dou
 
         auto collision_time = p1->get_boundary_collision_time(border(), dt, eps);
         if (collision_time) {
-            collisions[*collision_time] = { p1, nullptr };
+            collisions[*collision_time] = { p1, std::monostate() };
+        }
+
+        for ( auto& post : posts_) {
+            auto collision_time = post.get_collision_time(*p1, dt, eps);
+            if (collision_time) 
+                collisions[*collision_time] = { p1, &post };
         }
 
         for (int j = i + 1; j < n; ++j) {
@@ -295,12 +304,18 @@ std::tuple<curvy::game::collisions, double> curvy::game::get_next_collisions(dou
 }
 
 void curvy::game::handle_collision(collision& collision) {
-    auto [p1, p2] = collision;
-    if (!p2) {
+    auto [p1, puck_or_post] = collision;
+    if (std::holds_alternative<std::monostate>(puck_or_post)) {
         handle_boundary_collision(p1);
         return;
     }
 
+    if (std::holds_alternative<post*>(puck_or_post)) {
+        handle_post_collision(p1, std::get<post*>(puck_or_post));
+        return;
+    }
+    
+    auto p2 = std::get<curvy::puck*>(puck_or_post);
     if (p1->is_in_contact_list(*p2))
         return;
 
@@ -355,6 +370,34 @@ void curvy::game::handle_boundary_collision(puck* p)
         )
     );
     p->set_theta(angle_to_pt(circle_of_rev.center(), position));
+}
+
+
+void curvy::game::handle_post_collision(puck* pu, post* po)
+{
+    auto puck_position = pu->position();
+    auto circle_of_rev = pu->state().circle();
+    auto lin_mag = pu->state().linear_magnitude();
+    auto theta = angle_to_pt(puck_position, po->position());
+
+    matrix to_canonical_coords = rotation_matrix(-theta) * translation_matrix(-puck_position);
+    matrix reflect = scale_matrix(1, -1);
+    matrix from_canonical_coords = translation_matrix(puck_position) * rotation_matrix(theta);
+
+    circle_of_rev = apply_matrix(
+        from_canonical_coords * reflect * to_canonical_coords,
+        circle_of_rev
+    );
+    pu->set_vector(
+        curvy_vector(
+            circle_of_rev,
+            pu->state().orientation(),
+            lin_mag,
+            pu->state().weight()
+        )
+    );
+    pu->set_theta(angle_to_pt(circle_of_rev.center(), puck_position));
+    //posts_.clear();
 }
 
 void curvy::game::handle_collisions(collisions& pairs)

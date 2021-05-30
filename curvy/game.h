@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <variant>
 #include <gdiplus.h>
 #include <tuple>
 #include <optional>
@@ -37,12 +38,13 @@ namespace curvy {
 
         void render();
 
-        using collision = std::tuple<puck*, puck*>;
+        using collision = std::tuple<puck*, std::variant<puck*,post*,std::monostate>>;
         using collisions = std::vector<collision>;
 
         std::tuple<collisions, double> get_next_collisions(double dt, double eps);
         void handle_collision(collision& c);
         void handle_boundary_collision(puck* p);
+        void handle_post_collision(puck* pu, post* po);
         void handle_collisions(collisions& c);
 
         std::unique_ptr<gdi::Bitmap> back_buffer_;
