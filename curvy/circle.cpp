@@ -311,6 +311,12 @@ std::tuple<int, int, int, int> curvy::bounding_box_in_pixels(const curvy::circle
     );
 }
 
+double curvy::angle_of_curvature(bool orientation, const circle& circle)
+{
+    auto sign = orientation ? 1.0 : -1.0;
+    return sign * curvy::pi() / circle.radius();
+}
+
 curvy::circle curvy::degenerate_circle(const point& pt1, const point& pt2)
 {
     auto direction = angle_to_pt(pt1, pt2);

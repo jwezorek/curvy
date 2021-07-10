@@ -14,7 +14,7 @@ namespace {
 
     double to_angle_of_curvature(const curvy::curvy_vector& cv)
     {
-        return cv.sign() * curvy::pi() / cv.circle().radius();
+        return curvy::angle_of_curvature(cv.orientation(), cv.circle());
     }
 
     double curvature_to_pitch(double curve) {
