@@ -8,13 +8,6 @@ namespace {
     const double k_arithmetic_weighting_constant = 0.5;
     const double k_curvature_weighting_constant = 1.0;
 
-    bool is_pt_in_front_of_puck(const curvy::point& cannonicalized_pt) {
-        const auto pi = curvy::pi();
-        auto [dx, dy] = cannonicalized_pt;
-        auto angle = std::atan2(dy, dx);
-        return (angle > -pi / 2.0 && angle < pi / 2.0);
-    }
-
     double weight_from_magnitude(double v) {
         return std::pow(v, k_arithmetic_weighting_constant);
     }
