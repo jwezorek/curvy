@@ -69,4 +69,6 @@ namespace curvy {
     vec3 operator+(const vec3& a, const vec3& b);
     vec3 operator-(const vec3& a, const vec3& b);
     vec3 normalize(const vec3& v);
+
+
 }

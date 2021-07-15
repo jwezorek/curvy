@@ -14,7 +14,7 @@ namespace {
 
     double to_angle_of_curvature(const curvy::curvy_vector& cv)
     {
-        return curvy::angle_of_curvature(cv.orientation(), cv.circle());
+        return curvy::angle_of_curvature(cv.circle(), cv.orientation() );
     }
 
     double curvature_to_pitch(double curve) {
@@ -237,6 +237,15 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     double val = (ir - min_radius) / std::abs(r - min_radius);
 
     return std::pow(val, k_momentmum_transfer_constant);
+}
+
+//TODO
+double curvy::momentum_transfer_factor(const curvy::circle& base_circle, bool base_orientation, const curvy::circle& impulse_circle, bool impulse_orientation)
+{
+    auto base_curvature = curvy::angle_of_curvature(base_circle, base_orientation);
+    auto impulse_curvature = curvy::angle_of_curvature(impulse_circle, impulse_orientation);
+
+    return 0.0;
 }
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const

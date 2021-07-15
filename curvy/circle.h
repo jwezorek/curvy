@@ -51,6 +51,6 @@ namespace curvy {
     std::optional<std::tuple<circle, circle>> mid_circles(const circle& c1, const circle& c2);
     std::optional<std::tuple<circle, circle>> circles_of_given_radius_through_two_points(double radius, const point& pt1, const point& pt2);
     std::tuple<int, int, int, int> bounding_box_in_pixels(const curvy::circle& c, double log_sz, int pix_sz);
-    double angle_of_curvature(bool orientation, const circle& circle);
+    double angle_of_curvature(const circle& circle, bool orientation);
 }
 

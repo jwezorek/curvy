@@ -42,5 +42,5 @@ namespace curvy {
     std::tuple<circle, bool> circular_direction_through_two_points(const point& pt1, double direction_at_pt1, const point& pt2);
     bool is_in_front_of(const curvy::point& pt1, double direction_at_pt1, const curvy::point& pt2);
     double momentum_transfer_factor(const curvy::point& pt1, double pt1_direction, bool orientation, const curvy::point& pt2, double r, double d);
-
+    double momentum_transfer_factor(const curvy::circle& base_circle, bool base_orientation, const curvy::circle& impulse_circle, bool impulse_orientation);
 }

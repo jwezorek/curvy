@@ -622,3 +622,5 @@ curvy::vec3 curvy::normalize(const curvy::vec3& v)
     return (1.0 / m) * v;
 }
 
+
+
