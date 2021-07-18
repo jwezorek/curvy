@@ -549,36 +549,9 @@ std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_stat
     return nullopt;
 }
 
-
-double curvy::lerp_angles(double theta1, double theta2, double t)
+double curvy::inverse_lerp(double a, double b, double v)
 {
-    auto delta = angle_delta(theta2, theta1);
-    return delta * t + theta1;
-}
-
-// return theta2 such that lerp_angles(theta1, theta2, t) equals interpolated_angle...
-double curvy::lerp_angles_inverse(double interpolated_angle, double theta1, double t)
-{
-    auto inverse = (interpolated_angle - theta1) / t + theta1;
-
-    if (inverse > pi())
-        inverse -= two_pi();
-    else if (inverse < -pi())
-        inverse += two_pi();
-
-    return inverse;
-}
-
-double curvy::lerp_angles_inverse_2(double interpolated_angle, double theta2, double t)
-{
-    auto inverse = (-interpolated_angle + t * theta2) / (-1.0 + t);
-
-    if (inverse > pi())
-        inverse -= two_pi();
-    else if (inverse < -pi())
-        inverse += two_pi();
-
-    return inverse;
+    return (v - a) / (b - a);
 }
 
 double curvy::magnitude(const vec3& v)

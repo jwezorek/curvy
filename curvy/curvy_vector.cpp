@@ -239,13 +239,23 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     return std::pow(val, k_momentmum_transfer_constant);
 }
 
-//TODO
 double curvy::momentum_transfer_factor(const curvy::circle& base_circle, bool base_orientation, const curvy::circle& impulse_circle, bool impulse_orientation)
 {
     auto base_curvature = curvy::angle_of_curvature(base_circle, base_orientation);
     auto impulse_curvature = curvy::angle_of_curvature(impulse_circle, impulse_orientation);
+    double t;
 
-    return 0.0;
+    if (impulse_curvature >= -pi() && impulse_curvature <= base_curvature) {
+        t = inverse_lerp(-pi(), base_curvature, impulse_curvature);
+    }
+    else if (impulse_curvature > base_curvature && impulse_curvature <= pi()) {
+        t = inverse_lerp(pi(), base_curvature, impulse_curvature);
+    }
+    else {
+        throw std::runtime_error("this shouldnt happen.");
+    }
+
+    return std::pow(t, k_momentmum_transfer_constant);
 }
 
 curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point& pt) const
