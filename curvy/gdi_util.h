@@ -19,4 +19,7 @@ namespace curvy {
     void paint_circle_vector(gdi::Graphics& g, const curvy::curvy_vector& crc, gdi::Color color, double puck_sz, const curvy::point& pt, double log_sz, int pix_sz);
     std::array<curvy::point, 3> arrow_poly_from_circle_vec(const curvy::curvy_vector& crc, const curvy::point& pt, double puck_sz);
     std::array<curvy::point, 3> arrow_poly_at_pt(double theta, const curvy::point& pt, double puck_sz);
+    bool is_light_theme();
+    gdi::Color get_background_color();
+    gdi::Color get_foreground_color();
 }

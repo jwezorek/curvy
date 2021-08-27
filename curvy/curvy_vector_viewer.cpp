@@ -173,12 +173,14 @@ gdi::Bitmap* curvy::curvy_vector_viewer::get_bitmap() const
 
 std::array<double, 4> get_four_levels(double bottom) {
     auto delta = (1.0 - bottom) / 3.0;
-    return {
+    std::array<double, 4> ary = {
         bottom,
         bottom + delta,
         bottom + 2 * delta,
         1.0
     };
+
+    return ary;
 }
 
 std::tuple< gdi::Color, gdi::Color, gdi::Color, gdi::Color> get_four_color_levels(gdi::Color color) {
@@ -272,8 +274,8 @@ void curvy::curvy_vector_viewer::render()
     if (!pixel_sz_)
         return;
 
-    gdi::SolidBrush black_brush(colors::Black);
-    gdi::Pen white_pen(colors::White, 1);
+    gdi::SolidBrush black_brush(get_background_color());
+    gdi::Pen white_pen(get_foreground_color(), 1);
     std::unique_ptr<gdi::Graphics> g( gdi::Graphics::FromImage(back_buffer_.get()) );
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);

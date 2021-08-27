@@ -221,8 +221,8 @@ void curvy::curvy_arithmetic_viewer::render()
     if (!pixel_sz_)
         return;
 
-    gdi::SolidBrush black_brush(colors::Black);
-    gdi::Pen white_pen(colors::White, 1);
+    gdi::SolidBrush black_brush( get_background_color() );
+    gdi::Pen white_pen( get_foreground_color(), 1);
     std::unique_ptr<gdi::Graphics> g(gdi::Graphics::FromImage(back_buffer_.get()));
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);

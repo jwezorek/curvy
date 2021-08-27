@@ -67,6 +67,32 @@ std::array<curvy::point, 3> curvy::arrow_poly_at_pt(double theta, const curvy::p
     return pts;
 }
 
+bool curvy::is_light_theme() {
+#ifdef LIGHT
+    return true;
+#else
+    return false;
+#endif
+}
+
+gdi::Color curvy::get_background_color()
+{
+#ifdef LIGHT
+    return gdi::Color::White;
+#else
+    return gdi::Color::Black;
+#endif
+}
+
+gdi::Color curvy::get_foreground_color()
+{
+#ifdef LIGHT
+    return gdi::Color::Black;
+#else
+    return gdi::Color::White;
+#endif
+}
+
 gdi::Point curvy::to_scr_point(const curvy::point& p, double log_sz, int pix_sz) {
     auto [x, y] = curvy::to_scr_coords(p, log_sz, pix_sz);
     return { x,y };

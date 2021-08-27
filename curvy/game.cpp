@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <gdiplus.h>
+#include "gdi_util.h"
 #include "game.h"
 #include "util.h"
 #include <cmath>
@@ -236,8 +236,8 @@ void curvy::game::render()
     if (!pixel_sz_)
         return;
 
-    gdi::SolidBrush black_brush(colors::Black);
-    gdi::Pen white_pen(colors::White, 1);
+    gdi::SolidBrush black_brush(get_background_color());
+    gdi::Pen white_pen(get_foreground_color(), 1);
     std::unique_ptr<gdi::Graphics> g(gdi::Graphics::FromImage(back_buffer_.get()));
 
     g->SetSmoothingMode(gdi::SmoothingModeAntiAlias);

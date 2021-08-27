@@ -222,7 +222,7 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
 
     auto min_radius = d / 2.0;
     auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
-    auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
+    auto ir = 0.5 * std::abs(d / std::sin(theta));
 
     if (r < min_radius) {
         throw std::runtime_error("a circle is too small");
@@ -232,7 +232,7 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     if (theta < peak) {
         auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
         auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
-        ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
+        ir = 0.5 * std::abs(d / std::sin(t2));
     }
     double val = (ir - min_radius) / std::abs(r - min_radius);
 
