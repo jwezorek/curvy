@@ -25,7 +25,6 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
 }
-
 /*
 void curvy::curvy_world_simulation::initialize()
 {
@@ -80,7 +79,7 @@ void curvy::curvy_world_simulation::initialize()
         s * 0.5, s * -0.866,
         colors::Orange
         });
-
+    
     insert({
         s * -1, s * 2 * -0.866,
         colors::Blue
@@ -90,7 +89,7 @@ void curvy::curvy_world_simulation::initialize()
         0, s * 2 * -0.866,
         colors::Purple
         });
-
+    
     insert({
         s * 1, s * 2 * -0.866,
         colors::DeepPink

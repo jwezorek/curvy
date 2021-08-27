@@ -188,10 +188,12 @@ std::tuple< gdi::Color, gdi::Color, gdi::Color, gdi::Color> get_four_color_level
     double green = static_cast<double>(color.GetG() );
     double blue = static_cast<double>(color.GetB() );
     auto levels = get_four_levels(0.35);
+
     auto level_to_color = [&](int n)->gdi::Color {
-        BYTE rb = static_cast<BYTE>(std::round(levels[n] * red));
-        BYTE gb = static_cast<BYTE>(std::round(levels[n] * green));
-        BYTE bb = static_cast<BYTE>(std::round(levels[n] * blue));
+        double bkgd_offset = curvy::is_light_theme() ? (1.0 - levels[n]) * 255 : 0.0;
+        BYTE rb = static_cast<BYTE>(std::round(levels[n] * red + bkgd_offset));
+        BYTE gb = static_cast<BYTE>(std::round(levels[n] * green + bkgd_offset));
+        BYTE bb = static_cast<BYTE>(std::round(levels[n] * blue + bkgd_offset));
         return gdi::Color(rb, gb, bb);
     };
     return {
