@@ -29,13 +29,11 @@ void curvy::curvy_vector_viewer::initialize()
     puck_a_.set_speed(R);
     puck_a_.set_color(colors::Red);
     puck_a_.set_puck_radius(r);
-    puck_a_.state().refresh_weight();
 
     puck_b_.set_color(colors::DodgerBlue);
     puck_b_.set_puck_radius(r);
     puck_b_.set_circle_rotation_position(north, 0, -R, R);
     puck_b_.set_speed(R);
-    puck_b_.state().refresh_weight();
 
     sync_b_with_a(puck_a_.theta());
 }

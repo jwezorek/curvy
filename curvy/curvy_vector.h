@@ -9,11 +9,9 @@ namespace curvy {
 
     class curvy_vector {
     public:
-        curvy_vector(const curvy::circle& c, bool o, double m, double weight);
+        curvy_vector(const curvy::circle& c, bool o, double m);
         void set_magnitude(double m);
         void set_circle(const circle& c);
-        void refresh_weight();
-
         bool orientation() const;
         const curvy::circle& circle() const;
         std::optional<double> angular_magnitude() const;
@@ -25,10 +23,8 @@ namespace curvy {
         curvy_vector subtract(const curvy_vector& cv, const point& where) const;
         std::string to_string() const;
         double direction_at(const point& pt) const;
-        double weight() const;
 
     private:
-        double weight_;
         bool orientation_;
         double linear_magnitude_;
         curvy::circle circle_;

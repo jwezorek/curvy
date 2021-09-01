@@ -5,8 +5,8 @@
 namespace {
 
     const double k_momentmum_transfer_constant = 0.5;
-    const double k_arithmetic_weighting_constant = 0.5;
-    const double k_curvature_weighting_constant = 1.0;
+    const double k_arithmetic_weighting_constant = 1.0;
+    const double k_curvature_weighting_constant = 2.0;
 
     double weight_from_magnitude(double v) {
         return std::pow(v, k_arithmetic_weighting_constant);
@@ -32,7 +32,8 @@ namespace {
         return sgn * v * curvy::pi();
     }
 
-    curvy::vec3 to_vector(double weight, double direction, double curvature) {
+    curvy::vec3 to_vector(double mag, double direction, double curvature) {
+        auto weight = weight_from_magnitude(mag);
         auto yaw = direction;
         auto pitch = curvature_to_pitch(curvature);
         return {
@@ -57,7 +58,7 @@ namespace {
 
     curvy::vec3 to_vector(const curvy::curvy_vector& v, const curvy::point& pt) {
         return to_vector(
-            v.weight(),
+            v.linear_magnitude(),
             v.direction_at(pt),
             to_angle_of_curvature(v)
         );
@@ -82,14 +83,14 @@ namespace {
 
         return curvy::apply_matrix(
             from_canonical_coords,
-            curvy::curvy_vector(vector_circle, orientation_of_sum, magnitude, weight)
+            curvy::curvy_vector(vector_circle, orientation_of_sum, magnitude)
         );
     }
 }
 
 
-curvy::curvy_vector::curvy_vector(const curvy::circle& c, bool o, double m, double w) :
-    orientation_(o), circle_(c), linear_magnitude_(m), weight_((w >= 0) ? w : weight_from_magnitude(m))
+curvy::curvy_vector::curvy_vector(const curvy::circle& c, bool o, double m) :
+    orientation_(o), circle_(c), linear_magnitude_(m)
 {
 }
 
@@ -102,11 +103,6 @@ void curvy::curvy_vector::set_magnitude(double m)
 void curvy::curvy_vector::set_circle(const curvy::circle& c)
 {
     circle_ = c;
-}
-
-void curvy::curvy_vector::refresh_weight()
-{
-    weight_ = weight_from_magnitude(linear_magnitude());
 }
 
 bool curvy::curvy_vector::orientation() const
@@ -166,19 +162,15 @@ double curvy::curvy_vector::direction_at(const point& pt) const
     return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
-double curvy::curvy_vector::weight() const
-{
-    return weight_;
-}
 
 curvy::curvy_vector curvy::operator*(double scale, const curvy_vector& cv)
 {
-    return curvy_vector(cv.circle(), cv.orientation(), scale * cv.signed_linear_magnitude(), cv.weight());
+    return curvy_vector(cv.circle(), cv.orientation(), scale * cv.signed_linear_magnitude());
 }
 
 curvy::curvy_vector curvy::make_curvy_vector(const curvy::circle& c, bool o, double m)
 {
-    return curvy_vector(c, o, m, weight_from_magnitude(m));
+    return curvy_vector(c, o, m);
 }
 
 curvy::curvy_vector curvy::operator*(const curvy_vector& cv, double scale)
@@ -192,8 +184,7 @@ curvy::curvy_vector curvy::apply_matrix(const curvy::matrix& mat, const curvy::c
     return curvy::curvy_vector(
         circle,
         cv.orientation(),
-        cv.linear_magnitude(),
-        cv.weight()
+        cv.linear_magnitude()
     );
 }
 
@@ -271,7 +262,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
         linear_magnitude() + cv.linear_magnitude(), 
         pt
     );
-    sum.refresh_weight();
+
     return sum;
 }
 
@@ -285,6 +276,6 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
         linear_magnitude() - cv.linear_magnitude(), 
         pt
     );
-    diff.refresh_weight();
+
     return diff;
 }

@@ -164,7 +164,6 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
                     move_arrow_orientation_ = (shift_down) ? !vector_a_.orientation() : vector_a_.orientation();
                 }
                 vector_a_.set_magnitude(handle_move_arrow(vector_a_, move_arrow_orientation_.value(), pt));
-                vector_a_.refresh_weight();
                 break;
 
             case interaction::moving_arrow_b:
@@ -173,7 +172,6 @@ bool curvy::curvy_arithmetic_viewer::handle_mouse_move(const std::tuple<int, int
                     move_arrow_orientation_ = (shift_down) ? !vector_b_.orientation() : vector_b_.orientation();
                 }
                 vector_b_.set_magnitude(handle_move_arrow(vector_b_, move_arrow_orientation_.value(), pt));
-                vector_b_.refresh_weight();
                 break;
         }
 
@@ -239,12 +237,11 @@ void curvy::curvy_arithmetic_viewer::render()
 
     
     // check that subtraction is really the inverse of addition...
-    /*
+    
     if (!addition_) {
         auto sum_check = vector_b_.add(result, { 0,0 });
         paint_circle_vector(*g, sum_check, colors::Green, 2.0, { 0,0 }, logical_sz_, pixel_sz_);
     }
-    */
 
     draw_operation(*g, addition_);
 }

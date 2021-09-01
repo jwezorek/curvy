@@ -25,7 +25,7 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
 }
-/*
+
 void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
@@ -59,8 +59,9 @@ void curvy::curvy_world_simulation::initialize()
         colors::Purple
         });
 }
-*/
 
+
+/*
 void curvy::curvy_world_simulation::initialize()
 {
     double s = 2.2;
@@ -102,7 +103,7 @@ void curvy::curvy_world_simulation::initialize()
         });
 
 }
-
+*/
 
 void curvy::curvy_world_simulation::set_logical_dimensions(double log_sz, bool refresh)
 {
@@ -407,8 +408,7 @@ void curvy::curvy_world_simulation::handle_boundary_collision(puck* p)
         curvy_vector(
             circle_of_rev,
             p->state().orientation(),
-            lin_mag,
-            p->state().weight()
+            lin_mag
         )
     );
     p->set_theta(angle_to_pt(circle_of_rev.center(), position));

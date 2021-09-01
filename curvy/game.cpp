@@ -365,8 +365,7 @@ void curvy::game::handle_boundary_collision(puck* p)
         curvy_vector(
             circle_of_rev,
             p->state().orientation(),
-            lin_mag,
-            p->state().weight()
+            lin_mag
         )
     );
     p->set_theta(angle_to_pt(circle_of_rev.center(), position));
@@ -392,8 +391,7 @@ void curvy::game::handle_post_collision(puck* pu, post* po)
         curvy_vector(
             circle_of_rev,
             pu->state().orientation(),
-            lin_mag,
-            pu->state().weight()
+            lin_mag
         )
     );
     pu->set_theta(angle_to_pt(circle_of_rev.center(), puck_position));
