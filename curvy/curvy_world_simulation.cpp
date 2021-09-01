@@ -25,7 +25,7 @@ curvy::curvy_world_simulation::curvy_world_simulation(int px_sz, double log_sz) 
     set_logical_dimensions(log_sz, false);
     set_pixel_dimensions(px_sz, true);
 }
-/*
+
 void curvy::curvy_world_simulation::initialize()
 {
     pucks_.clear();
@@ -59,8 +59,9 @@ void curvy::curvy_world_simulation::initialize()
         colors::Purple
         });
 }
-*/
 
+
+/*
 void curvy::curvy_world_simulation::initialize()
 {
     double s = 2.2;
@@ -102,7 +103,7 @@ void curvy::curvy_world_simulation::initialize()
         });
 
 }
-
+*/
 
 void curvy::curvy_world_simulation::set_logical_dimensions(double log_sz, bool refresh)
 {

@@ -271,7 +271,6 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
         linear_magnitude() + cv.linear_magnitude(), 
         pt
     );
-    sum.refresh_weight();
     return sum;
 }
 
@@ -285,6 +284,5 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
         linear_magnitude() - cv.linear_magnitude(), 
         pt
     );
-    diff.refresh_weight();
     return diff;
 }
