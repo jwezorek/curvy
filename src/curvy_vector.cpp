@@ -216,10 +216,47 @@ curvy::curvy_projection curvy::project(const curvy_vector& source, const curvy_v
         direction.circle(),
         direction.sign() * coefficient * source.linear_magnitude()
     );
-    return {
-        projected,
-        source.subtract(projected, where)
+
+    const auto residual_magnitude = (1.0 - coefficient) * source.linear_magnitude();
+    if (residual_magnitude <= eps()) {
+        auto [x, y] = where;
+        return { projected, curvy_vector(x, y, 0.0, 0.0) };
+    }
+
+    const auto contact_normal = angle_to_pt(where, direction_point);
+    const auto tangent_1 = normalize_angle(contact_normal + pi_over_two());
+    const auto tangent_2 = normalize_angle(contact_normal - pi_over_two());
+    const auto incoming_direction = normalize_angle(source.direction_at(where));
+    const auto tangent_distance = [incoming_direction](double tangent) {
+        return std::abs(normalize_angle(tangent - incoming_direction));
     };
+    const auto residual_direction = tangent_distance(tangent_1) < tangent_distance(tangent_2)
+        ? tangent_1
+        : tangent_2;
+
+    curvy_vector residual;
+    if (source.circle().is_degenerate()) {
+        residual = curvy_vector(
+            circle(true, where, residual_direction),
+            true,
+            residual_magnitude
+        );
+    } else {
+        const auto radius = source.circle().radius();
+        const auto center_y = (source.orientation() ? 1.0 : -1.0) * radius;
+        const matrix from_canonical_coords = translation_matrix(where) * rotation_matrix(residual_direction);
+        const auto residual_circle = apply_matrix(
+            from_canonical_coords,
+            circle(0.0, center_y, radius)
+        );
+        residual = curvy_vector(
+            residual_circle,
+            source.orientation(),
+            residual_magnitude
+        );
+    }
+
+    return { projected, residual };
 }
 
 double curvy::to_angle_of_curvature(const curvy_vector& cv)
