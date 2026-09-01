@@ -1,8 +1,11 @@
+#define NOMINMAX
+
 #include "util.h"
 #include <Windows.h>
 #include <cmath>
 #include <array>
-#include <boost/math/tools/roots.hpp>
+#include <algorithm>
+#include <limits>
 
 namespace {
     using vec = Eigen::Matrix<double, 3, 1>;
@@ -225,7 +228,7 @@ bool curvy::is_to_the_right_of(double from_direction, const point& from_pt, cons
 {
     matrix mat1 = rotation_matrix( -from_direction) * translation_matrix(-from_pt);
     auto rotated_pt = apply_matrix(mat1, to_pt);
-    return std::get<1>(to_pt) < 0;
+    return std::get<1>(rotated_pt) < 0;
 }
 
 std::tuple<int, int, int, int> curvy::to_scr_coords(double x1, double y1, double x2, double y2, double logical_sz, int pixel_sz)
@@ -339,85 +342,126 @@ double curvy::to_degrees(double radians)
     return radians * 180.0 / curvy::pi();
 }
 
-struct circles_traveling_in_circles {
-    circles_traveling_in_circles(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d) :
-        r1(r1), theta1(theta1), a1(a1), cx(cx), cy(cy), r2(r2), theta2(theta2), a2(a2), d(d) {}
-
-    std::tuple<double, double, double> operator()(double const& t)
-    {
-        // Return f(x) and f'(x) and f''(x).
-        // f(x)...
-        double cosine_term = r1 * std::cos(theta1 + t * a1) - (cx + r2 * std::cos(theta2 + t * a2));
-        double sine_term = r1 * std::sin(theta1 + t * a1) - (cy + r2 * std::sin(theta2 + t * a2));
-        double fx = cosine_term * cosine_term + sine_term * sine_term - d * d;
-
-        // f'(x)
-        double dx = 2.0 * (a1 * r1 * std::cos(a1 * t + theta1) - a2 * r2 * std::cos(a2 * t + theta2)) *
-            (-cy + r1 * std::sin(a1 * t + theta1) - r2 * std::sin(a2 * t + theta2)) +
-            2.0 * (-cx + r1 * std::cos(a1 * t + theta1) - r2 * std::cos(a2 * t + theta2)) *
-            (-a1 * r1 * std::sin(a1 * t + theta1) + a2 * r2 * std::sin(a2 * t + theta2));
-
-        // f''(x)
-        double cosine_term_2 = a1 * r1 * std::cos(a1 * t + theta1) - a2 * r2 * std::cos(a2 * t + theta2);
-        double sine_term_2 = -a1 * r1 * std::sin(a1 * t + theta1) + a2 * r2 * std::sin(a2 * t + theta2);
-        double d2x = 2.0 * cosine_term_2 * cosine_term_2 +
-            2.0 * (-cx + r1 * std::cos(a1 * t + theta1) - r2 * std::cos(a2 * t + theta2)) *
-            (-(a1 * a1) * r1 * std::cos(a1 * t + theta1) + a2 * a2 * r2 * std::cos(a2 * t + theta2)) +
-            2.0 * sine_term_2 * sine_term_2 +
-            2.0 * (-cy + r1 * std::sin(a1 * t + theta1) - r2 * std::sin(a2 * t + theta2)) *
-            (-(a1 * a1) * r1 * std::sin(a1 * t + theta1) + a2 * a2 * r2 * std::sin(a2 * t + theta2));
-
-        return { fx, dx, d2x };  // 'return' fx, dx and d2x.
-    }
-
-private:
-    double r1, theta1, a1, cx, cy, r2, theta2, a2, d;
-};
-
-double solve_circles_traveling_in_circles(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2)
+std::optional<double> curvy::circles_traveling_in_circles_collision_time(
+    double r1, double theta1, double a1,
+    double cx, double cy,
+    double r2, double theta2, double a2,
+    double d, double t2)
 {
-    using namespace boost::math::tools;
-    const int digits = std::numeric_limits<double>::digits;  
-    int get_digits = static_cast<int>(digits - 4);    
-                                                       
-    boost::uintmax_t maxit = 20;
-    double result = halley_iterate(
-        circles_traveling_in_circles(r1, theta1, a1, cx, cy, r2, theta2, a2, d),
-        t2 / 2.0, 0.0, t2, get_digits, maxit);
+    if (t2 < 0.0)
+        return std::nullopt;
 
-    return result;
-}
+    auto separation = [=](double t) {
+        auto x1 = r1 * std::cos(theta1 + t * a1);
+        auto y1 = r1 * std::sin(theta1 + t * a1);
+        auto x2 = cx + r2 * std::cos(theta2 + t * a2);
+        auto y2 = cy + r2 * std::sin(theta2 + t * a2);
+        return std::hypot(x1 - x2, y1 - y2) - d;
+    };
 
-double curvy::circles_traveling_in_circles_collision_time(double r1, double theta1, double a1, double cx, double cy, double r2, double theta2, double a2, double d, double t2)
-{
-    return solve_circles_traveling_in_circles(r1, theta1, a1, cx, cy, r2, theta2, a2, d, t2);
-}
-
-std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2)
-{
-    using namespace std;
-    auto arc_cosine = (-(r * (4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
-        4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta))) +
-        sqrt(pow(r, 2) * pow(4 * pow(cx, 3) * cos(theta) + 4 * cx * pow(cy, 2) * cos(theta) - 4 * cx * pow(d, 2) * cos(theta) + 4 * cx * pow(r, 2) * cos(theta) + 8 * cx * d * R * cos(theta) - 4 * cx * pow(R, 2) * cos(theta) +
-            4 * pow(cx, 2) * cy * sin(theta) + 4 * pow(cy, 3) * sin(theta) - 4 * cy * pow(d, 2) * sin(theta) + 4 * cy * pow(r, 2) * sin(theta) + 8 * cy * d * R * sin(theta) - 4 * cy * pow(R, 2) * sin(theta), 2) -
-            4 * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)) *
-            (pow(cx, 4) + 2 * pow(cx, 2) * pow(cy, 2) + pow(cy, 4) - 2 * pow(cx, 2) * pow(d, 2) - 2 * pow(cy, 2) * pow(d, 2) + pow(d, 4) + 2 * pow(cx, 2) * pow(r, 2) + 2 * pow(cy, 2) * pow(r, 2) -
-                2 * pow(d, 2) * pow(r, 2) + pow(r, 4) + 4 * pow(cx, 2) * d * R + 4 * pow(cy, 2) * d * R - 4 * pow(d, 3) * R + 4 * d * pow(r, 2) * R - 2 * pow(cx, 2) * pow(R, 2) - 2 * pow(cy, 2) * pow(R, 2) + 6 * pow(d, 2) * pow(R, 2) -
-                2 * pow(r, 2) * pow(R, 2) - 4 * d * pow(R, 3) + pow(R, 4) - 4 * pow(cy, 2) * pow(r, 2) * pow(cos(theta), 2) + 8 * cx * cy * pow(r, 2) * cos(theta) * sin(theta) - 4 * pow(cx, 2) * pow(r, 2) * pow(sin(theta), 2)))) /
-        (2. * pow(r, 2) * (4 * pow(cx, 2) * pow(cos(theta), 2) + 4 * pow(cy, 2) * pow(cos(theta), 2) + 4 * pow(cx, 2) * pow(sin(theta), 2) + 4 * pow(cy, 2) * pow(sin(theta), 2)));
-    
-    if (arc_cosine > 1.0) // sometimes this can come out to being some tiny epsilon above 1.0 due to floating point bullshit...
+    auto gap = separation(0.0);
+    if (gap <= eps())
         return 0.0;
 
-    auto t = acos(arc_cosine) / a;
-    if (t >= 0 && t <= t2)
-        return t;
+    // The distance between the puck centers cannot close faster than the
+    // sum of their linear speeds. Advancing by a fraction of gap/max_speed
+    // therefore cannot step over the first collision, even when the pucks
+    // touch and separate again before t2.
+    auto max_relative_speed = std::abs(a1 * r1) + std::abs(a2 * r2);
+    if (max_relative_speed <= eps())
+        return std::nullopt;
 
-    t *= -1.0;
-    if (t >= 0 && t <= t2)
-        return t;
+    double t = 0.0;
+    constexpr int max_iterations = 256;
+    for (int iteration = 0; iteration < max_iterations; ++iteration) {
+        auto safe_step = gap / max_relative_speed;
+        if (safe_step > t2 - t)
+            return std::nullopt;
+
+        auto step = std::max(0.9 * safe_step,
+            8.0 * std::numeric_limits<double>::epsilon() * std::max(1.0, std::abs(t)));
+        t = std::min(t + step, t2);
+        gap = separation(t);
+
+        if (gap <= eps())
+            return t;
+        if (t >= t2)
+            return std::nullopt;
+    }
 
     return std::nullopt;
 }
 
+std::optional<double> curvy::circle_traveling_in_circle_collision_time_with_circular_border(double R, double r, double cx, double cy, double a, double theta, double d, double t2)
+{
+    if (t2 < 0.0)
+        return std::nullopt;
 
+    auto clearance = [=](double t) {
+        auto x = cx + r * std::cos(theta + t * a);
+        auto y = cy + r * std::sin(theta + t * a);
+        return (R - d) - std::hypot(x, y);
+    };
+
+    auto max_speed = std::abs(a * r);
+    auto gap = clearance(0.0);
+    double t = 0.0;
+
+    if (gap <= eps()) {
+        if (max_speed <= eps())
+            return std::nullopt;
+
+        auto x = cx + r * std::cos(theta);
+        auto y = cy + r * std::sin(theta);
+        auto vx = -a * r * std::sin(theta);
+        auto vy = a * r * std::cos(theta);
+        auto distance_from_center = std::hypot(x, y);
+        auto outward_speed = distance_from_center > eps()
+            ? (x * vx + y * vy) / distance_from_center
+            : 0.0;
+
+        if (gap < -eps() || outward_speed > eps())
+            return 0.0;
+
+        // A puck reflected at the boundary begins the next search still in
+        // contact but moving inward. Step just far enough to establish a
+        // positive clearance; if it instead moves outside, the collision is
+        // at the start of the interval.
+        double probe = std::min(t2, 32.0 * eps() / max_speed);
+        for (int i = 0; i < 32 && probe > 0.0; ++i) {
+            gap = clearance(probe);
+            if (gap < -eps())
+                return 0.0;
+            if (gap > eps()) {
+                t = probe;
+                break;
+            }
+            probe = std::min(t2, 2.0 * probe);
+        }
+
+        if (gap <= eps())
+            return std::nullopt;
+    }
+
+    if (max_speed <= eps())
+        return std::nullopt;
+
+    constexpr int max_iterations = 256;
+    for (int iteration = 0; iteration < max_iterations; ++iteration) {
+        auto safe_step = gap / max_speed;
+        if (safe_step > t2 - t)
+            return std::nullopt;
+
+        auto step = std::max(0.9 * safe_step,
+            8.0 * std::numeric_limits<double>::epsilon() * std::max(1.0, std::abs(t)));
+        t = std::min(t + step, t2);
+        gap = clearance(t);
+
+        if (gap <= eps())
+            return t;
+        if (t >= t2)
+            return std::nullopt;
+    }
+
+    return std::nullopt;
+}

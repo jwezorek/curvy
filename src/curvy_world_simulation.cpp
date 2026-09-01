@@ -1,7 +1,10 @@
+#define NOMINMAX
+
 #include <Windows.h>
 #include <gdiplus.h>
 #include "curvy_world_simulation.h"
 #include "util.h"
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <map>
@@ -162,13 +165,21 @@ void curvy::curvy_world_simulation::update(double dt)
     //for (auto& p : pucks_)
     //    p.apply_friction( dt );
 
+    int consecutive_zero_time_events = 0;
     while (dt > 0) {
         auto [collisions, when] = get_next_collisions(dt, eps() );
+        auto made_no_progress =
+            when <= std::numeric_limits<double>::epsilon() * std::max(1.0, dt);
+        if (made_no_progress && consecutive_zero_time_events > 0)
+            break;
+
         for (auto& p : pucks_)
             p.update(when);
 
         if (!collisions.empty())
             handle_collisions( collisions );
+
+        consecutive_zero_time_events = made_no_progress ? 1 : 0;
 
         dt -= when;
     }
@@ -211,7 +222,7 @@ void curvy::curvy_world_simulation::paint_puck(gdi::Graphics& g, const puck& p)
 }
 
 std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world_simulation::get_next_collisions(double dt, double eps) {
-    std::map<double, collision> collisions;
+    std::multimap<double, collision> collisions;
     int n = static_cast<int>(pucks_.size());
 
     for (int i = 0; i < n; ++i) {
@@ -219,7 +230,7 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
 
         auto collision_time = p1->get_boundary_collision_time(border(), dt, eps);
         if (collision_time) {
-            collisions[*collision_time] = { p1, nullptr };
+            collisions.emplace(*collision_time, collision{ p1, nullptr });
         }
 
         for (int j = i + 1; j < n; ++j) {
@@ -230,7 +241,7 @@ std::tuple<curvy::curvy_world_simulation::collisions, double> curvy::curvy_world
 
             auto collision_time = p1->get_collision_time(*p2, dt, eps);
             if (collision_time) {
-                collisions[*collision_time] = { p1,p2 };
+                collisions.emplace(*collision_time, collision{ p1,p2 });
             }
         }
     }
@@ -321,5 +332,3 @@ void curvy::curvy_world_simulation::handle_collisions( collisions& pairs)
     for (auto& pair : pairs)
         handle_collision(pair);
 }
-
-

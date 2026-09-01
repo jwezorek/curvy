@@ -7,6 +7,7 @@ namespace curvy {
 
     class state {
     public:
+        virtual ~state() = default;
         virtual void initialize() = 0;
         virtual void update() = 0;
         virtual void update(double dt) = 0;

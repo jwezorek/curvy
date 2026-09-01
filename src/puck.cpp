@@ -2,7 +2,10 @@
 #include "util.h"
 #include "circle.h"
 #include "curvy_vector.h"
+#include <algorithm>
 #include <cmath>
+#include <iterator>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -30,16 +33,7 @@ namespace {
         return std::abs(distance_from_intersection(p1, p2)) <= eps;
     }
 
-    std::optional<double> get_collision_time(const curvy::puck& p1, const curvy::puck& p2, double t1, double t2, double eps) {
-        auto p1_at_t2 = p1.update(t2);
-        auto p2_at_t2 = p2.update(t2);
-
-        if (!is_intersecting(p1_at_t2, p2_at_t2))
-            return std::nullopt;
-
-        if (is_in_contact(p1_at_t2, p2_at_t2, eps))
-            return t2;
-
+    std::optional<double> get_collision_time(const curvy::puck& p1, const curvy::puck& p2, double t2) {
         auto v1 = p1.state();
         auto v2 = p2.state();
 
@@ -53,7 +47,7 @@ namespace {
                 v2.circle().radius(),
                 p2.theta(),
                 *v2.signed_angular_magnitude(),
-                p1.puck_circle().radius() + p1.puck_circle().radius(),
+                p1.puck_circle().radius() + p2.puck_circle().radius(),
                 t2
             );
         }
@@ -62,31 +56,7 @@ namespace {
 
     }
 
-    double distance_from_intersection_with_boundary(const curvy::puck& p1, const curvy::circle& border)
-    {
-        auto pt_on_boundary = curvy::closest_pt_on_circle(border, p1.position());
-        auto dist = curvy::euclidean_distance(p1.position(), pt_on_boundary);
-        auto distance_when_touching = p1.puck_circle().radius();
-        return dist - distance_when_touching;
-    }
-
-    bool is_intersecting_with_border(const curvy::puck& p1, const curvy::circle& border)
-    {
-        return distance_from_intersection_with_boundary(p1, border) <= 0;
-    }
-
-    bool is_in_contact_with_border(const curvy::puck& p1, const curvy::circle& border, double eps) {
-        return std::abs(distance_from_intersection_with_boundary(p1, border)) <= eps;
-    }
-
-    std::optional<double> get_boundary_collision_time(const curvy::puck& p1, const curvy::circle& border, double t1, double t2, double eps) {
-        auto p1_at_t2 = p1.update(t2);
-        if (!is_intersecting_with_border(p1_at_t2, border))
-            return std::nullopt;
-
-        if (is_in_contact_with_border(p1_at_t2, border, eps))
-            return t2;
-
+    std::optional<double> get_boundary_collision_time(const curvy::puck& p1, const curvy::circle& border, double t2) {
         if (p1.state().angular_magnitude()) {
             return curvy::circle_traveling_in_circle_collision_time_with_circular_border(
                 border.radius(),
@@ -153,12 +123,14 @@ curvy::curvy_vector curvy::puck::momentum_vector() const
 
 std::optional<double> curvy::puck::get_collision_time(const puck& p, double dt, double eps) const
 {
-    return ::get_collision_time(*this, p, 0, dt, eps);
+    static_cast<void>(eps);
+    return ::get_collision_time(*this, p, dt);
 }
 
 std::optional<double> curvy::puck::get_boundary_collision_time(const curvy::circle& border, double dt, double eps) const
 {
-    return ::get_boundary_collision_time(*this, border, 0, dt, eps);
+    static_cast<void>(eps);
+    return ::get_boundary_collision_time(*this, border, dt);
 }
 
 gdi::Color curvy::puck::color() const

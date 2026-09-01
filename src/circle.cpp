@@ -230,6 +230,8 @@ curvy::point curvy::closest_pt_on_circle(const curvy::circle& c, const curvy::po
     auto [cx, cy] = c.center();
     auto [px, py] = pt;
     auto distance_to_center = curvy::euclidean_distance(cx, cy, px, py);
+    if (distance_to_center <= curvy::eps())
+        return { cx + c.radius(), cy };
     return {
         cx + c.radius() * (px - cx) / distance_to_center,
         cy + c.radius() * (py - cy) / distance_to_center

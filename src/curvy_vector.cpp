@@ -1,6 +1,9 @@
 #define NOMINMAX
 #include "curvy_vector.h"
 #include <Windows.h>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
 
 namespace {
 
@@ -30,7 +33,7 @@ curvy::curvy_vector::curvy_vector(const curvy::circle & c, double m) :
 
 
 curvy::curvy_vector::curvy_vector(const curvy::circle & c, bool o, double m) :
-    orientation_(o), circle_(c), linear_magnitude_(m)
+    orientation_(o), circle_(c), linear_magnitude_(std::abs(m))
 {
 }
 
@@ -122,6 +125,10 @@ std::string curvy::curvy_vector::to_string() const
 
 double curvy::curvy_vector::direction_at(const point& pt) const
 {
+    if (circle_.is_degenerate()) {
+        return normalize_angle(circle_.degenerate_angle() +
+            (orientation_ ? 0.0 : pi()));
+    }
     return direction_on_circle(angle_to_pt(circle_.center(), pt), orientation_);
 }
 
@@ -169,6 +176,12 @@ std::tuple<curvy::circle, bool> curvy::circular_direction_through_two_points(con
     matrix from_canonical_coords = translation_matrix(pt1) * rotation_matrix(direction_at_pt1);
 
     auto [px, py] = apply_matrix(to_canonical_coords, pt2);
+    if (std::abs(py) <= eps()) {
+        return {
+            curvy::circle(true, pt1, normalize_angle(direction_at_pt1)),
+            true
+        };
+    }
     double circle_of_impulse_y = (px * px + py * py) / (2 * py);
     auto c = apply_matrix(from_canonical_coords, curvy::circle(0, circle_of_impulse_y, std::abs(circle_of_impulse_y)));
     return { c, py > 0 };
@@ -181,7 +194,13 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
 
     auto min_radius = d / 2.0;
     auto theta = (orientation ? 1.0 : -1.0) * curvy::angle_to_point_relative_to_direction(pt1, pt1_direction, pt2);
-    auto ir = std::abs((d * d) / (2.0 * d * std::sin(theta)));
+    auto impulse_radius = [d](double angle) {
+        auto sine = std::abs(std::sin(angle));
+        return sine <= curvy::eps()
+            ? std::numeric_limits<double>::infinity()
+            : d / (2.0 * sine);
+    };
+    auto ir = impulse_radius(theta);
 
     if (r < min_radius) {
         throw std::runtime_error("a circle is too small");
@@ -191,7 +210,7 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
     if (theta < peak) {
         auto pcnt = (theta - (-curvy::pi_over_two())) / (peak - (-curvy::pi_over_two()));
         auto t2 = -curvy::pi_over_two() + pcnt * (curvy::pi_over_two() - peak);
-        ir = std::abs((d * d) / (2.0 * d * std::sin(t2)));
+        ir = impulse_radius(t2);
     }
     double val = (ir - min_radius) / std::abs(r - min_radius);
 
@@ -247,7 +266,12 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
 
     auto m1 = linear_magnitude();
     auto m2 = cv.linear_magnitude();
-    auto linear_magnitude_of_diff = m1 - m2;
+    auto signed_magnitude_of_diff = m1 - m2;
+    if (std::abs(signed_magnitude_of_diff) <= eps()) {
+        auto [x, y] = pt;
+        return curvy_vector(x, y, 0.0, 0.0);
+    }
+    auto linear_magnitude_of_diff = std::abs(signed_magnitude_of_diff);
     auto curvature1 = curvy::to_angle_of_curvature(*this);
     auto curvature2 = curvy::to_angle_of_curvature(cv);
     auto curvature_of_diff = normalize_angle((weight(m1) * curvature1 - weight(m2) * curvature2) / (weight(m1) - weight(m2)));
@@ -272,6 +296,3 @@ curvy::curvy_vector curvy::curvy_vector::subtract(const curvy_vector& cv, const 
         curvy_vector(vector_circle, orientation_of_diff, linear_magnitude_of_diff)
     );
 }
-
-
-
