@@ -26,28 +26,26 @@ The 2021 implementation combines two curvy vectors applied at the same point by 
 2. their instantaneous tangent directions,
 3. their signed curvatures.
 
-For vectors \(A\) and \(B\),
+For vectors `A` and `B`:
 
-\[
-m_{\text{result}} = m_A + m_B
-\]
+```text
+m_result = m_A + m_B
+```
 
 and signed curvature is magnitude-weighted:
 
-\[
-k_{\text{result}}
-=
-\frac{m_A k_A + m_B k_B}
-     {m_A + m_B}
-\]
+```text
+k_result = (m_A * k_A + m_B * k_B)
+           / (m_A + m_B)
+```
 
 The resulting directed circle is reconstructed from the combined tangent direction and curvature.
 
-One interesting interpretation is that, for circles tangent at a common point, signed curvature behaves naturally as an affine coordinate. In homogeneous coordinates,
+One interesting interpretation is that, for circles tangent at a common point, signed curvature behaves naturally as an affine coordinate. In homogeneous coordinates:
 
-\[
-C \leftrightarrow (m, mk)
-\]
+```text
+C <-> (m, m*k)
+```
 
 the magnitude/curvature part of Curvy addition becomes ordinary linear addition.
 
@@ -70,15 +68,11 @@ The main open problem in Curvy is **projection**.
 
 Given an incoming curvy vector and an impact circle, the geometry determines the direction of the transferred component quite naturally. What is less obvious is how much magnitude should be transferred along that circle.
 
-Conceptually, Curvy needs an analogue of
+Conceptually, Curvy needs an analogue of:
 
-\[
-\text{source}
-=
-\text{projected component}
-+
-\text{residual component}
-\]
+```text
+source = projected component + residual component
+```
 
 defined directly on directed circles with magnitudes.
 
