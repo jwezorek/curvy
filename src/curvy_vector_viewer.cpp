@@ -21,7 +21,7 @@ curvy::curvy_vector_viewer::curvy_vector_viewer(int px_sz, double log_sz) :
 void curvy::curvy_vector_viewer::initialize()
 {
     auto r = 1;
-    auto R = 8;
+    auto R = 7.8;
     const auto north = pi_over_two();
     const auto south = three_pi_over_two();
 
