@@ -284,6 +284,27 @@ void curvy::curvy_world_simulation::handle_collision( collision& collision) {
     auto final_a = projection_a_to_b.residual.add(projection_b_to_a.projected, pt_a);
     auto final_b = projection_b_to_a.residual.add(projection_a_to_b.projected, pt_b);
 
+    // The remapped 2021 bump guarantees local separation when a moving puck
+    // strikes a stationary target, but two independently projected moving
+    // pucks can still recombine into an approaching pair.  Treat C8
+    // (post-collision nonpenetration) as a hard constraint: if the provisional
+    // result still closes the contact gap, fall back to full mutual transfer.
+    // With T_a = T_b = 1 the residuals vanish and the normal relative velocity
+    // is exactly reversed, so an approaching pair is guaranteed to separate.
+    auto contact_normal = normalize_pt(pt_b - pt_a);
+    auto separation_rate = [&](const curvy_vector& va, const curvy_vector& vb) {
+        return dot_product(
+            vb.newtonian_vector_at_point(pt_b) - va.newtonian_vector_at_point(pt_a),
+            contact_normal
+        );
+    };
+
+    auto incoming_separation_rate = separation_rate(a, b);
+    if (incoming_separation_rate < 0.0 && separation_rate(final_a, final_b) <= 0.0) {
+        final_a = curvy_vector(b_to_a_circle, b_to_a_orientation, b.linear_magnitude());
+        final_b = curvy_vector(a_to_b_circle, a_to_b_orientation, a.linear_magnitude());
+    }
+
     puck_a.set_vector(final_a);
     puck_b.set_vector(final_b);
 

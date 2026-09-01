@@ -198,8 +198,14 @@ double curvy::momentum_transfer_factor(const curvy::point& pt1, double pt1_direc
         ir = impulse_radius(t2);
     }
     double val = (ir - min_radius) / std::abs(r - min_radius);
+    auto separation_strength = std::pow(val, k_momentmum_transfer_constant);
 
-    return std::pow(val, k_momentmum_transfer_constant);
+    // The original 2021 bump ran from zero at the glancing endpoints to one
+    // at same-circle incidence.  Interpret that bump as separation strength
+    // rather than transfer fraction: T = (1 + B) / 2.  This keeps full
+    // same-circle transfer while making every non-endpoint approaching
+    // collision transfer more than half of the source magnitude.
+    return (1.0 + separation_strength) / 2.0;
 }
 
 curvy::curvy_projection curvy::project(const curvy_vector& source, const curvy_vector& direction, const point& where, const point& direction_point, double characteristic_distance)
