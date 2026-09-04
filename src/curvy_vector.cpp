@@ -278,7 +278,7 @@ curvy::curvy_vector curvy::curvy_vector::add(const curvy_vector& cv, const point
     auto curvature2 = curvy::to_angle_of_curvature(cv);
     auto curvature_of_sum = normalize_angle((weight(m1) * curvature1 + weight(m2) * curvature2) / (weight(m1)+weight(m2)));
     auto direction_of_sum = atan_of_pt(
-        weight(m1) * newtonian_vector_at_point(pt) + weight(m2) * cv.newtonian_vector_at_point(pt)
+        newtonian_vector_at_point(pt) + cv.newtonian_vector_at_point(pt)
     );
     auto orientation_of_sum = curvature_of_sum >= 0;
     curvature_of_sum = std::abs(curvature_of_sum);
